@@ -2,16 +2,13 @@ import { useState } from "react";
 import Sil from "./Sil";
 import { T, COR_HEX, fmt } from "../../lib/galeneTheme";
 import { useWindowWidth } from "../../hooks/useWindowWidth";
-import { salvarPedido } from "../../lib/orders";
 
 export default function Carrinho({ cart, onRemove, onFinish, onBack }) {
   const [step, setStep] = useState(1);
   const [met, setMet]   = useState(null);
-  const [ok, setOk]     = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [erroServidor, setErroServidor] = useState(null);
 
-  const [cardForm, setCardForm] = useState({ numero: "", nome: "", validade: "", cvv: "" });
   const [form, setForm] = useState({ razao: "", cnpj: "", email: "", tel: "", end: "", cidade: "" });
   const [formErros, setFormErros] = useState({});
 
@@ -37,29 +34,20 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack }) {
   const confirmarPedido = async (pagamento) => {
     setSalvando(true);
     setErroServidor(null);
-    const { error } = await salvarPedido({ form, cart, pagamento, totalPecas: totPcs, totalValor: totVal });
-    setSalvando(false);
-    if (error) {
+    try {
+      const res = await fetch('/api/pedidos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ form, cart, pagamento, totalPecas: totPcs, totalValor: totVal }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error?.message || 'Erro ao criar pedido');
+      window.location.href = data.checkout_url;
+    } catch (e) {
+      setSalvando(false);
       setErroServidor("Não foi possível registrar o pedido. Tente novamente.");
-      return;
     }
-    setOk(true);
   };
-
-  if (ok) return (
-    <div style={{ textAlign: "center", padding: "80px 24px" }}>
-      <div style={{ width: 72, height: 72, background: `linear-gradient(135deg,${T.goldDk},${T.gold})`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px" }}>
-        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-      </div>
-      <h2 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 32, color: T.gold, margin: "0 0 12px" }}>Pedido Enviado!</h2>
-      <p style={{ fontFamily: "'Lato',sans-serif", fontSize: 13, color: T.ink3, maxWidth: 380, margin: "0 auto 32px", lineHeight: 1.7 }}>
-        Recebemos seu pedido. Nossa equipe entrará em contato em breve pelo e-mail informado para confirmar os detalhes.
-      </p>
-      <button onClick={onFinish} style={{ background: `linear-gradient(135deg,${T.goldDk},${T.gold})`, border: "none", borderRadius: 12, padding: "14px 36px", color: "white", fontFamily: "'Lato',sans-serif", fontSize: 13, fontWeight: 700, cursor: "pointer", letterSpacing: 1 }}>
-        Continuar Comprando
-      </button>
-    </div>
-  );
 
   return (
     <div style={{ maxWidth: 980, margin: "0 auto", padding: mob ? "20px 14px 100px" : "36px 32px 60px" }}>
@@ -211,54 +199,23 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack }) {
                 </div>
               )}
 
-              {met === "pix" && (
-                <div style={{ textAlign: "center", padding: "24px 0" }}>
-                  <div style={{ background: "#EAF5EE", border: "1px solid #B8D8C4", borderRadius: 16, padding: "28px 24px", marginBottom: 20 }}>
-                    <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 11, color: T.ink3, marginBottom: 8, letterSpacing: 1 }}>TOTAL A PAGAR</div>
-                    <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 22, color: T.ink2, marginBottom: 4 }}>{totPcs} peças</div>
-                    <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 42, color: T.jade, fontWeight: 600 }}>{fmt(totVal)}</div>
-                    <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 10, color: T.jade, marginTop: 8, letterSpacing: 1.5 }}>VIA PIX — NOSSA EQUIPE ENVIARÁ A CHAVE</div>
-                  </div>
-                  <button
-                    onClick={() => confirmarPedido("pix")}
-                    disabled={salvando}
-                    style={{ width: "100%", background: salvando ? T.bg2 : `linear-gradient(135deg,${T.jade},#4A8B5A)`, border: "none", borderRadius: 12, padding: "16px", color: salvando ? T.ink4 : "white", fontFamily: "'Lato',sans-serif", fontSize: 13, fontWeight: 700, cursor: salvando ? "wait" : "pointer", letterSpacing: 1 }}
-                  >
-                    {salvando ? "Registrando pedido…" : "Confirmar Pedido via PIX"}
-                  </button>
-                </div>
-              )}
-
-              {met === "cartao" && (
-                <div style={{ display: "grid", gridTemplateColumns: mob ? "1fr" : "1fr 1fr", gap: 12 }}>
-                  {[
-                    ["numero",   "Número do Cartão", "2"],
-                    ["nome",     "Nome no Cartão",   "2"],
-                    ["validade", "Validade",          "1"],
-                    ["cvv",      "CVV",               "1"],
-                  ].map(([f, l, c]) => (
-                    <div key={f} style={{ gridColumn: `span ${mob ? "1" : c}` }}>
-                      <label style={{ display: "block", fontFamily: "'Lato',sans-serif", fontSize: 10, letterSpacing: 1.5, color: T.ink4, textTransform: "uppercase", marginBottom: 6 }}>{l}</label>
-                      <input
-                        value={cardForm[f]}
-                        onChange={(e) => setCardForm((p) => ({ ...p, [f]: e.target.value }))}
-                        style={{ width: "100%", padding: "11px 14px", border: `1.5px solid ${T.border}`, borderRadius: 8, fontFamily: "'Lato',sans-serif", fontSize: 13, color: T.ink, background: T.panel, outline: "none", boxSizing: "border-box" }}
-                        onFocus={(e) => (e.target.style.borderColor = T.gold)}
-                        onBlur={(e)  => (e.target.style.borderColor = T.border)}
-                      />
-                    </div>
-                  ))}
-                  <div style={{ gridColumn: `span ${mob ? "1" : "2"}` }}>
-                    <button
-                      onClick={() => confirmarPedido("cartao")}
-                      disabled={salvando}
-                      style={{ width: "100%", background: salvando ? T.bg2 : `linear-gradient(135deg,${T.goldDk},${T.gold})`, border: "none", borderRadius: 12, padding: "16px", color: salvando ? T.ink4 : "white", fontFamily: "'Lato',sans-serif", fontSize: 13, fontWeight: 700, cursor: salvando ? "wait" : "pointer", letterSpacing: 1 }}
-                    >
-                      {salvando ? "Registrando pedido…" : `Confirmar Pedido — ${fmt(totVal)}`}
-                    </button>
+              <div style={{ textAlign: "center", padding: "24px 0" }}>
+                <div style={{ background: met === "pix" ? "#EAF5EE" : T.goldXlt, border: `1px solid ${met === "pix" ? "#B8D8C4" : T.border}`, borderRadius: 16, padding: "28px 24px", marginBottom: 20 }}>
+                  <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 11, color: T.ink3, marginBottom: 8, letterSpacing: 1 }}>TOTAL A PAGAR</div>
+                  <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 22, color: T.ink2, marginBottom: 4 }}>{totPcs} peças</div>
+                  <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 42, color: met === "pix" ? T.jade : T.gold, fontWeight: 600 }}>{fmt(totVal)}</div>
+                  <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 10, color: T.ink3, marginTop: 8, letterSpacing: 1 }}>
+                    Você vai finalizar em uma página segura do Mercado Pago
                   </div>
                 </div>
-              )}
+                <button
+                  onClick={() => confirmarPedido(met)}
+                  disabled={salvando}
+                  style={{ width: "100%", background: salvando ? T.bg2 : `linear-gradient(135deg,${T.goldDk},${T.gold})`, border: "none", borderRadius: 12, padding: "16px", color: salvando ? T.ink4 : "white", fontFamily: "'Lato',sans-serif", fontSize: 13, fontWeight: 700, cursor: salvando ? "wait" : "pointer", letterSpacing: 1 }}
+                >
+                  {salvando ? "Redirecionando…" : "Ir para o pagamento"}
+                </button>
+              </div>
             </div>
           )}
         </div>
