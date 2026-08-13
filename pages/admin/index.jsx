@@ -6,7 +6,7 @@ import Estoque      from "../../components/admin/tabs/Estoque";
 import Pedidos      from "../../components/admin/tabs/Pedidos";
 import LoginPage    from "../../components/admin/LoginPage";
 import SettingsPage from "../../components/admin/SettingsPage";
-import { MOCK } from "../../components/admin/mockData";
+import { fetchDashboardData } from "../../lib/adminData";
 import { getSession, logout } from "../../lib/adminAuth";
 
 const TABS = [
@@ -21,12 +21,22 @@ export default function AdminPage() {
   const [checkingSession, setCheckingSession] = useState(true);
   const [session,     setSession]     = useState(null);
   const [activeTab,   setActiveTab]   = useState("overview");
-  const [data]                        = useState(MOCK);
+  const [data,        setData]        = useState(null);
+  const [loadingData, setLoadingData] = useState(true);
   const [showLogout,  setShowLogout]  = useState(false);
 
   useEffect(() => {
     getSession().then(s => { setSession(s); setCheckingSession(false); });
   }, []);
+
+  useEffect(() => {
+    if (!session) return;
+    setLoadingData(true);
+    fetchDashboardData()
+      .then(setData)
+      .catch((err) => console.error("Erro ao buscar dados do painel:", err))
+      .finally(() => setLoadingData(false));
+  }, [session]);
 
   async function handleLogout() {
     await logout();
@@ -92,8 +102,12 @@ export default function AdminPage() {
         </div>
 
         <div style={{ display:"flex", alignItems:"center", gap:16 }}>
-          <span style={{ fontSize:11, color:"#475569" }}>
-            Demo (dado mock) · Fase 3 do roadmap troca por Supabase real
+          <span style={{ fontSize:11, color:"#475569", display:"flex", alignItems:"center", gap:6 }}>
+            <span style={{
+              width:7, height:7, borderRadius:"50%",
+              background: loadingData ? "#475569" : "#34d399",
+            }} />
+            {loadingData ? "Carregando..." : "Dado real · Supabase"}
           </span>
 
           <div style={{ position:"relative" }}>
@@ -137,10 +151,18 @@ export default function AdminPage() {
       </div>
 
       <div style={{ padding:"28px 32px", maxWidth:1400, margin:"0 auto" }} key={activeTab}>
-        {activeTab==="overview" && <Overview data={data} />}
-        {activeTab==="vendas"   && <Vendas   data={data} />}
-        {activeTab==="estoque"  && <Estoque  data={data} />}
-        {activeTab==="pedidos"  && <Pedidos  data={data} />}
+        {!data && activeTab !== "settings" ? (
+          <div style={{ textAlign:"center", padding:"80px 0", color:"#64748b", fontSize:13 }}>
+            Carregando dados do painel...
+          </div>
+        ) : (
+          <>
+            {activeTab==="overview" && <Overview data={data} />}
+            {activeTab==="vendas"   && <Vendas   data={data} />}
+            {activeTab==="estoque"  && <Estoque  data={data} />}
+            {activeTab==="pedidos"  && <Pedidos  data={data} />}
+          </>
+        )}
         {activeTab==="settings" && <SettingsPage />}
       </div>
 

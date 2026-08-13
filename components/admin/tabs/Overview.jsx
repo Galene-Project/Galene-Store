@@ -12,15 +12,15 @@ export default function Overview({ data }) {
   const { faturamentoMensal, vendasPorCategoria, topProdutos, estoqueAlertas, distribuicaoTamanho, kpis } = data;
   const totalFat = faturamentoMensal.reduce((a, b) => a + b.valor, 0);
   const totalPedidos = faturamentoMensal.reduce((a, b) => a + b.pedidos, 0);
-  const ticketMedio = Math.round(totalFat / totalPedidos);
+  const ticketMedio = totalPedidos ? Math.round(totalFat / totalPedidos) : 0;
 
   return (
     <>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(6,1fr)", gap: 14, marginBottom: 22 }}>
-        <KPICard icon="💰" label="Faturamento (6 meses)"  value={`R$${(totalFat/1000).toFixed(1)}k`} sub="+23% vs anterior" accent="#c084fc" delay={0}    />
+        <KPICard icon="💰" label="Faturamento (6 meses)"  value={`R$${(totalFat/1000).toFixed(1)}k`} sub="6 meses"          accent="#c084fc" delay={0}    />
         <KPICard icon="🛒" label="Total de Pedidos"       value={totalPedidos}                        sub="6 meses"          accent="#818cf8" delay={0.05}  />
         <KPICard icon="🎯" label="Ticket Médio"           value={`R$${ticketMedio}`}                  sub="por pedido"       accent="#38bdf8" delay={0.1}   />
-        <KPICard icon="📦" label="SKUs Ativos"            value={kpis.totalSkus}                      sub="37 modelos"       accent="#34d399" delay={0.15}  />
+        <KPICard icon="📦" label="SKUs Ativos"            value={kpis.totalSkus}                      sub={`${kpis.disponiveis} c/ estoque`} accent="#34d399" delay={0.15}  />
         <KPICard icon="⚠️" label="Alertas de Estoque"    value={estoqueAlertas.length}               sub={`${kpis.esgotados} esgotados`} accent="#fb923c" delay={0.2} />
         <KPICard icon="📅" label="Pedidos Hoje"           value={kpis.pedidosHoje}                    sub={`R$${kpis.faturamentoHoje}`}    accent="#f472b6" delay={0.25} />
       </div>

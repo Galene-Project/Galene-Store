@@ -16,14 +16,16 @@ export default function Pedidos({ data }) {
     { name:"Cancelado",    value: kpis.cancelados   },
   ];
   const statusCores = ["#34d399","#38bdf8","#ef4444"];
+  const totalStatus = kpis.entregues + kpis.emAndamento + kpis.cancelados;
+  const pct = (n) => totalStatus ? `${Math.round((n / totalStatus) * 100)}%` : "—";
 
   return (
     <>
       <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:14, marginBottom:22 }}>
         <KPICard icon="🛒" label="Pedidos (6 meses)"  value={kpis.pedidosMes}   accent="#c084fc" delay={0}    />
-        <KPICard icon="✅" label="Entregues"           value={kpis.entregues}    sub="84%"        accent="#34d399" delay={0.05} />
+        <KPICard icon="✅" label="Entregues"           value={kpis.entregues}    sub={pct(kpis.entregues)}        accent="#34d399" delay={0.05} />
         <KPICard icon="🚚" label="Em Andamento"        value={kpis.emAndamento}  sub="este mês"   accent="#38bdf8" delay={0.1}  />
-        <KPICard icon="❌" label="Cancelados"          value={kpis.cancelados}   sub="5,2%"       accent="#ef4444" delay={0.15} />
+        <KPICard icon="❌" label="Cancelados"          value={kpis.cancelados}   sub={pct(kpis.cancelados)}       accent="#ef4444" delay={0.15} />
       </div>
 
       <Card delay={0.1} style={{ marginBottom:16 }}>

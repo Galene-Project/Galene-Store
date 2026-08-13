@@ -12,16 +12,21 @@ export default function Vendas({ data }) {
   const { faturamentoMensal, vendasPorCategoria, topProdutos } = data;
   const totalFat = faturamentoMensal.reduce((a, b) => a + b.valor, 0);
   const totalPedidos = faturamentoMensal.reduce((a, b) => a + b.pedidos, 0);
-  const ticketMedio = Math.round(totalFat / totalPedidos);
+  const ticketMedio = totalPedidos ? Math.round(totalFat / totalPedidos) : 0;
   const melhorCat = [...vendasPorCategoria].sort((a,b)=>b.receita-a.receita)[0];
+  const mesAtual = faturamentoMensal[faturamentoMensal.length - 1];
+  const mesAnterior = faturamentoMensal[faturamentoMensal.length - 2];
+  const crescimento = mesAnterior?.valor
+    ? Math.round(((mesAtual.valor - mesAnterior.valor) / mesAnterior.valor) * 100)
+    : null;
 
   return (
     <>
       <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:14, marginBottom:22 }}>
         <KPICard icon="💰" label="Faturamento (6 meses)" value={`R$${(totalFat/1000).toFixed(1)}k`} accent="#c084fc" delay={0} />
-        <KPICard icon="📈" label="Crescimento"           value="+23%"                                sub="vs mês anterior" accent="#34d399" delay={0.05} />
+        <KPICard icon="📈" label="Crescimento"           value={crescimento === null ? "—" : `${crescimento > 0 ? "+" : ""}${crescimento}%`} sub="vs mês anterior" accent="#34d399" delay={0.05} />
         <KPICard icon="🎯" label="Ticket Médio"          value={`R$${ticketMedio}`}                  sub="por pedido"      accent="#38bdf8" delay={0.1}  />
-        <KPICard icon="🏆" label="Melhor Categoria"      value={melhorCat.nome.split(" ")[0]}        sub={`R$${melhorCat.receita}`} accent="#f472b6" delay={0.15} />
+        <KPICard icon="🏆" label="Melhor Categoria"      value={melhorCat ? melhorCat.nome.split(" ")[0] : "—"} sub={melhorCat ? `R$${melhorCat.receita}` : "sem vendas"} accent="#f472b6" delay={0.15} />
       </div>
 
       <div style={{ display:"grid", gridTemplateColumns:"3fr 2fr", gap:16, marginBottom:16 }}>
