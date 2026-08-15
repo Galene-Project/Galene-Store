@@ -10,7 +10,7 @@ export default function Sidebar({ cat, setCat, mobile, onClose, produtos }) {
     <div style={{ width: mobile ? 260 : 200, background: T.panel, borderRight: `1px solid ${T.border}`, height: "100%", overflowY: "auto" }}>
       {mobile && (
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 16px 12px" }}>
-          <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 16, color: T.gold, fontWeight: 600 }}>Categorias</span>
+          <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 16, color: T.goldDk, fontWeight: 600 }}>Categorias</span>
           <button onClick={onClose} aria-label="Fechar menu" style={{ background: "none", border: "none", fontSize: 20, color: T.ink3, cursor: "pointer" }}>✕</button>
         </div>
       )}

@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import Link from "next/link";
 import Sidebar from "./Sidebar";
 import ModalProd from "./ModalProd";
 import Carrinho from "./Carrinho";
@@ -6,6 +7,10 @@ import { CardDest, Card } from "./Cards";
 import { T, sortSizes } from "../../lib/galeneTheme";
 import { useWindowWidth } from "../../hooks/useWindowWidth";
 import { supabase } from "../../lib/supabaseClient";
+
+// ponytail: só M/G/Unico aparecem na loja por decisão do negócio (2026-08-14);
+// os outros tamanhos continuam no banco (stock intacto) pra reativar sem migração.
+const TAMANHOS_VISIVEIS = new Set(["M", "G", "Unico"]);
 
 export default function GaleneStore() {
   const w = useWindowWidth();
@@ -41,7 +46,9 @@ export default function GaleneStore() {
           tag: p.tag,
           desc: p.description,
           cores: [...new Set(p.product_colors.map((pc) => pc.colors.name))],
-          tamanhos: sortSizes([...new Set(p.stock.map((s) => s.sizes.name))]),
+          tamanhos: sortSizes([...new Set(
+            p.stock.filter((s) => TAMANHOS_VISIVEIS.has(s.sizes.name)).map((s) => s.sizes.name)
+          )]),
         }))
         .filter((p) => p.cores.length && p.tamanhos.length);
       setProdutos(mapped);
@@ -101,7 +108,7 @@ export default function GaleneStore() {
       )}
 
       <header style={{ position: "sticky", top: 0, zIndex: 400, background: T.panel, borderBottom: `1px solid ${T.border}`, boxShadow: "0 2px 12px rgba(26,23,20,0.06)" }}>
-        <div style={{ background: `linear-gradient(135deg,${T.goldDk},${T.gold},${T.goldDk})`, padding: "7px 16px", textAlign: "center", fontFamily: "'Lato',sans-serif", fontSize: 10, letterSpacing: 2.5, color: "white", fontWeight: 700 }}>
+        <div style={{ background: T.goldDk, padding: "7px 16px", textAlign: "center", fontFamily: "'Lato',sans-serif", fontSize: 10, letterSpacing: 2.5, color: "white", fontWeight: 700 }}>
           ✦ ATACADO ✦ PIX E CARTÃO ✦ PEDIDO MÍNIMO 6 PEÇAS ✦
         </div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: mob ? "12px 14px" : "14px 24px" }}>
@@ -138,12 +145,12 @@ export default function GaleneStore() {
                 CATÁLOGO
               </button>
             )}
-            <a
+            <Link
               href="/admin"
               style={{ textDecoration: "none", background: "none", border: `1.5px solid ${T.border}`, borderRadius: 10, padding: "8px 14px", cursor: "pointer", fontFamily: "'Lato',sans-serif", fontSize: 11, fontWeight: 700, color: T.ink3, letterSpacing: 0.5 }}
             >
               {mob ? "📊" : "Painel"}
-            </a>
+            </Link>
             <button
               onClick={() => setCurrentView("carrinho")}
               style={{ background: currentView === "carrinho" ? T.goldXlt : "none", border: `1.5px solid ${currentView === "carrinho" ? T.gold : T.border}`, borderRadius: 10, padding: "8px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, fontFamily: "'Lato',sans-serif", fontSize: 12, fontWeight: 700, color: currentView === "carrinho" ? T.goldDk : T.ink2, transition: "all .15s", position: "relative" }}
@@ -184,7 +191,7 @@ export default function GaleneStore() {
               <div style={{ background: `linear-gradient(135deg,${T.bg2},${T.bg3})`, borderRadius: 16, padding: mob ? "24px 20px" : "28px 36px", marginBottom: 28, position: "relative", overflow: "hidden", borderTop: `3px solid ${T.gold}` }}>
                 <div style={{ position: "absolute", right: mob ? 16 : 40, top: "50%", transform: "translateY(-50%)", opacity: 0.08, fontSize: mob ? 80 : 120, fontFamily: "'Cormorant Garamond',serif", fontWeight: 700, color: T.goldDk, userSelect: "none", lineHeight: 1 }}>G</div>
                 <div style={{ position: "relative" }}>
-                  <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 9.5, letterSpacing: 4, color: T.gold, textTransform: "uppercase", marginBottom: 8 }}>Coleção Atual</div>
+                  <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 9.5, letterSpacing: 4, color: T.goldDk, textTransform: "uppercase", marginBottom: 8 }}>Coleção Atual</div>
                   <h1 style={{ margin: "0 0 8px", fontFamily: "'Cormorant Garamond',serif", fontSize: mob ? 28 : 38, color: T.ink, fontWeight: 600 }}>
                     Destaques Galene
                   </h1>

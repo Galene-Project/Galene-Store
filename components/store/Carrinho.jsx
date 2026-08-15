@@ -114,13 +114,13 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack }) {
                           <div key={s.key} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
                             <div style={{ width: 8, height: 8, borderRadius: "50%", background: COR_HEX[s.cor] || T.gold }} />
                             <span style={{ fontFamily: "'Lato',sans-serif", fontSize: 11, color: T.ink3, flex: 1 }}>{s.cor} / {s.tam} — {s.qtd}</span>
-                            <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 13, color: T.gold }}>{fmt(s.qtd * item.preco)}</span>
+                            <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 13, color: T.goldDk }}>{fmt(s.qtd * item.preco)}</span>
                           </div>
                         ))}
                       </div>
                     </div>
                   ))}
-                  <button onClick={() => ok6 && setStep(2)} disabled={!ok6} style={{ width: "100%", height: 50, marginTop: 8, background: ok6 ? `linear-gradient(135deg,${T.goldDk},${T.gold})` : T.bg2, border: "none", borderRadius: 12, cursor: ok6 ? "pointer" : "not-allowed", fontFamily: "'Lato',sans-serif", fontSize: 13, fontWeight: 700, color: ok6 ? "white" : T.ink4, letterSpacing: 1 }}>
+                  <button onClick={() => ok6 && setStep(2)} disabled={!ok6} style={{ width: "100%", height: 50, marginTop: 8, background: ok6 ? T.goldDk : T.bg2, border: "none", borderRadius: 12, cursor: ok6 ? "pointer" : "not-allowed", fontFamily: "'Lato',sans-serif", fontSize: 13, fontWeight: 700, color: ok6 ? "white" : T.ink4, letterSpacing: 1 }}>
                     {ok6 ? "Continuar" : `Mínimo 6 peças (faltam ${6 - totPcs})`}
                   </button>
                 </>
@@ -154,7 +154,7 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack }) {
                 <button onClick={() => setStep(1)} style={{ background: "none", border: `1.5px solid ${T.border}`, borderRadius: 10, padding: "12px 20px", cursor: "pointer", fontFamily: "'Lato',sans-serif", fontSize: 12, fontWeight: 700, color: T.ink3 }}>
                   Voltar
                 </button>
-                <button onClick={irParaPagamento} style={{ flex: 1, background: `linear-gradient(135deg,${T.goldDk},${T.gold})`, border: "none", borderRadius: 10, padding: "12px", cursor: "pointer", fontFamily: "'Lato',sans-serif", fontSize: 13, fontWeight: 700, color: "white", letterSpacing: 1 }}>
+                <button onClick={irParaPagamento} style={{ flex: 1, background: T.goldDk, border: "none", borderRadius: 10, padding: "12px", cursor: "pointer", fontFamily: "'Lato',sans-serif", fontSize: 13, fontWeight: 700, color: "white", letterSpacing: 1 }}>
                   Continuar
                 </button>
               </div>
@@ -211,7 +211,7 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack }) {
                 <button
                   onClick={() => confirmarPedido(met)}
                   disabled={salvando}
-                  style={{ width: "100%", background: salvando ? T.bg2 : `linear-gradient(135deg,${T.goldDk},${T.gold})`, border: "none", borderRadius: 12, padding: "16px", color: salvando ? T.ink4 : "white", fontFamily: "'Lato',sans-serif", fontSize: 13, fontWeight: 700, cursor: salvando ? "wait" : "pointer", letterSpacing: 1 }}
+                  style={{ width: "100%", background: salvando ? T.bg2 : T.goldDk, border: "none", borderRadius: 12, padding: "16px", color: salvando ? T.ink4 : "white", fontFamily: "'Lato',sans-serif", fontSize: 13, fontWeight: 700, cursor: salvando ? "wait" : "pointer", letterSpacing: 1 }}
                 >
                   {salvando ? "Redirecionando…" : "Ir para o pagamento"}
                 </button>
@@ -241,7 +241,7 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack }) {
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", paddingTop: 10, borderTop: `1px solid ${T.border}` }}>
                 <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 16, color: T.ink, fontWeight: 600 }}>Total</span>
-                <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 24, color: T.gold, fontWeight: 600 }}>{fmt(totVal)}</span>
+                <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 24, color: T.goldDk, fontWeight: 600 }}>{fmt(totVal)}</span>
               </div>
             </div>
           </div>

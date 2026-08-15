@@ -15,6 +15,12 @@ export default function ModalProd({ prod, onClose, onAdd }) {
     return () => { document.body.style.overflow = ""; };
   }, []);
 
+  useEffect(() => {
+    function onKeyDown(e) { if (e.key === "Escape") onClose(); }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [onClose]);
+
   const addSel = useCallback(() => {
     if (!tam) return;
     const key = `${cor}__${tam}`;
@@ -63,7 +69,7 @@ export default function ModalProd({ prod, onClose, onAdd }) {
               <Sil cat={prod.cat} cor={COR_HEX[cor] || T.gold} sz={92} />
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 34, color: T.gold, fontWeight: 600, lineHeight: 1 }}>
+              <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 34, color: T.goldDk, fontWeight: 600, lineHeight: 1 }}>
                 {fmt(prod.preco)}
               </div>
               <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 10, color: T.ink4, margin: "4px 0 10px", letterSpacing: 1 }}>
@@ -77,7 +83,7 @@ export default function ModalProd({ prod, onClose, onAdd }) {
 
           <div style={{ marginBottom: 18 }}>
             <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 10, letterSpacing: 2, color: T.ink4, textTransform: "uppercase", marginBottom: 10 }}>
-              Cor: <span style={{ color: T.gold }}>{cor}</span>
+              Cor: <span style={{ color: T.goldDk }}>{cor}</span>
             </div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               {prod.cores.map((c) => (
@@ -95,7 +101,7 @@ export default function ModalProd({ prod, onClose, onAdd }) {
             </div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               {prod.tamanhos.map((t) => (
-                <button key={t} onClick={() => setTam(t)} style={{ width: 54, height: 48, background: tam === t ? `linear-gradient(135deg,${T.goldDk},${T.gold})` : T.panel, border: `1.5px solid ${tam === t ? T.gold : T.border}`, borderRadius: 10, cursor: "pointer", fontFamily: "'Lato',sans-serif", fontSize: 12, fontWeight: 700, color: tam === t ? "white" : T.ink2, transition: "all .15s" }}>
+                <button key={t} onClick={() => setTam(t)} style={{ width: 54, height: 48, background: tam === t ? T.goldDk : T.panel, border: `1.5px solid ${tam === t ? T.gold : T.border}`, borderRadius: 10, cursor: "pointer", fontFamily: "'Lato',sans-serif", fontSize: 12, fontWeight: 700, color: tam === t ? "white" : T.ink2, transition: "all .15s" }}>
                   {t}
                 </button>
               ))}
@@ -120,7 +126,7 @@ export default function ModalProd({ prod, onClose, onAdd }) {
                     <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 16, color: T.ink, fontWeight: 600, minWidth: 20, textAlign: "center" }}>{s.qtd}</span>
                     <button onClick={() => updQ(s.key, 1)} style={{ width: 26, height: 26, background: T.bg2, border: `1px solid ${T.border}`, borderRadius: 6, cursor: "pointer", fontSize: 14, color: T.ink2, display: "flex", alignItems: "center", justifyContent: "center" }}>+</button>
                   </div>
-                  <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 13, color: T.gold, minWidth: 60, textAlign: "right" }}>{fmt(s.qtd * prod.preco)}</span>
+                  <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 13, color: T.goldDk, minWidth: 60, textAlign: "right" }}>{fmt(s.qtd * prod.preco)}</span>
                   <button onClick={() => remS(s.key)} aria-label="Remover" style={{ background: "none", border: "none", cursor: "pointer", color: T.ink4, fontSize: 16, padding: 2 }}>
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                       <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
@@ -130,12 +136,12 @@ export default function ModalProd({ prod, onClose, onAdd }) {
               ))}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px" }}>
                 <span style={{ fontFamily: "'Lato',sans-serif", fontSize: 11, color: T.ink3 }}>{totPcs} peça{totPcs !== 1 ? "s" : ""}</span>
-                <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 18, color: T.gold, fontWeight: 600 }}>{fmt(totVal)}</span>
+                <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 18, color: T.goldDk, fontWeight: 600 }}>{fmt(totVal)}</span>
               </div>
             </div>
           )}
 
-          <button onClick={handleAdd} disabled={!sel.length} style={{ width: "100%", height: 52, background: sel.length ? `linear-gradient(135deg,${T.goldDk},${T.gold})` : T.bg2, border: "none", borderRadius: 12, cursor: sel.length ? "pointer" : "not-allowed", fontFamily: "'Lato',sans-serif", fontSize: 13, fontWeight: 700, color: sel.length ? "white" : T.ink4, letterSpacing: 1, transition: "all .2s" }}>
+          <button onClick={handleAdd} disabled={!sel.length} style={{ width: "100%", height: 52, background: sel.length ? T.goldDk : T.bg2, border: "none", borderRadius: 12, cursor: sel.length ? "pointer" : "not-allowed", fontFamily: "'Lato',sans-serif", fontSize: 13, fontWeight: 700, color: sel.length ? "white" : T.ink4, letterSpacing: 1, transition: "all .2s" }}>
             {sel.length ? `Adicionar ao Pedido — ${fmt(totVal)}` : "Selecione cor e tamanho"}
           </button>
         </div>

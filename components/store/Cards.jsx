@@ -39,11 +39,13 @@ export function CardDest({ prod, onClick }) {
         <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 80, background: `linear-gradient(to top, ${T.panel}CC, transparent)` }} />
         <div style={{ position: "absolute", bottom: 16, left: 0, right: 0, display: "flex", justifyContent: "center", gap: 6 }}>
           {prod.cores.map((c, i) => (
-            <div
+            <button
               key={c}
+              type="button"
               onClick={(e) => { e.stopPropagation(); setCi(i); }}
               title={c}
-              style={{ width: 12, height: 12, borderRadius: "50%", background: COR_HEX[c] || T.gold, border: `2px solid ${i === ci ? T.gold : "transparent"}`, cursor: "pointer", transition: "border-color .15s", boxShadow: "0 1px 4px rgba(0,0,0,0.2)" }}
+              aria-label={`Ver cor ${c}`}
+              style={{ width: 18, height: 18, padding: 0, borderRadius: "50%", background: COR_HEX[c] || T.gold, border: `2px solid ${i === ci ? T.gold : "transparent"}`, cursor: "pointer", transition: "border-color .15s", boxShadow: "0 1px 4px rgba(0,0,0,0.2)" }}
             />
           ))}
         </div>
@@ -60,12 +62,12 @@ export function CardDest({ prod, onClick }) {
         </p>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
-            <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: mob ? 24 : 28, color: T.gold, fontWeight: 600 }}>
+            <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: mob ? 24 : 28, color: T.goldDk, fontWeight: 600 }}>
               {fmt(prod.preco)}
             </div>
             <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 9.5, color: T.ink4 }}>por peça</div>
           </div>
-          <button style={{ background: `linear-gradient(135deg,${T.goldDk},${T.gold})`, border: "none", borderRadius: 10, padding: "10px 18px", color: "white", fontFamily: "'Lato',sans-serif", fontSize: 11, fontWeight: 700, cursor: "pointer", letterSpacing: 1 }}>
+          <button type="button" onClick={(e) => { e.stopPropagation(); onClick(); }} aria-label={`Selecionar ${prod.nome}`} style={{ background: T.goldDk, border: "none", borderRadius: 10, padding: "10px 18px", color: "white", fontFamily: "'Lato',sans-serif", fontSize: 11, fontWeight: 700, cursor: "pointer", letterSpacing: 1 }}>
             Selecionar
           </button>
         </div>
@@ -106,11 +108,13 @@ export function Card({ prod, onClick }) {
         <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 50, background: `linear-gradient(to top, ${T.panel}CC, transparent)` }} />
         <div style={{ position: "absolute", bottom: 12, left: 0, right: 0, display: "flex", justifyContent: "center", gap: 5 }}>
           {prod.cores.slice(0, 5).map((c, i) => (
-            <div
+            <button
               key={c}
+              type="button"
               onClick={(e) => { e.stopPropagation(); setCi(i); }}
               title={c}
-              style={{ width: 8, height: 8, borderRadius: "50%", background: COR_HEX[c] || T.gold, border: `1.5px solid ${i === ci ? T.gold : "transparent"}`, cursor: "pointer", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }}
+              aria-label={`Ver cor ${c}`}
+              style={{ width: 14, height: 14, padding: 0, borderRadius: "50%", background: COR_HEX[c] || T.gold, border: `1.5px solid ${i === ci ? T.gold : "transparent"}`, cursor: "pointer", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }}
             />
           ))}
         </div>
@@ -123,18 +127,18 @@ export function Card({ prod, onClick }) {
           {prod.nome}
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 19, color: T.gold, fontWeight: 600 }}>
+          <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 19, color: T.goldDk, fontWeight: 600 }}>
             {fmt(prod.preco)}
           </div>
-          <div style={{
-            background: hov ? `linear-gradient(135deg,${T.goldDk},${T.gold})` : "transparent",
+          <button type="button" onClick={(e) => { e.stopPropagation(); onClick(); }} aria-label={`Ver ${prod.nome}`} style={{
+            background: hov ? T.goldDk : "transparent",
             border: `1.5px solid ${hov ? T.gold : T.border}`,
-            borderRadius: 8, padding: "6px 12px",
+            borderRadius: 8, padding: "6px 12px", cursor: "pointer",
             fontFamily: "'Lato',sans-serif", fontSize: 10, fontWeight: 700,
             color: hov ? "white" : T.ink4, transition: "all .2s", letterSpacing: 0.5,
           }}>
             Ver
-          </div>
+          </button>
         </div>
       </div>
     </div>
