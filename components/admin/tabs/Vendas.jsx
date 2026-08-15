@@ -22,25 +22,25 @@ export default function Vendas({ data }) {
 
   return (
     <>
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:14, marginBottom:22 }}>
+      <div className="admin-kpi-grid" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:14, marginBottom:22 }}>
         <KPICard icon="💰" label="Faturamento (6 meses)" value={`R$${(totalFat/1000).toFixed(1)}k`} accent="#c084fc" delay={0} />
         <KPICard icon="📈" label="Crescimento"           value={crescimento === null ? "—" : `${crescimento > 0 ? "+" : ""}${crescimento}%`} sub="vs mês anterior" accent="#34d399" delay={0.05} />
         <KPICard icon="🎯" label="Ticket Médio"          value={`R$${ticketMedio}`}                  sub="por pedido"      accent="#38bdf8" delay={0.1}  />
         <KPICard icon="🏆" label="Melhor Categoria"      value={melhorCat ? melhorCat.nome.split(" ")[0] : "—"} sub={melhorCat ? `R$${melhorCat.receita}` : "sem vendas"} accent="#f472b6" delay={0.15} />
       </div>
 
-      <div style={{ display:"grid", gridTemplateColumns:"3fr 2fr", gap:16, marginBottom:16 }}>
+      <div className="admin-chart-grid" style={{ display:"grid", gridTemplateColumns:"3fr 2fr", gap:16, marginBottom:16 }}>
         <Card delay={0.1}>
           <SectionTitle>Evolução — Faturamento & Pedidos</SectionTitle>
           <ResponsiveContainer width="100%" height={260}>
             <LineChart data={faturamentoMensal}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-              <XAxis dataKey="mes" tick={{ fill:"#64748b", fontSize:11 }} axisLine={false} tickLine={false} />
-              <YAxis yAxisId="l" tick={{ fill:"#64748b", fontSize:11 }} axisLine={false} tickLine={false} tickFormatter={v=>`R$${v}`} />
-              <YAxis yAxisId="r" orientation="right" tick={{ fill:"#64748b", fontSize:11 }} axisLine={false} tickLine={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-4)" />
+              <XAxis dataKey="mes" tick={{ fill:"var(--text-4)", fontSize:11 }} axisLine={false} tickLine={false} />
+              <YAxis yAxisId="l" tick={{ fill:"var(--text-4)", fontSize:11 }} axisLine={false} tickLine={false} tickFormatter={v=>`R$${v}`} />
+              <YAxis yAxisId="r" orientation="right" tick={{ fill:"var(--text-4)", fontSize:11 }} axisLine={false} tickLine={false} />
               <Tooltip content={<CustomTooltip />} />
-              <Legend wrapperStyle={{ fontSize:11, color:"#94a3b8" }} />
-              <Line yAxisId="l" type="monotone" dataKey="valor"   name="Faturamento (R$)" stroke="#c084fc" strokeWidth={3} dot={{ r:5, fill:"#c084fc", stroke:"#1e1b2e", strokeWidth:2 }} />
+              <Legend wrapperStyle={{ fontSize:11, color:"var(--text-3)" }} />
+              <Line yAxisId="l" type="monotone" dataKey="valor"   name="Faturamento (R$)" stroke="#c084fc" strokeWidth={3} dot={{ r:5, fill:"#c084fc", stroke:"var(--panel-solid)", strokeWidth:2 }} />
               <Line yAxisId="r" type="monotone" dataKey="pedidos" name="Nº Pedidos"       stroke="#34d399" strokeWidth={2} strokeDasharray="5 3" dot={{ r:4, fill:"#34d399" }} />
             </LineChart>
           </ResponsiveContainer>
@@ -55,7 +55,7 @@ export default function Vendas({ data }) {
                 labelLine={false} fontSize={9}>
                 {vendasPorCategoria.map((_, i) => <Cell key={i} fill={CORES[i % CORES.length]} />)}
               </Pie>
-              <Tooltip contentStyle={{ background:"#1e1b2e", border:"1px solid rgba(192,132,252,0.3)", borderRadius:8, fontSize:11 }} formatter={v=>[`R$${v}`,"Receita"]} />
+              <Tooltip contentStyle={{ background:"var(--panel-solid)", border:"1px solid rgba(192,132,252,0.3)", borderRadius:8, fontSize:11 }} formatter={v=>[`R$${v}`,"Receita"]} />
             </PieChart>
           </ResponsiveContainer>
         </Card>
@@ -65,13 +65,13 @@ export default function Vendas({ data }) {
         <SectionTitle accent="#818cf8">Ranking — Receita vs Unidades Vendidas</SectionTitle>
         <ResponsiveContainer width="100%" height={220}>
           <BarChart data={topProdutos}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-            <XAxis dataKey="nome" tick={{ fill:"#64748b", fontSize:10 }} axisLine={false} tickLine={false}
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-4)" />
+            <XAxis dataKey="nome" tick={{ fill:"var(--text-4)", fontSize:10 }} axisLine={false} tickLine={false}
               tickFormatter={n=>n.replace("Vestido ","").replace("Conjunto ","")} />
-            <YAxis yAxisId="l" tick={{ fill:"#64748b", fontSize:10 }} axisLine={false} tickLine={false} tickFormatter={v=>`R$${v}`} />
-            <YAxis yAxisId="r" orientation="right" tick={{ fill:"#64748b", fontSize:10 }} axisLine={false} tickLine={false} />
+            <YAxis yAxisId="l" tick={{ fill:"var(--text-4)", fontSize:10 }} axisLine={false} tickLine={false} tickFormatter={v=>`R$${v}`} />
+            <YAxis yAxisId="r" orientation="right" tick={{ fill:"var(--text-4)", fontSize:10 }} axisLine={false} tickLine={false} />
             <Tooltip content={<CustomTooltip />} />
-            <Legend wrapperStyle={{ fontSize:11, color:"#94a3b8" }} />
+            <Legend wrapperStyle={{ fontSize:11, color:"var(--text-3)" }} />
             <Bar yAxisId="l" dataKey="receita" name="Receita (R$)" fill="#c084fc" radius={[4,4,0,0]} opacity={0.85} />
             <Bar yAxisId="r" dataKey="vendas"  name="Unidades"     fill="#38bdf8" radius={[4,4,0,0]} opacity={0.85} />
           </BarChart>

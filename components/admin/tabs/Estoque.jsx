@@ -15,23 +15,23 @@ export default function Estoque({ data }) {
 
   return (
     <>
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:14, marginBottom:22 }}>
+      <div className="admin-kpi-grid" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:14, marginBottom:22 }}>
         <KPICard icon="📦" label="Total de SKUs"   value={kpis.totalSkus}   accent="#c084fc"  delay={0}    />
         <KPICard icon="✅" label="Disponíveis"     value={kpis.disponiveis} sub={`${Math.round(kpis.disponiveis/kpis.totalSkus*100)}%`} accent="#34d399" delay={0.05} />
         <KPICard icon="⚠️" label="Estoque Baixo"  value={kpis.estoqueBaixo} sub="atenção"     accent="#fb923c" delay={0.1}  />
         <KPICard icon="❌" label="Esgotados"       value={kpis.esgotados}   sub="repor urgente" accent="#ef4444" delay={0.15} />
       </div>
 
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:16 }}>
+      <div className="admin-chart-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:16 }}>
         <Card delay={0.1}>
           <SectionTitle>Estoque por Categoria (un.)</SectionTitle>
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={estoqueSimulado} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" horizontal={false} />
-              <XAxis type="number" tick={{ fill:"#64748b", fontSize:10 }} axisLine={false} tickLine={false} />
-              <YAxis type="category" dataKey="nome" tick={{ fill:"#94a3b8", fontSize:10 }} axisLine={false} tickLine={false} width={130} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-4)" horizontal={false} />
+              <XAxis type="number" tick={{ fill:"var(--text-4)", fontSize:10 }} axisLine={false} tickLine={false} />
+              <YAxis type="category" dataKey="nome" tick={{ fill:"var(--text-3)", fontSize:10 }} axisLine={false} tickLine={false} width={130} />
               <Tooltip content={<CustomTooltip />} />
-              <Legend wrapperStyle={{ fontSize:11, color:"#94a3b8" }} />
+              <Legend wrapperStyle={{ fontSize:11, color:"var(--text-3)" }} />
               <Bar dataKey="estoque" name="Em Estoque" fill="#34d399" radius={[0,4,4,0]} opacity={0.85} />
               <Bar dataKey="vendido" name="Vendido"    fill="#c084fc" radius={[0,4,4,0]} opacity={0.6}  />
             </BarChart>
@@ -42,17 +42,17 @@ export default function Estoque({ data }) {
           <SectionTitle accent="#f472b6">Distribuição por Tamanho</SectionTitle>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={distribuicaoTamanho}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-              <XAxis dataKey="name" tick={{ fill:"#94a3b8", fontSize:13, fontWeight:700 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill:"#64748b", fontSize:11 }} axisLine={false} tickLine={false} tickFormatter={v=>`${v}%`} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-4)" />
+              <XAxis dataKey="name" tick={{ fill:"var(--text-3)", fontSize:13, fontWeight:700 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill:"var(--text-4)", fontSize:11 }} axisLine={false} tickLine={false} tickFormatter={v=>`${v}%`} />
               <Tooltip content={<CustomTooltip suffix="%" />} />
               <Bar dataKey="value" name="% Vendas" radius={[6,6,0,0]}>
                 {distribuicaoTamanho.map((_, i) => <Cell key={i} fill={CORES_TAM[i]} />)}
               </Bar>
             </BarChart>
           </ResponsiveContainer>
-          <div style={{ marginTop:14, padding:12, background:"rgba(255,255,255,0.03)", borderRadius:10 }}>
-            <div style={{ fontSize:11, color:"#64748b" }}>💡 Tamanho M representa 35% das vendas — priorize no reabastecimento</div>
+          <div style={{ marginTop:14, padding:12, background:"var(--surface-2)", borderRadius:10 }}>
+            <div style={{ fontSize:11, color:"var(--text-4)" }}>💡 Tamanho M representa 35% das vendas — priorize no reabastecimento</div>
           </div>
         </Card>
       </div>
@@ -64,21 +64,21 @@ export default function Estoque({ data }) {
             <thead>
               <tr>
                 {["SKU","Produto","Cor","Tam","Estoque Real","Mínimo","Status","Ação"].map(h=>(
-                  <th key={h} style={{ padding:"10px 12px", textAlign:"left", color:"#64748b", fontWeight:600, borderBottom:"1px solid rgba(255,255,255,0.07)", whiteSpace:"nowrap" }}>{h}</th>
+                  <th key={h} style={{ padding:"10px 12px", textAlign:"left", color:"var(--text-4)", fontWeight:600, borderBottom:"1px solid var(--surface-6)", whiteSpace:"nowrap" }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {estoqueAlertas.map((a, i) => (
-                <tr key={i} style={{ borderBottom:"1px solid rgba(255,255,255,0.04)" }}>
-                  <td style={{ padding:"10px 12px", color:"#64748b", fontFamily:"'DM Mono',monospace", fontSize:11 }}>{a.sku}</td>
-                  <td style={{ padding:"10px 12px", color:"#e2e8f0", fontWeight:600 }}>{a.produto}</td>
-                  <td style={{ padding:"10px 12px", color:"#94a3b8" }}>{a.cor}</td>
-                  <td style={{ padding:"10px 12px", color:"#94a3b8" }}>{a.tam}</td>
+                <tr key={i} style={{ borderBottom:"1px solid var(--surface-3)" }}>
+                  <td style={{ padding:"10px 12px", color:"var(--text-4)", fontFamily:"'DM Mono',monospace", fontSize:11 }}>{a.sku}</td>
+                  <td style={{ padding:"10px 12px", color:"var(--text-2)", fontWeight:600 }}>{a.produto}</td>
+                  <td style={{ padding:"10px 12px", color:"var(--text-3)" }}>{a.cor}</td>
+                  <td style={{ padding:"10px 12px", color:"var(--text-3)" }}>{a.tam}</td>
                   <td style={{ padding:"10px 12px" }}>
                     <span style={{ fontSize:20, fontWeight:800, color:a.status==="esgotado"?"#ef4444":"#fb923c", fontFamily:"'DM Mono',monospace" }}>{a.real}</span>
                   </td>
-                  <td style={{ padding:"10px 12px", color:"#64748b" }}>{a.minimo}</td>
+                  <td style={{ padding:"10px 12px", color:"var(--text-4)" }}>{a.minimo}</td>
                   <td style={{ padding:"10px 12px" }}>
                     <span style={{ padding:"3px 8px", borderRadius:6, fontSize:10, fontWeight:700,
                       background:a.status==="esgotado"?"#fee2e2":"#ffedd5",

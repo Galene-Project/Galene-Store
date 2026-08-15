@@ -7,8 +7,8 @@ export default function KPICard({ icon, label, value, sub, accent = "#c084fc", d
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        background: "rgba(255,255,255,0.04)",
-        border: "1px solid rgba(255,255,255,0.08)",
+        background: "var(--surface-3)",
+        border: "1px solid var(--surface-7)",
         borderRadius: 16,
         padding: "20px 22px",
         display: "flex",
@@ -25,8 +25,8 @@ export default function KPICard({ icon, label, value, sub, accent = "#c084fc", d
         <span style={{ fontSize: 20 }}>{icon}</span>
         {sub && (
           <span style={{
-            fontSize: 10, color: "#6b7280",
-            background: "rgba(255,255,255,0.06)",
+            fontSize: 10, color: "var(--text-4)",
+            background: "var(--surface-5)",
             padding: "2px 8px", borderRadius: 20,
           }}>{sub}</span>
         )}
@@ -35,7 +35,7 @@ export default function KPICard({ icon, label, value, sub, accent = "#c084fc", d
         fontSize: 26, fontWeight: 800, color: accent,
         fontFamily: "'DM Mono', monospace", letterSpacing: -1,
       }}>{value}</div>
-      <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 500 }}>{label}</div>
+      <div style={{ fontSize: 11, color: "var(--text-3)", fontWeight: 500 }}>{label}</div>
     </div>
   );
 }

@@ -21,7 +21,7 @@ export default function Pedidos({ data }) {
 
   return (
     <>
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:14, marginBottom:22 }}>
+      <div className="admin-kpi-grid" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:14, marginBottom:22 }}>
         <KPICard icon="🛒" label="Pedidos (6 meses)"  value={kpis.pedidosMes}   accent="#c084fc" delay={0}    />
         <KPICard icon="✅" label="Entregues"           value={kpis.entregues}    sub={pct(kpis.entregues)}        accent="#34d399" delay={0.05} />
         <KPICard icon="🚚" label="Em Andamento"        value={kpis.emAndamento}  sub="este mês"   accent="#38bdf8" delay={0.1}  />
@@ -35,7 +35,7 @@ export default function Pedidos({ data }) {
             <thead>
               <tr>
                 {["Nº Pedido","Data","Cliente","Produto","Cor","Tam","Qtd","Total","Status"].map(h=>(
-                  <th key={h} style={{ padding:"10px 14px", textAlign:"left", color:"#64748b", fontWeight:600, borderBottom:"1px solid rgba(255,255,255,0.07)", whiteSpace:"nowrap" }}>{h}</th>
+                  <th key={h} style={{ padding:"10px 14px", textAlign:"left", color:"var(--text-4)", fontWeight:600, borderBottom:"1px solid var(--surface-6)", whiteSpace:"nowrap" }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -44,16 +44,16 @@ export default function Pedidos({ data }) {
                 const st = statusStyle(p.status);
                 return (
                   <tr key={i}
-                    style={{ borderBottom:"1px solid rgba(255,255,255,0.04)", transition:"background 0.15s", cursor:"default" }}
-                    onMouseEnter={e=>e.currentTarget.style.background="rgba(255,255,255,0.03)"}
+                    style={{ borderBottom:"1px solid var(--surface-3)", transition:"background 0.15s", cursor:"default" }}
+                    onMouseEnter={e=>e.currentTarget.style.background="var(--surface-2)"}
                     onMouseLeave={e=>e.currentTarget.style.background=""}>
                     <td style={{ padding:"11px 14px", fontFamily:"'DM Mono',monospace", fontSize:11, color:"#c084fc", fontWeight:600 }}>{p.num}</td>
-                    <td style={{ padding:"11px 14px", color:"#64748b" }}>{p.data}</td>
-                    <td style={{ padding:"11px 14px", color:"#e2e8f0", fontWeight:600 }}>{p.cliente}</td>
-                    <td style={{ padding:"11px 14px", color:"#94a3b8" }}>{p.produto}</td>
-                    <td style={{ padding:"11px 14px", color:"#64748b" }}>{p.cor}</td>
-                    <td style={{ padding:"11px 14px", color:"#64748b" }}>{p.tam}</td>
-                    <td style={{ padding:"11px 14px", color:"#94a3b8", textAlign:"center" }}>{p.qtd}</td>
+                    <td style={{ padding:"11px 14px", color:"var(--text-4)" }}>{p.data}</td>
+                    <td style={{ padding:"11px 14px", color:"var(--text-2)", fontWeight:600 }}>{p.cliente}</td>
+                    <td style={{ padding:"11px 14px", color:"var(--text-3)" }}>{p.produto}</td>
+                    <td style={{ padding:"11px 14px", color:"var(--text-4)" }}>{p.cor}</td>
+                    <td style={{ padding:"11px 14px", color:"var(--text-4)" }}>{p.tam}</td>
+                    <td style={{ padding:"11px 14px", color:"var(--text-3)", textAlign:"center" }}>{p.qtd}</td>
                     <td style={{ padding:"11px 14px", fontWeight:700, color:"#c084fc", fontFamily:"'DM Mono',monospace" }}>R${p.total}</td>
                     <td style={{ padding:"11px 14px" }}>
                       <span style={{ padding:"3px 10px", borderRadius:20, fontSize:10, fontWeight:700, background:st.bg, color:st.color }}>{p.status}</span>
@@ -66,14 +66,14 @@ export default function Pedidos({ data }) {
         </div>
       </Card>
 
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
+      <div className="admin-chart-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
         <Card delay={0.2}>
           <SectionTitle accent="#34d399">Pedidos por Mês</SectionTitle>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={faturamentoMensal}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-              <XAxis dataKey="mes" tick={{ fill:"#64748b", fontSize:11 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill:"#64748b", fontSize:11 }} axisLine={false} tickLine={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-4)" />
+              <XAxis dataKey="mes" tick={{ fill:"var(--text-4)", fontSize:11 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill:"var(--text-4)", fontSize:11 }} axisLine={false} tickLine={false} />
               <Tooltip content={<CustomTooltip />} />
               <Bar dataKey="pedidos" name="Pedidos" fill="#34d399" radius={[6,6,0,0]} opacity={0.85} />
             </BarChart>
@@ -87,8 +87,8 @@ export default function Pedidos({ data }) {
               <Pie data={statusPie} cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={4} dataKey="value">
                 {statusPie.map((_, i) => <Cell key={i} fill={statusCores[i]} />)}
               </Pie>
-              <Tooltip contentStyle={{ background:"#1e1b2e", border:"1px solid rgba(192,132,252,0.3)", borderRadius:8, fontSize:11 }} />
-              <Legend wrapperStyle={{ fontSize:11, color:"#94a3b8" }} />
+              <Tooltip contentStyle={{ background:"var(--panel-solid)", border:"1px solid rgba(192,132,252,0.3)", borderRadius:8, fontSize:11 }} />
+              <Legend wrapperStyle={{ fontSize:11, color:"var(--text-3)" }} />
             </PieChart>
           </ResponsiveContainer>
         </Card>

@@ -10,30 +10,30 @@ const Section = ({ title, icon, children, status }) => {
   };
   const c = colors[status] || colors.pending;
   return (
-    <div style={{ marginBottom:16, borderRadius:16, overflow:"hidden", border:`1px solid rgba(255,255,255,0.07)` }}>
+    <div style={{ marginBottom:16, borderRadius:16, overflow:"hidden", border:`1px solid var(--surface-6)` }}>
       <div
         onClick={() => setOpen(o => !o)}
         style={{
           display:"flex", alignItems:"center", justifyContent:"space-between",
           padding:"16px 22px", cursor:"pointer",
-          background:"rgba(255,255,255,0.03)",
+          background:"var(--surface-2)",
           transition:"background 0.15s",
         }}
       >
         <div style={{ display:"flex", alignItems:"center", gap:12 }}>
           <span style={{ fontSize:18 }}>{icon}</span>
-          <span style={{ fontSize:14, fontWeight:700, color:"#e2e8f0" }}>{title}</span>
+          <span style={{ fontSize:14, fontWeight:700, color:"var(--text-2)" }}>{title}</span>
         </div>
         <div style={{ display:"flex", alignItems:"center", gap:10 }}>
           <span style={{
             fontSize:10, fontWeight:700, padding:"3px 10px", borderRadius:20,
             background:c.bg, border:`1px solid ${c.border}`, color:c.dot,
           }}>{c.label}</span>
-          <span style={{ color:"#475569", fontSize:12, transition:"transform 0.2s", display:"inline-block", transform:open?"rotate(90deg)":"" }}>▶</span>
+          <span style={{ color:"var(--text-5)", fontSize:12, transition:"transform 0.2s", display:"inline-block", transform:open?"rotate(90deg)":"" }}>▶</span>
         </div>
       </div>
       {open && (
-        <div style={{ padding:"20px 22px 22px", background:"rgba(0,0,0,0.2)", borderTop:"1px solid rgba(255,255,255,0.05)" }}>
+        <div style={{ padding:"20px 22px 22px", background:"rgba(0,0,0,0.2)", borderTop:"1px solid var(--surface-4)" }}>
           {children}
         </div>
       )}
@@ -43,19 +43,19 @@ const Section = ({ title, icon, children, status }) => {
 
 const Field = ({ label, value, placeholder, hint, mono }) => (
   <div style={{ marginBottom:16 }}>
-    <div style={{ fontSize:11, fontWeight:600, color:"#94a3b8", marginBottom:6, textTransform:"uppercase", letterSpacing:"0.05em" }}>{label}</div>
+    <div style={{ fontSize:11, fontWeight:600, color:"var(--text-3)", marginBottom:6, textTransform:"uppercase", letterSpacing:"0.05em" }}>{label}</div>
     <div style={{
       padding:"11px 14px", borderRadius:10,
-      background: value && !value.includes("AQUI") ? "rgba(52,211,153,0.06)" : "rgba(255,255,255,0.04)",
-      border:`1.5px solid ${value && !value.includes("AQUI") ? "rgba(52,211,153,0.3)" : "rgba(255,255,255,0.08)"}`,
-      fontSize:12, color: value && !value.includes("AQUI") ? "#34d399" : "#475569",
+      background: value && !value.includes("AQUI") ? "rgba(52,211,153,0.06)" : "var(--surface-3)",
+      border:`1.5px solid ${value && !value.includes("AQUI") ? "rgba(52,211,153,0.3)" : "var(--surface-7)"}`,
+      fontSize:12, color: value && !value.includes("AQUI") ? "#34d399" : "var(--text-5)",
       fontFamily: mono ? "'DM Mono',monospace" : "inherit",
       wordBreak:"break-all",
     }}>
       {value && !value.includes("AQUI") ? value : placeholder}
       {value && !value.includes("AQUI") && <span style={{ marginLeft:8, fontSize:10 }}>✅</span>}
     </div>
-    {hint && <div style={{ fontSize:11, color:"#475569", marginTop:5, lineHeight:1.5 }}>{hint}</div>}
+    {hint && <div style={{ fontSize:11, color:"var(--text-5)", marginTop:5, lineHeight:1.5 }}>{hint}</div>}
   </div>
 );
 
@@ -67,7 +67,7 @@ const Step = ({ n, text }) => (
       display:"flex", alignItems:"center", justifyContent:"center",
       fontSize:10, fontWeight:800, color:"white", marginTop:1,
     }}>{n}</div>
-    <div style={{ fontSize:13, color:"#94a3b8", lineHeight:1.6 }}>{text}</div>
+    <div style={{ fontSize:13, color:"var(--text-3)", lineHeight:1.6 }}>{text}</div>
   </div>
 );
 
@@ -90,17 +90,17 @@ export default function SettingsPage() {
   return (
     <div style={{ maxWidth:860, margin:"0 auto" }}>
       <div style={{
-        background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.07)",
+        background:"var(--surface-2)", border:"1px solid var(--surface-6)",
         borderRadius:16, padding:"24px 28px", marginBottom:24,
       }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
           <div>
-            <div style={{ fontSize:15, fontWeight:700, color:"#e2e8f0" }}>Progresso da Configuração</div>
-            <div style={{ fontSize:12, color:"#64748b", marginTop:2 }}>{done} de {total} integrações conectadas</div>
+            <div style={{ fontSize:15, fontWeight:700, color:"var(--text-2)" }}>Progresso da Configuração</div>
+            <div style={{ fontSize:12, color:"var(--text-4)", marginTop:2 }}>{done} de {total} integrações conectadas</div>
           </div>
           <div style={{ fontSize:28, fontWeight:800, color: pct===100?"#34d399":"#c084fc", fontFamily:"'DM Mono',monospace" }}>{pct}%</div>
         </div>
-        <div style={{ height:8, background:"rgba(255,255,255,0.06)", borderRadius:4, overflow:"hidden" }}>
+        <div style={{ height:8, background:"var(--surface-5)", borderRadius:4, overflow:"hidden" }}>
           <div style={{
             height:"100%", width:"100%", transform:`scaleX(${pct/100})`, transformOrigin:"left", borderRadius:4,
             background: pct===100 ? "linear-gradient(90deg,#34d399,#059669)" : "linear-gradient(90deg,#c084fc,#818cf8)",
@@ -108,8 +108,8 @@ export default function SettingsPage() {
           }} />
         </div>
         {pct < 100 && (
-          <div style={{ marginTop:12, fontSize:12, color:"#64748b" }}>
-            📋 Abra o arquivo <code style={{ background:"rgba(255,255,255,0.07)", padding:"1px 6px", borderRadius:4, color:"#c084fc" }}>lib/adminConfig.js</code> e preencha os campos marcados com <code style={{ background:"rgba(255,255,255,0.07)", padding:"1px 6px", borderRadius:4, color:"#fb923c" }}>AQUI</code>
+          <div style={{ marginTop:12, fontSize:12, color:"var(--text-4)" }}>
+            ⚠️ Essas integrações ainda não têm rota server-side pra guardar a chave com segurança — <b>não cole API key/token real em <code style={{ background:"var(--surface-6)", padding:"1px 6px", borderRadius:4, color:"#c084fc" }}>lib/adminConfig.js</code></b> (esse arquivo vai pro bundle público). Peça pra configurar isso antes de preencher de verdade.
           </div>
         )}
         {pct === 100 && (
@@ -139,7 +139,7 @@ export default function SettingsPage() {
       </Section>
 
       <Section title="Dados da Loja" icon="🏪" status="ok">
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
+        <div className="admin-chart-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
           <Field label="Nome da loja"      value={st.name}      placeholder="Galene" />
           <Field label="Nome do agente"    value={st.agentName} placeholder="Gabi" />
           <Field label="WhatsApp"          value={st.whatsapp}  placeholder="55XXXXXXXXXXX" mono />
@@ -147,8 +147,8 @@ export default function SettingsPage() {
           <Field label="Pedido mínimo"     value={`${st.minOrder} peças`} placeholder="6 peças" />
           <Field label="Pagamento"         value={st.payment.join(", ")} placeholder="PIX, Cartão" />
         </div>
-        <div style={{ marginTop:12, fontSize:12, color:"#64748b" }}>
-          ✏️ Para alterar, edite <code style={{ background:"rgba(255,255,255,0.07)", padding:"1px 6px", borderRadius:4, color:"#c084fc" }}>lib/adminConfig.js</code>
+        <div style={{ marginTop:12, fontSize:12, color:"var(--text-4)" }}>
+          ✏️ Para alterar, edite <code style={{ background:"var(--surface-6)", padding:"1px 6px", borderRadius:4, color:"#c084fc" }}>lib/adminConfig.js</code>
         </div>
       </Section>
     </div>

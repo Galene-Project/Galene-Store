@@ -5,7 +5,7 @@ export function SectionTitle({ children, accent = "#c084fc" }) {
     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
       <div style={{ width: 3, height: 18, borderRadius: 2, background: accent }} />
       <span style={{
-        fontSize: 12, fontWeight: 700, color: "#e2e8f0",
+        fontSize: 12, fontWeight: 700, color: "var(--text-2)",
         letterSpacing: "0.06em", textTransform: "uppercase",
       }}>{children}</span>
     </div>
@@ -16,11 +16,11 @@ export function CustomTooltip({ active, payload, label, prefix = "", suffix = ""
   if (!active || !payload?.length) return null;
   return (
     <div style={{
-      background: "#1e1b2e",
+      background: "var(--panel-solid)",
       border: "1px solid rgba(192,132,252,0.3)",
       borderRadius: 10, padding: "10px 14px", fontSize: 12,
     }}>
-      <div style={{ color: "#94a3b8", marginBottom: 4 }}>{label}</div>
+      <div style={{ color: "var(--text-3)", marginBottom: 4 }}>{label}</div>
       {payload.map((p, i) => (
         <div key={i} style={{ color: p.color || "#c084fc", fontWeight: 700 }}>
           {p.name}: {prefix}{p.value?.toLocaleString("pt-BR")}{suffix}
@@ -33,8 +33,8 @@ export function CustomTooltip({ active, payload, label, prefix = "", suffix = ""
 export function Card({ children, style = {}, delay = 0 }) {
   return (
     <div style={{
-      background: "rgba(255,255,255,0.03)",
-      border: "1px solid rgba(255,255,255,0.07)",
+      background: "var(--surface-2)",
+      border: "1px solid var(--surface-6)",
       borderRadius: 16, padding: 24,
       animation: `fadeUp 0.5s ease ${delay}s both`,
       ...style,
