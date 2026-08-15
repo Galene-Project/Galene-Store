@@ -22,18 +22,19 @@ export default async function handler(req, res) {
     if (!orderId) return res.status(200).end();
 
     if (info.status === 'approved') {
-      const { data: order } = await supabaseAdmin
+      // Update condicional (só grava se ainda não estava 'pago') faz o Postgres
+      // arbitrar concorrência — o Mercado Pago reenvia notificação, então duas
+      // entregas do mesmo webhook podem chegar em paralelo; sem isso, as duas
+      // passariam pelo "ainda não tá pago" e decrementariam o estoque em dobro.
+      const { data: claimed, error: claimErr } = await supabaseAdmin
         .from('orders')
-        .select('id, status')
+        .update({ status: 'pago', payment_id: String(paymentId) })
         .eq('id', orderId)
-        .single();
+        .neq('status', 'pago')
+        .select('id');
+      if (claimErr) throw claimErr;
 
-      if (order && order.status !== 'pago') {
-        await supabaseAdmin
-          .from('orders')
-          .update({ status: 'pago', payment_id: String(paymentId) })
-          .eq('id', orderId);
-
+      if (claimed && claimed.length > 0) {
         const { data: items } = await supabaseAdmin
           .from('order_items')
           .select('product_id, color_id, size_id, quantity')

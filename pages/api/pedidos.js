@@ -1,20 +1,41 @@
 import { Preference } from 'mercadopago';
 import { mpClient } from '../../lib/mercadopago';
 import { supabaseAdmin } from '../../lib/supabaseAdmin';
+import { computeOrderItems } from '../../lib/pricing';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: { code: 'METHOD_NOT_ALLOWED', message: 'Use POST', details: [] } });
 
-  const { form, cart, pagamento, totalPecas, totalValor } = req.body || {};
+  const { form, cart, pagamento } = req.body || {};
 
   if (!form || !cart?.length) {
     return res.status(400).json({ error: { code: 'VALIDATION_FAILED', message: 'Dados do pedido incompletos.', details: [] } });
   }
-  if (totalPecas < 6) {
-    return res.status(400).json({ error: { code: 'VALIDATION_FAILED', message: 'Pedido mínimo de 6 peças.', details: [] } });
-  }
 
   try {
+    // Preço vem sempre do banco, nunca do corpo do POST — ver lib/pricing.js.
+    const productIds = [...new Set(cart.map((i) => i.id))];
+    const { data: products, error: prodErr } = await supabaseAdmin
+      .from('products')
+      .select('id, price')
+      .eq('is_active', true)
+      .in('id', productIds);
+    if (prodErr) throw prodErr;
+
+    let priced;
+    try {
+      priced = computeOrderItems(cart, products || []);
+    } catch (e) {
+      return res.status(400).json({ error: { code: 'VALIDATION_FAILED', message: e.message, details: [] } });
+    }
+
+    // Peças mínimas recalculadas do carrinho de verdade — não confia no
+    // totalPecas que o client mandava (dava pra declarar 6 e mandar 1).
+    const totalPecas = priced.items.reduce((s, i) => s + i.quantity, 0);
+    if (totalPecas < 6) {
+      return res.status(400).json({ error: { code: 'VALIDATION_FAILED', message: 'Pedido mínimo de 6 peças.', details: [] } });
+    }
+
     const { data: customer, error: custErr } = await supabaseAdmin
       .from('customers')
       .insert([{
@@ -36,7 +57,7 @@ export default async function handler(req, res) {
         customer_id: customer.id,
         payment_provider: 'mercado_pago',
         shipping_address: { endereco: form.end || '', cidade: form.cidade || '' },
-        total: totalValor,
+        total: priced.total,
       }])
       .select()
       .single();
@@ -51,16 +72,14 @@ export default async function handler(req, res) {
     const colorId = (name) => colors?.find((c) => c.name === name)?.id ?? null;
     const sizeId = (name) => sizes?.find((s) => s.name === name)?.id ?? null;
 
-    const items = cart.flatMap((item) =>
-      item.sel.map((s) => ({
-        order_id: order.id,
-        product_id: item.id,
-        color_id: colorId(s.cor),
-        size_id: sizeId(s.tam),
-        quantity: s.qtd,
-        unit_price: item.preco,
-      }))
-    );
+    const items = priced.items.map((i) => ({
+      order_id: order.id,
+      product_id: i.productId,
+      color_id: colorId(i.cor),
+      size_id: sizeId(i.tam),
+      quantity: i.quantity,
+      unit_price: i.unitPrice,
+    }));
     const { error: itemsErr } = await supabaseAdmin.from('order_items').insert(items);
     if (itemsErr) throw itemsErr;
 
@@ -68,14 +87,12 @@ export default async function handler(req, res) {
     const preference = new Preference(mpClient);
     const pref = await preference.create({
       body: {
-        items: cart.flatMap((item) =>
-          item.sel.map((s) => ({
-            title: `${item.nome} — ${s.cor}/${s.tam}`,
-            quantity: s.qtd,
-            unit_price: item.preco,
-            currency_id: 'BRL',
-          }))
-        ),
+        items: priced.items.map((i) => ({
+          title: `${i.nome} — ${i.cor}/${i.tam}`,
+          quantity: i.quantity,
+          unit_price: i.unitPrice,
+          currency_id: 'BRL',
+        })),
         external_reference: order.id,
         back_urls: {
           success: `${origin}/pedido-confirmado?numero=${orderNumber}`,
