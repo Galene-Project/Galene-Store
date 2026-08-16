@@ -22,39 +22,28 @@ export default async function handler(req, res) {
     if (!orderId) return res.status(200).end();
 
     if (info.status === 'approved') {
-      // Update condicional (só grava se ainda não estava 'pago') faz o Postgres
-      // arbitrar concorrência — o Mercado Pago reenvia notificação, então duas
-      // entregas do mesmo webhook podem chegar em paralelo; sem isso, as duas
-      // passariam pelo "ainda não tá pago" e decrementariam o estoque em dobro.
-      const { data: claimed, error: claimErr } = await supabaseAdmin
-        .from('orders')
-        .update({ status: 'pago', payment_id: String(paymentId) })
-        .eq('id', orderId)
-        .neq('status', 'pago')
-        .select('id');
-      if (claimErr) throw claimErr;
-
-      if (claimed && claimed.length > 0) {
-        const { data: items } = await supabaseAdmin
-          .from('order_items')
-          .select('product_id, color_id, size_id, quantity')
-          .eq('order_id', orderId);
-
-        for (const item of items || []) {
-          const { data: stockRow } = await supabaseAdmin
-            .from('stock')
-            .select('id, quantity')
-            .eq('product_id', item.product_id)
-            .eq('color_id', item.color_id)
-            .eq('size_id', item.size_id)
-            .single();
-          if (stockRow) {
-            await supabaseAdmin
-              .from('stock')
-              .update({ quantity: Math.max(0, stockRow.quantity - item.quantity) })
-              .eq('id', stockRow.id);
-          }
-        }
+      // Marcar como pago e baixar o estoque acontecem dentro de uma função
+      // Postgres só (`claim_payment_and_decrement_stock`), logo numa transação
+      // só. Duas coisas dependem disso:
+      //   1. O Mercado Pago reenvia notificação; o update condicional lá dentro
+      //      (`status <> 'pago'`) faz o banco arbitrar quem ganha a transição,
+      //      então o estoque não é decrementado duas vezes.
+      //   2. Se faltar saldo, o CHECK (quantity >= 0) estoura e reverte tudo,
+      //      inclusive o status. A versão anterior fazia
+      //      `Math.max(0, quantity - pedido)` aqui no JS: uma venda de 5 sobre
+      //      um estoque de 2 zerava a linha e perdia as 3 restantes, e o
+      //      cancelamento depois devolvia as 5 cheias — estoque terminava com
+      //      3 peças inexistentes, sem nenhum erro em lugar nenhum.
+      // A prevenção de verdade é o checkout recusar antes (ver
+      // `lib/stock.js`); isso aqui é a rede embaixo, pra corrida entre dois
+      // pedidos simultâneos disputando as últimas peças.
+      const { data: resultado, error: rpcErr } = await supabaseAdmin.rpc(
+        'claim_payment_and_decrement_stock',
+        { p_order_id: orderId, p_payment_id: String(paymentId) },
+      );
+      if (rpcErr) throw rpcErr;
+      if (resultado === 'already_paid') {
+        console.log(`Webhook repetido pro pedido ${orderId}, ignorado.`);
       }
     } else if (['rejected', 'cancelled'].includes(info.status)) {
       await supabaseAdmin.from('orders').update({ status: 'cancelado' }).eq('id', orderId);
