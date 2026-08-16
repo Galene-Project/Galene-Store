@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Overview     from "../../components/admin/tabs/Overview";
 import Vendas       from "../../components/admin/tabs/Vendas";
 import Estoque      from "../../components/admin/tabs/Estoque";
@@ -8,6 +8,7 @@ import LoginPage    from "../../components/admin/LoginPage";
 import SettingsPage from "../../components/admin/SettingsPage";
 import { fetchDashboardData } from "../../lib/adminData";
 import { getSession, logout } from "../../lib/adminAuth";
+import { supabase } from "../../lib/supabaseClient";
 
 const TABS = [
   { id:"overview",  label:"Visão Geral",  icon:"📊" },
@@ -25,6 +26,7 @@ export default function AdminPage() {
   const [loadingData, setLoadingData] = useState(true);
   const [showLogout,  setShowLogout]  = useState(false);
   const [theme,       setTheme]       = useState("dark");
+  const [justUpdated, setJustUpdated] = useState(null);
 
   useEffect(() => {
     const saved = localStorage.getItem("galene-admin-theme");
@@ -43,14 +45,30 @@ export default function AdminPage() {
     getSession().then(s => { setSession(s); setCheckingSession(false); });
   }, []);
 
-  useEffect(() => {
-    if (!session) return;
+  const loadData = useCallback(() => {
     setLoadingData(true);
     fetchDashboardData()
       .then(setData)
       .catch((err) => console.error("Erro ao buscar dados do painel:", err))
       .finally(() => setLoadingData(false));
-  }, [session]);
+  }, []);
+
+  useEffect(() => {
+    if (!session) return;
+    loadData();
+  }, [session, loadData]);
+
+  useEffect(() => {
+    if (!session) return;
+    const channel = supabase
+      .channel('orders-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
+        loadData();
+        setJustUpdated(Date.now());
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [session, loadData]);
 
   async function handleLogout() {
     await logout();
@@ -226,7 +244,7 @@ export default function AdminPage() {
             {activeTab==="overview" && <Overview data={data} />}
             {activeTab==="vendas"   && <Vendas   data={data} />}
             {activeTab==="estoque"  && <Estoque  data={data} />}
-            {activeTab==="pedidos"  && <Pedidos  data={data} />}
+            {activeTab==="pedidos"  && <Pedidos data={data} accessToken={session.access_token} onRefresh={loadData} justUpdated={justUpdated} />}
           </>
         )}
         {activeTab==="settings" && <SettingsPage />}
