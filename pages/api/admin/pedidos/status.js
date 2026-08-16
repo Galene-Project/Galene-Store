@@ -1,5 +1,5 @@
 import { supabaseAdmin } from '../../../../lib/supabaseAdmin';
-import { VALID_STATUSES, shouldRestoreStock, buildRestoreMap } from '../../../../lib/orderStatus';
+import { VALID_STATUSES, shouldRestoreStock } from '../../../../lib/orderStatus';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -34,40 +34,23 @@ export default async function handler(req, res) {
 
     const mustRestore = shouldRestoreStock(order.status, novoStatus);
 
-    // Update de status primeiro, condicionado ao status lido (optimistic
-    // concurrency) — se outra requisição já mudou o status entre o select
-    // e aqui, `updated` vem vazio e devolvemos 409 em vez de reprocessar a
-    // restauração de estoque (evita restauração dupla em retry).
-    const { data: updated, error: updateErr } = await supabaseAdmin
-      .from('orders')
-      .update({ status: novoStatus })
-      .eq('id', orderId)
-      .eq('status', order.status)
-      .select('id');
-    if (updateErr) throw updateErr;
+    // Status update + restauração de estoque (se houver) rodam dentro de
+    // uma única função Postgres (`update_order_status_and_restore_stock`),
+    // que o Postgres executa numa única transação implícita — se faltar
+    // linha de estoque no meio da restauração, tudo é revertido, inclusive
+    // o update de status já feito antes na mesma função. Isso fecha a
+    // janela de falha parcial (status commitado + estoque parcialmente
+    // restaurado) que existia com as duas operações separadas.
+    const { data: result, error: rpcErr } = await supabaseAdmin.rpc('update_order_status_and_restore_stock', {
+      p_order_id: orderId,
+      p_expected_status: order.status,
+      p_novo_status: novoStatus,
+      p_must_restore: mustRestore,
+    });
+    if (rpcErr) throw rpcErr;
 
-    if (!updated || updated.length === 0) {
+    if (result === 'conflict') {
       return res.status(409).json({ error: { code: 'CONFLICT', message: 'Pedido foi alterado por outra requisição, tente novamente.', details: [] } });
-    }
-
-    if (mustRestore) {
-      const { data: items, error: itemsErr } = await supabaseAdmin
-        .from('order_items')
-        .select('product_id, color_id, size_id, quantity')
-        .eq('order_id', orderId);
-      if (itemsErr) throw itemsErr;
-
-      const restoreMap = buildRestoreMap(items || []);
-      for (const [key, qty] of restoreMap) {
-        const [productId, colorId, sizeId] = key.split(':');
-        const { error: rpcErr } = await supabaseAdmin.rpc('increment_stock_quantity', {
-          p_product_id: productId,
-          p_color_id: colorId,
-          p_size_id: sizeId,
-          p_qty: qty,
-        });
-        if (rpcErr) throw rpcErr;
-      }
     }
 
     return res.status(200).json({ ok: true });
