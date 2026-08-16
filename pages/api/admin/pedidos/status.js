@@ -32,7 +32,25 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Pedido não encontrado.', details: [] } });
     }
 
-    if (shouldRestoreStock(order.status, novoStatus)) {
+    const mustRestore = shouldRestoreStock(order.status, novoStatus);
+
+    // Update de status primeiro, condicionado ao status lido (optimistic
+    // concurrency) — se outra requisição já mudou o status entre o select
+    // e aqui, `updated` vem vazio e devolvemos 409 em vez de reprocessar a
+    // restauração de estoque (evita restauração dupla em retry).
+    const { data: updated, error: updateErr } = await supabaseAdmin
+      .from('orders')
+      .update({ status: novoStatus })
+      .eq('id', orderId)
+      .eq('status', order.status)
+      .select('id');
+    if (updateErr) throw updateErr;
+
+    if (!updated || updated.length === 0) {
+      return res.status(409).json({ error: { code: 'CONFLICT', message: 'Pedido foi alterado por outra requisição, tente novamente.', details: [] } });
+    }
+
+    if (mustRestore) {
       const { data: items, error: itemsErr } = await supabaseAdmin
         .from('order_items')
         .select('product_id, color_id, size_id, quantity')
@@ -42,27 +60,15 @@ export default async function handler(req, res) {
       const restoreMap = buildRestoreMap(items || []);
       for (const [key, qty] of restoreMap) {
         const [productId, colorId, sizeId] = key.split(':');
-        const { data: stockRow } = await supabaseAdmin
-          .from('stock')
-          .select('id, quantity')
-          .eq('product_id', productId)
-          .eq('color_id', colorId)
-          .eq('size_id', sizeId)
-          .single();
-        if (stockRow) {
-          await supabaseAdmin
-            .from('stock')
-            .update({ quantity: stockRow.quantity + qty })
-            .eq('id', stockRow.id);
-        }
+        const { error: rpcErr } = await supabaseAdmin.rpc('increment_stock_quantity', {
+          p_product_id: productId,
+          p_color_id: colorId,
+          p_size_id: sizeId,
+          p_qty: qty,
+        });
+        if (rpcErr) throw rpcErr;
       }
     }
-
-    const { error: updateErr } = await supabaseAdmin
-      .from('orders')
-      .update({ status: novoStatus })
-      .eq('id', orderId);
-    if (updateErr) throw updateErr;
 
     return res.status(200).json({ ok: true });
   } catch (err) {
