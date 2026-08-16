@@ -56,6 +56,9 @@ export default async function handler(req, res) {
     return res.status(200).json({ ok: true });
   } catch (err) {
     console.error('Erro ao atualizar status do pedido:', err);
+    if (typeof err?.message === 'string' && err.message.startsWith('stock row not found for product')) {
+      return res.status(422).json({ error: { code: 'STOCK_ROW_MISSING', message: 'Não foi possível cancelar: falta linha de estoque para uma das variantes do pedido. Contate o suporte técnico.', details: [] } });
+    }
     return res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Não foi possível atualizar o pedido.', details: [] } });
   }
 }

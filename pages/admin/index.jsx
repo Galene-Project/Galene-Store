@@ -244,7 +244,7 @@ export default function AdminPage() {
             {activeTab==="overview" && <Overview data={data} />}
             {activeTab==="vendas"   && <Vendas   data={data} />}
             {activeTab==="estoque"  && <Estoque  data={data} />}
-            {activeTab==="pedidos"  && <Pedidos data={data} accessToken={session.access_token} onRefresh={loadData} justUpdated={justUpdated} />}
+            {activeTab==="pedidos"  && <Pedidos data={data} onRefresh={loadData} justUpdated={justUpdated} />}
           </>
         )}
         {activeTab==="settings" && <SettingsPage />}

@@ -8,8 +8,9 @@ import KPICard from "../KPICard";
 import { SectionTitle, CustomTooltip, Card, statusStyle } from "../shared";
 import { STATUS_LABEL } from "../../../lib/adminData";
 import { VALID_STATUSES } from "../../../lib/orderStatus";
+import { getSession } from "../../../lib/adminAuth";
 
-export default function Pedidos({ data, accessToken, onRefresh, justUpdated }) {
+export default function Pedidos({ data, onRefresh, justUpdated }) {
   const { faturamentoMensal, ultimosPedidos, kpis } = data;
   const [expandedId, setExpandedId] = useState(null);
   const [updatingId, setUpdatingId] = useState(null);
@@ -36,11 +37,12 @@ export default function Pedidos({ data, accessToken, onRefresh, justUpdated }) {
     setUpdatingId(orderId);
     setErrorMsg("");
     try {
+      const session = await getSession();
       const res = await fetch("/api/admin/pedidos/status", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${session?.access_token}`,
         },
         body: JSON.stringify({ orderId, novoStatus }),
       });

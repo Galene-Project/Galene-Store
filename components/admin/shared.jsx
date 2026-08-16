@@ -52,6 +52,7 @@ export function statusStyle(s) {
     Entregue:   { bg: "#d1fae5", color: "#065f46" },
     Enviado:    { bg: "#dbeafe", color: "#1e40af" },
     Separado:   { bg: "#fef9c3", color: "#854d0e" },
+    Pago:       { bg: "#cffafe", color: "#155e75" },
     Confirmado: { bg: "#f3e8ff", color: "#6b21a8" },
     Pendente:   { bg: "#ffedd5", color: "#9a3412" },
     Cancelado:  { bg: "#fee2e2", color: "#991b1b" },
