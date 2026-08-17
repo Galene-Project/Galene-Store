@@ -5,7 +5,7 @@ import ModalProd from "./ModalProd";
 import Carrinho from "./Carrinho";
 import { CardDest, Card } from "./Cards";
 import { T, sortSizes } from "../../lib/galeneTheme";
-import { corBaixa, corEsgotada } from "../../lib/estoqueStatus";
+import { mapProdutos } from "../../lib/catalogo";
 import { useWindowWidth } from "../../hooks/useWindowWidth";
 import { supabase } from "../../lib/supabaseClient";
 
@@ -36,51 +36,30 @@ export default function GaleneStore() {
             stock ( color_id, size_id, colors ( name ), sizes ( name ) )
           `)
           .eq("is_active", true),
-        supabase.from("estoque_status_publico").select("product_id, color_id, size_id, status"),
+        supabase.from("estoque_status_publico").select("product_id, color_id, size_id, status").limit(5000),
       ]);
       if (error) { console.error("Erro ao buscar produtos:", error); setLoading(false); return; }
       if (statusErr) { console.error("Erro ao buscar status de estoque:", statusErr); }
 
-      const statusMap = new Map(
-        (statusRows || []).map((r) => [`${r.product_id}:${r.color_id}:${r.size_id}`, r.status])
-      );
+      const baseProdutos = (data || []).map((p) => ({
+        id: p.id,
+        nome: p.name,
+        cat: p.category,
+        sub: p.material,
+        preco: Number(p.price),
+        destaque: p.featured,
+        tag: p.tag,
+        desc: p.description,
+        cores: [...new Set(p.product_colors.map((pc) => pc.colors.name))],
+        tamanhos: sortSizes([...new Set(
+          p.stock.filter((s) => s.sizes?.name && TAMANHOS_VISIVEIS.has(s.sizes.name)).map((s) => s.sizes.name)
+        )]),
+        product_colors: p.product_colors,
+        stock: p.stock,
+      }));
 
-      const mapped = (data || [])
-        .map((p) => {
-          const corTam = {};
-          p.stock.forEach((s) => {
-            const corNome = s.colors?.name;
-            const tamNome = s.sizes?.name;
-            if (!corNome || !tamNome || !TAMANHOS_VISIVEIS.has(tamNome)) return;
-            const status = statusMap.get(`${p.id}:${s.color_id}:${s.size_id}`) || "ok";
-            corTam[corNome] = corTam[corNome] || {};
-            corTam[corNome][tamNome] = status;
-          });
-          const corBaixaMap = {};
-          const corEsgotadaMap = {};
-          Object.keys(corTam).forEach((c) => {
-            corBaixaMap[c] = corBaixa(corTam[c]);
-            corEsgotadaMap[c] = corEsgotada(corTam[c]);
-          });
-
-          return {
-            id: p.id,
-            nome: p.name,
-            cat: p.category,
-            sub: p.material,
-            preco: Number(p.price),
-            destaque: p.featured,
-            tag: p.tag,
-            desc: p.description,
-            cores: [...new Set(p.product_colors.map((pc) => pc.colors.name))],
-            tamanhos: sortSizes([...new Set(
-              p.stock.filter((s) => s.sizes?.name && TAMANHOS_VISIVEIS.has(s.sizes.name)).map((s) => s.sizes.name)
-            )]),
-            corTam,
-            corBaixaMap,
-            corEsgotadaMap,
-          };
-        })
+      const mapped = mapProdutos(baseProdutos, statusRows || [], TAMANHOS_VISIVEIS)
+        .map(({ product_colors, stock, ...p }) => p)
         .filter((p) => p.cores.length && p.tamanhos.length);
       setProdutos(mapped);
       setLoading(false);
