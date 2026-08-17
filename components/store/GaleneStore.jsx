@@ -5,6 +5,7 @@ import ModalProd from "./ModalProd";
 import Carrinho from "./Carrinho";
 import { CardDest, Card } from "./Cards";
 import { T, sortSizes } from "../../lib/galeneTheme";
+import { mapProdutos } from "../../lib/catalogo";
 import { useWindowWidth } from "../../hooks/useWindowWidth";
 import { supabase } from "../../lib/supabaseClient";
 
@@ -26,30 +27,39 @@ export default function GaleneStore() {
 
   useEffect(() => {
     async function fetchProdutos() {
-      const { data, error } = await supabase
-        .from("products")
-        .select(`
-          id, name, category, material, price, description, featured, tag,
-          product_colors ( colors ( name ) ),
-          stock ( quantity, sizes ( name ) )
-        `)
-        .eq("is_active", true);
+      const [{ data, error }, { data: statusRows, error: statusErr }] = await Promise.all([
+        supabase
+          .from("products")
+          .select(`
+            id, name, category, material, price, description, featured, tag,
+            product_colors ( colors ( name ) ),
+            stock ( color_id, size_id, colors ( name ), sizes ( name ) )
+          `)
+          .eq("is_active", true),
+        supabase.from("estoque_status_publico").select("product_id, color_id, size_id, status").limit(5000),
+      ]);
       if (error) { console.error("Erro ao buscar produtos:", error); setLoading(false); return; }
-      const mapped = (data || [])
-        .map((p) => ({
-          id: p.id,
-          nome: p.name,
-          cat: p.category,
-          sub: p.material,
-          preco: Number(p.price),
-          destaque: p.featured,
-          tag: p.tag,
-          desc: p.description,
-          cores: [...new Set(p.product_colors.map((pc) => pc.colors.name))],
-          tamanhos: sortSizes([...new Set(
-            p.stock.filter((s) => TAMANHOS_VISIVEIS.has(s.sizes.name)).map((s) => s.sizes.name)
-          )]),
-        }))
+      if (statusErr) { console.error("Erro ao buscar status de estoque:", statusErr); }
+
+      const baseProdutos = (data || []).map((p) => ({
+        id: p.id,
+        nome: p.name,
+        cat: p.category,
+        sub: p.material,
+        preco: Number(p.price),
+        destaque: p.featured,
+        tag: p.tag,
+        desc: p.description,
+        cores: [...new Set(p.product_colors.map((pc) => pc.colors.name))],
+        tamanhos: sortSizes([...new Set(
+          p.stock.filter((s) => s.sizes?.name && TAMANHOS_VISIVEIS.has(s.sizes.name)).map((s) => s.sizes.name)
+        )]),
+        product_colors: p.product_colors,
+        stock: p.stock,
+      }));
+
+      const mapped = mapProdutos(baseProdutos, statusRows || [], TAMANHOS_VISIVEIS)
+        .map(({ product_colors, stock, ...p }) => p)
         .filter((p) => p.cores.length && p.tamanhos.length);
       setProdutos(mapped);
       setLoading(false);
