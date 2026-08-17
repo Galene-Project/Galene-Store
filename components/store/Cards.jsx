@@ -43,9 +43,9 @@ export function CardDest({ prod, onClick }) {
               key={c}
               type="button"
               onClick={(e) => { e.stopPropagation(); setCi(i); }}
-              title={c}
+              title={prod.corEsgotadaMap?.[c] ? `${c} (esgotado)` : c}
               aria-label={`Ver cor ${c}`}
-              style={{ width: 18, height: 18, padding: 0, borderRadius: "50%", background: COR_HEX[c] || T.gold, border: `2px solid ${i === ci ? T.gold : "transparent"}`, cursor: "pointer", transition: "border-color .15s", boxShadow: "0 1px 4px rgba(0,0,0,0.2)" }}
+              style={{ width: 18, height: 18, padding: 0, borderRadius: "50%", background: COR_HEX[c] || T.gold, border: `2px solid ${i === ci ? T.gold : "transparent"}`, cursor: "pointer", opacity: prod.corEsgotadaMap?.[c] ? 0.35 : 1, transition: "border-color .15s, opacity .15s", boxShadow: "0 1px 4px rgba(0,0,0,0.2)" }}
             />
           ))}
         </div>
@@ -112,9 +112,9 @@ export function Card({ prod, onClick }) {
               key={c}
               type="button"
               onClick={(e) => { e.stopPropagation(); setCi(i); }}
-              title={c}
+              title={prod.corEsgotadaMap?.[c] ? `${c} (esgotado)` : c}
               aria-label={`Ver cor ${c}`}
-              style={{ width: 14, height: 14, padding: 0, borderRadius: "50%", background: COR_HEX[c] || T.gold, border: `1.5px solid ${i === ci ? T.gold : "transparent"}`, cursor: "pointer", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }}
+              style={{ width: 14, height: 14, padding: 0, borderRadius: "50%", background: COR_HEX[c] || T.gold, border: `1.5px solid ${i === ci ? T.gold : "transparent"}`, cursor: "pointer", opacity: prod.corEsgotadaMap?.[c] ? 0.35 : 1, boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }}
             />
           ))}
         </div>
