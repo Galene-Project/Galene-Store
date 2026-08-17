@@ -16,6 +16,8 @@ export default function Pedidos({ data, onRefresh, justUpdated }) {
   const [updatingId, setUpdatingId] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
   const [showBanner, setShowBanner] = useState(false);
+  const [approvingId, setApprovingId] = useState(null);
+  const [approvedLinks, setApprovedLinks] = useState({});
 
   useEffect(() => {
     if (!justUpdated) return;
@@ -53,6 +55,30 @@ export default function Pedidos({ data, onRefresh, justUpdated }) {
       setErrorMsg(err.message);
     } finally {
       setUpdatingId(null);
+    }
+  }
+
+  async function handleApprove(orderId) {
+    setApprovingId(orderId);
+    setErrorMsg("");
+    try {
+      const session = await getSession();
+      const res = await fetch("/api/admin/pedidos/aprovar", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({ orderId }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.error?.message || "Falha ao aprovar pedido.");
+      setApprovedLinks((prev) => ({ ...prev, [orderId]: json.checkout_url }));
+      onRefresh();
+    } catch (err) {
+      setErrorMsg(err.message);
+    } finally {
+      setApprovingId(null);
     }
   }
 
@@ -153,24 +179,61 @@ export default function Pedidos({ data, onRefresh, justUpdated }) {
                               </tbody>
                             </table>
                           </div>
-                          <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                            <label style={{ fontSize:11, color:"var(--text-4)", fontWeight:600 }}>Status:</label>
-                            <select
-                              value={p.statusRaw}
-                              disabled={updatingId === p.id}
-                              onChange={(e) => handleStatusChange(p.id, e.target.value)}
-                              onClick={(e) => e.stopPropagation()}
-                              style={{
-                                padding:"6px 10px", borderRadius:8, fontSize:12,
-                                background:"var(--surface-3)", color:"var(--text-2)",
-                                border:"1px solid var(--surface-7)",
-                              }}>
-                              {VALID_STATUSES.map((s) => (
-                                <option key={s} value={s}>{STATUS_LABEL[s] || s}</option>
-                              ))}
-                            </select>
-                            {updatingId === p.id && <span style={{ fontSize:11, color:"var(--text-4)" }}>Salvando...</span>}
-                          </div>
+                          {approvedLinks[p.id] ? (
+                            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                              <label style={{ fontSize:11, color:"var(--text-4)", fontWeight:600 }}>Link de pagamento:</label>
+                              <input
+                                readOnly
+                                value={approvedLinks[p.id]}
+                                onClick={(e) => { e.stopPropagation(); e.target.select(); }}
+                                style={{
+                                  flex:1, maxWidth:360, padding:"6px 10px", borderRadius:8, fontSize:11,
+                                  background:"var(--surface-3)", color:"var(--text-2)",
+                                  border:"1px solid var(--surface-7)", fontFamily:"'DM Mono',monospace",
+                                }}
+                              />
+                              <button
+                                onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(approvedLinks[p.id]); }}
+                                style={{
+                                  padding:"6px 12px", borderRadius:8, border:"1px solid var(--surface-7)",
+                                  background:"var(--surface-3)", color:"var(--text-3)", fontSize:11, fontWeight:600, cursor:"pointer",
+                                }}>
+                                Copiar
+                              </button>
+                            </div>
+                          ) : p.statusRaw === "aguardando_aprovacao" ? (
+                            <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleApprove(p.id); }}
+                                disabled={approvingId === p.id}
+                                style={{
+                                  padding:"7px 16px", borderRadius:8, border:"none",
+                                  cursor: approvingId === p.id ? "wait" : "pointer",
+                                  background:"linear-gradient(135deg,#34d399,#059669)", color:"white", fontSize:12, fontWeight:700,
+                                }}>
+                                {approvingId === p.id ? "Aprovando..." : "✅ Aprovar"}
+                              </button>
+                            </div>
+                          ) : (
+                            <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                              <label style={{ fontSize:11, color:"var(--text-4)", fontWeight:600 }}>Status:</label>
+                              <select
+                                value={p.statusRaw}
+                                disabled={updatingId === p.id}
+                                onChange={(e) => handleStatusChange(p.id, e.target.value)}
+                                onClick={(e) => e.stopPropagation()}
+                                style={{
+                                  padding:"6px 10px", borderRadius:8, fontSize:12,
+                                  background:"var(--surface-3)", color:"var(--text-2)",
+                                  border:"1px solid var(--surface-7)",
+                                }}>
+                                {VALID_STATUSES.map((s) => (
+                                  <option key={s} value={s}>{STATUS_LABEL[s] || s}</option>
+                                ))}
+                              </select>
+                              {updatingId === p.id && <span style={{ fontSize:11, color:"var(--text-4)" }}>Salvando...</span>}
+                            </div>
+                          )}
                         </td>
                       </tr>
                     )}
