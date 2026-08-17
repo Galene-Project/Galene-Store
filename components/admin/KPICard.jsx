@@ -25,12 +25,15 @@ export default function KPICard({ icon, label, value, sub, trend, accent = "#c08
         <span style={{ fontSize: 20 }}>{icon}</span>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           {trend && (
-            <span style={{
-              fontSize: 10, fontWeight: 700,
-              color: trend.up ? "#34d399" : "#ef4444",
-              display: "flex", alignItems: "center", gap: 2,
-            }}>
-              {trend.up ? "▲" : "▼"} {Math.abs(trend.pct)}%
+            <span
+              title="Comparado ao mês anterior (mês atual pode estar em andamento)"
+              style={{
+                fontSize: 10, fontWeight: 700,
+                color: trend.up ? "#34d399" : "#ef4444",
+                display: "flex", alignItems: "center", gap: 2,
+              }}
+            >
+              {trend.up ? "▲" : "▼"} {Math.abs(trend.pct)}% mês
             </span>
           )}
           {sub && (

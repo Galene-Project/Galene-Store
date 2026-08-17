@@ -9,7 +9,7 @@ import KPICard from "../KPICard";
 import { SectionTitle, CustomTooltip, Card, CORES, CORES_TAM } from "../shared";
 
 export default function Overview({ data }) {
-  const { faturamentoMensal, vendasPorCategoria, topProdutos, estoqueAlertas, distribuicaoTamanho, kpis, comparativo, topClientes, produtosParados } = data;
+  const { faturamentoMensal, vendasPorCategoria, topProdutos, estoqueAlertas, distribuicaoTamanho, kpis, comparativo, topClientes, produtosParados, produtosParadosTotal } = data;
   const totalFat = faturamentoMensal.reduce((a, b) => a + b.valor, 0);
   const totalPedidos = faturamentoMensal.reduce((a, b) => a + b.pedidos, 0);
   const ticketMedio = totalPedidos ? Math.round(totalFat / totalPedidos) : 0;
@@ -22,7 +22,7 @@ export default function Overview({ data }) {
         <KPICard icon="🎯" label="Ticket Médio"           value={`R$${ticketMedio}`}                  sub="por pedido"       accent="#38bdf8" delay={0.1}   />
         <KPICard icon="📦" label="SKUs Ativos"            value={kpis.totalSkus}                      sub={`${kpis.disponiveis} c/ estoque`} accent="#34d399" delay={0.15}  />
         <KPICard icon="⚠️" label="Alertas de Estoque"    value={estoqueAlertas.length}               sub={`${kpis.esgotados} esgotados`} accent="#fb923c" delay={0.2} />
-        <KPICard icon="📅" label="Pedidos Hoje"           value={kpis.pedidosHoje}                    sub={`R$${kpis.faturamentoHoje}`}    accent="#f472b6" delay={0.25} />
+        <KPICard icon="📅" label="Pedidos Hoje"           value={kpis.pedidosHoje}                    sub={`R$${kpis.faturamentoHoje.toFixed(2)}`}    accent="#f472b6" delay={0.25} />
       </div>
 
       <div className="admin-chart-grid" style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16, marginBottom: 16 }}>
@@ -132,7 +132,7 @@ export default function Overview({ data }) {
                     </div>
                     <div style={{ display:"flex", gap:12 }}>
                       <span style={{ fontSize:11, color:"var(--text-4)" }}>{c.totalPedidos} pedido{c.totalPedidos !== 1 ? "s" : ""}</span>
-                      <span style={{ fontSize:11, fontWeight:700, color:"#c084fc", fontFamily:"'DM Mono',monospace" }}>R${c.totalGasto}</span>
+                      <span style={{ fontSize:11, fontWeight:700, color:"#c084fc", fontFamily:"'DM Mono',monospace" }}>R${c.totalGasto.toFixed(2)}</span>
                     </div>
                   </div>
                   <div style={{ height:4, background:"var(--surface-5)", borderRadius:2, overflow:"hidden" }}>
@@ -174,7 +174,7 @@ export default function Overview({ data }) {
       </Card>
 
       <Card style={{ background:"rgba(96,165,250,0.05)", border:"1px solid rgba(96,165,250,0.2)", marginTop:16 }} delay={0.35}>
-        <SectionTitle accent="#60a5fa">📉 Produtos Parados (60+ dias sem venda)</SectionTitle>
+        <SectionTitle accent="#60a5fa">📉 Produtos Parados (60+ dias sem venda) — {produtosParadosTotal} no total, top {produtosParados.length} por estoque parado</SectionTitle>
         {produtosParados.length === 0 ? (
           <div style={{ fontSize:12, color:"var(--text-4)" }}>Nenhum produto parado — tudo girando.</div>
         ) : (
