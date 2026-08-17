@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import Sil from "./Sil";
-import { T, COR_HEX, fmt } from "../../lib/galeneTheme";
+import { T, COR_HEX, fmt, sortSizes } from "../../lib/galeneTheme";
 import { useWindowWidth } from "../../hooks/useWindowWidth";
 
 export default function ModalProd({ prod, onClose, onAdd }) {
@@ -23,13 +23,14 @@ export default function ModalProd({ prod, onClose, onAdd }) {
 
   const addSel = useCallback(() => {
     if (!tam) return;
+    if (prod.corTam?.[cor]?.[tam] === "esgotado") return;
     const key = `${cor}__${tam}`;
     setSel((prev) => {
       const ex = prev.find((s) => s.key === key);
       if (ex) return prev.map((s) => s.key === key ? { ...s, qtd: s.qtd + 1 } : s);
       return [...prev, { key, cor, tam, qtd: 1 }];
     });
-  }, [cor, tam]);
+  }, [cor, tam, prod.corTam]);
 
   const updQ = (key, d) =>
     setSel((p) => p.map((s) => s.key === key ? { ...s, qtd: Math.max(1, s.qtd + d) } : s));
@@ -86,12 +87,29 @@ export default function ModalProd({ prod, onClose, onAdd }) {
               Cor: <span style={{ color: T.goldDk }}>{cor}</span>
             </div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {prod.cores.map((c) => (
-                <button key={c} onClick={() => setCor(c)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 10px 5px 7px", border: `1.5px solid ${cor === c ? T.gold : T.border}`, borderRadius: 20, background: cor === c ? T.goldXlt : T.panel, cursor: "pointer", transition: "all .15s" }}>
-                  <div style={{ width: 12, height: 12, borderRadius: "50%", background: COR_HEX[c] || T.gold, border: "1px solid rgba(0,0,0,0.1)" }} />
-                  <span style={{ fontFamily: "'Lato',sans-serif", fontSize: 11, color: cor === c ? T.goldDk : T.ink3 }}>{c}</span>
-                </button>
-              ))}
+              {prod.cores.map((c) => {
+                const esgotada = prod.corEsgotadaMap?.[c];
+                const baixa = prod.corBaixaMap?.[c];
+                return (
+                  <button
+                    key={c}
+                    disabled={esgotada}
+                    onClick={() => { setCor(c); setTam(null); }}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 6, padding: "5px 10px 5px 7px",
+                      border: `1.5px solid ${cor === c ? T.gold : T.border}`, borderRadius: 20,
+                      background: cor === c ? T.goldXlt : T.panel,
+                      cursor: esgotada ? "not-allowed" : "pointer",
+                      opacity: esgotada ? 0.4 : 1,
+                      transition: "all .15s",
+                    }}
+                  >
+                    <div style={{ width: 12, height: 12, borderRadius: "50%", background: COR_HEX[c] || T.gold, border: "1px solid rgba(0,0,0,0.1)" }} />
+                    <span style={{ fontFamily: "'Lato',sans-serif", fontSize: 11, color: cor === c ? T.goldDk : T.ink3 }}>{c}</span>
+                    {baixa && !esgotada && <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#f59e0b" }} />}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -100,11 +118,31 @@ export default function ModalProd({ prod, onClose, onAdd }) {
               Tamanho {tam && <span style={{ color: T.jade }}>{tam}</span>}
             </div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {prod.tamanhos.map((t) => (
-                <button key={t} onClick={() => setTam(t)} style={{ width: 54, height: 48, background: tam === t ? T.goldDk : T.panel, border: `1.5px solid ${tam === t ? T.gold : T.border}`, borderRadius: 10, cursor: "pointer", fontFamily: "'Lato',sans-serif", fontSize: 12, fontWeight: 700, color: tam === t ? "white" : T.ink2, transition: "all .15s" }}>
-                  {t}
-                </button>
-              ))}
+              {(sortSizes(Object.keys(prod.corTam?.[cor] || {}))).map((t) => {
+                const status = prod.corTam?.[cor]?.[t];
+                const esgotado = status === "esgotado";
+                const baixo = status === "baixo";
+                return (
+                  <button
+                    key={t}
+                    disabled={esgotado}
+                    onClick={() => setTam(t)}
+                    style={{
+                      width: 54, height: 48,
+                      background: tam === t ? T.goldDk : T.panel,
+                      border: `1.5px solid ${tam === t ? T.gold : T.border}`,
+                      borderRadius: 10,
+                      cursor: esgotado ? "not-allowed" : "pointer",
+                      opacity: esgotado ? 0.4 : 1,
+                      fontFamily: "'Lato',sans-serif", fontSize: baixo ? 9 : 12, fontWeight: 700,
+                      color: tam === t ? "white" : T.ink2,
+                      transition: "all .15s",
+                    }}
+                  >
+                    {baixo && !esgotado ? "últimas peças" : t}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
