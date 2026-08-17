@@ -128,18 +128,23 @@ export default function ModalProd({ prod, onClose, onAdd }) {
                     disabled={esgotado}
                     onClick={() => setTam(t)}
                     style={{
-                      width: 54, height: 48,
+                      width: 54, height: baixo ? 58 : 48,
                       background: tam === t ? T.goldDk : T.panel,
                       border: `1.5px solid ${tam === t ? T.gold : T.border}`,
                       borderRadius: 10,
                       cursor: esgotado ? "not-allowed" : "pointer",
                       opacity: esgotado ? 0.4 : 1,
-                      fontFamily: "'Lato',sans-serif", fontSize: baixo ? 9 : 12, fontWeight: 700,
-                      color: tam === t ? "white" : T.ink2,
+                      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2,
+                      fontFamily: "'Lato',sans-serif",
                       transition: "all .15s",
                     }}
                   >
-                    {baixo && !esgotado ? "últimas peças" : t}
+                    <span style={{ fontSize: 12, fontWeight: 700, color: tam === t ? "white" : T.ink2 }}>{t}</span>
+                    {baixo && (
+                      <span style={{ fontSize: 8, fontWeight: 600, color: tam === t ? "white" : "#f59e0b", lineHeight: 1 }}>
+                        últimas peças
+                      </span>
+                    )}
                   </button>
                 );
               })}
