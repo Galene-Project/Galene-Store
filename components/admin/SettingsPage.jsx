@@ -76,15 +76,13 @@ function isConfigured(val) { return val && !val.includes("AQUI"); }
 export default function SettingsPage() {
   const gs = CONFIG.googleSheets;
   const ev = CONFIG.evolutionApi;
-  const n8 = CONFIG.n8n;
   const st = CONFIG.store;
 
   const gsOk = isConfigured(gs.sheetId) && isConfigured(gs.apiKey);
   const evOk = isConfigured(ev.baseUrl) && isConfigured(ev.apiKey);
-  const n8Ok = isConfigured(n8.baseUrl);
 
-  const done  = [gsOk, evOk, n8Ok].filter(Boolean).length;
-  const total = 3;
+  const done  = [gsOk, evOk].filter(Boolean).length;
+  const total = 2;
   const pct   = Math.round((done / total) * 100);
 
   return (
@@ -130,12 +128,6 @@ export default function SettingsPage() {
           hint="Fase 4 do roadmap — pré-requisito: número da Gabi provisionado" />
         <Field label="API Key" value={ev.apiKey} placeholder="Cole a chave da Evolution API" mono />
         <Field label="Instance Name" value={ev.instanceName} placeholder="galene" />
-        <Field label="Webhook URL (n8n)" value={ev.webhookUrl} placeholder="https://xxx.app.n8n.cloud/webhook/whatsapp" mono />
-      </Section>
-
-      <Section title="n8n (Automações)" icon="⚙️" status={n8Ok ? "ok" : "pending"}>
-        <Field label="URL do n8n" value={n8.baseUrl} placeholder="https://seu-nome.app.n8n.cloud" mono />
-        <Field label="Webhook Path" value={n8.webhookPath} placeholder="/webhook/whatsapp" hint="Caminho padrão — não altere" />
       </Section>
 
       <Section title="Dados da Loja" icon="🏪" status="ok">
