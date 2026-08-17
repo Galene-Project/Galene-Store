@@ -9,7 +9,7 @@ import KPICard from "../KPICard";
 import { SectionTitle, CustomTooltip, Card, CORES, CORES_TAM } from "../shared";
 
 export default function Overview({ data }) {
-  const { faturamentoMensal, vendasPorCategoria, topProdutos, estoqueAlertas, distribuicaoTamanho, kpis } = data;
+  const { faturamentoMensal, vendasPorCategoria, topProdutos, estoqueAlertas, distribuicaoTamanho, kpis, comparativo, topClientes, produtosParados, produtosParadosTotal } = data;
   const totalFat = faturamentoMensal.reduce((a, b) => a + b.valor, 0);
   const totalPedidos = faturamentoMensal.reduce((a, b) => a + b.pedidos, 0);
   const ticketMedio = totalPedidos ? Math.round(totalFat / totalPedidos) : 0;
@@ -17,12 +17,12 @@ export default function Overview({ data }) {
   return (
     <>
       <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(6,1fr)", gap: 14, marginBottom: 22 }}>
-        <KPICard icon="💰" label="Faturamento (6 meses)"  value={`R$${(totalFat/1000).toFixed(1)}k`} sub="6 meses"          accent="#c084fc" delay={0}    />
-        <KPICard icon="🛒" label="Total de Pedidos"       value={totalPedidos}                        sub="6 meses"          accent="#818cf8" delay={0.05}  />
+        <KPICard icon="💰" label="Faturamento (6 meses)"  value={`R$${(totalFat/1000).toFixed(1)}k`} sub="6 meses"          trend={comparativo.faturamentoPct !== null ? { pct: comparativo.faturamentoPct, up: comparativo.faturamentoPct >= 0 } : null} accent="#c084fc" delay={0}    />
+        <KPICard icon="🛒" label="Total de Pedidos"       value={totalPedidos}                        sub="6 meses"          trend={comparativo.pedidosPct !== null ? { pct: comparativo.pedidosPct, up: comparativo.pedidosPct >= 0 } : null} accent="#818cf8" delay={0.05}  />
         <KPICard icon="🎯" label="Ticket Médio"           value={`R$${ticketMedio}`}                  sub="por pedido"       accent="#38bdf8" delay={0.1}   />
         <KPICard icon="📦" label="SKUs Ativos"            value={kpis.totalSkus}                      sub={`${kpis.disponiveis} c/ estoque`} accent="#34d399" delay={0.15}  />
         <KPICard icon="⚠️" label="Alertas de Estoque"    value={estoqueAlertas.length}               sub={`${kpis.esgotados} esgotados`} accent="#fb923c" delay={0.2} />
-        <KPICard icon="📅" label="Pedidos Hoje"           value={kpis.pedidosHoje}                    sub={`R$${kpis.faturamentoHoje}`}    accent="#f472b6" delay={0.25} />
+        <KPICard icon="📅" label="Pedidos Hoje"           value={kpis.pedidosHoje}                    sub={`R$${kpis.faturamentoHoje.toFixed(2)}`}    accent="#f472b6" delay={0.25} />
       </div>
 
       <div className="admin-chart-grid" style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16, marginBottom: 16 }}>
@@ -73,7 +73,7 @@ export default function Overview({ data }) {
         </Card>
       </div>
 
-      <div className="admin-chart-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:16 }}>
+      <div className="admin-chart-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:16, marginBottom:16 }}>
         <Card delay={0.2}>
           <SectionTitle accent="#34d399">Receita por Categoria</SectionTitle>
           <ResponsiveContainer width="100%" height={240}>
@@ -114,6 +114,35 @@ export default function Overview({ data }) {
             })}
           </div>
         </Card>
+
+        <Card delay={0.28}>
+          <SectionTitle accent="#f472b6">Clientes que Mais Compram</SectionTitle>
+          <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+            {topClientes.length === 0 && (
+              <div style={{ fontSize:12, color:"var(--text-4)" }}>Sem pedidos pagos ainda.</div>
+            )}
+            {topClientes.map((c, i) => {
+              const pct = topClientes[0].totalGasto ? Math.round((c.totalGasto / topClientes[0].totalGasto) * 100) : 0;
+              return (
+                <div key={i}>
+                  <div style={{ display:"flex", justifyContent:"space-between", marginBottom:4 }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                      <span style={{ fontSize:11, fontWeight:700, color:CORES[i % CORES.length], minWidth:18, fontFamily:"'DM Mono',monospace" }}>#{i+1}</span>
+                      <span style={{ fontSize:12, color:"var(--text-2)", fontWeight:500 }}>{c.nome}</span>
+                    </div>
+                    <div style={{ display:"flex", gap:12 }}>
+                      <span style={{ fontSize:11, color:"var(--text-4)" }}>{c.totalPedidos} pedido{c.totalPedidos !== 1 ? "s" : ""}</span>
+                      <span style={{ fontSize:11, fontWeight:700, color:"#c084fc", fontFamily:"'DM Mono',monospace" }}>R${c.totalGasto.toFixed(2)}</span>
+                    </div>
+                  </div>
+                  <div style={{ height:4, background:"var(--surface-5)", borderRadius:2, overflow:"hidden" }}>
+                    <div style={{ height:"100%", width:"100%", transform:`scaleX(${pct/100})`, transformOrigin:"left", background:`linear-gradient(90deg,${CORES[i % CORES.length]},${CORES[(i+1)%CORES.length]})`, borderRadius:2, transition:"transform 1s ease" }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
       </div>
 
       <Card style={{ background:"rgba(251,146,60,0.05)", border:"1px solid rgba(251,146,60,0.2)" }} delay={0.3}>
@@ -142,6 +171,35 @@ export default function Overview({ data }) {
             </div>
           ))}
         </div>
+      </Card>
+
+      <Card style={{ background:"rgba(96,165,250,0.05)", border:"1px solid rgba(96,165,250,0.2)", marginTop:16 }} delay={0.35}>
+        <SectionTitle accent="#60a5fa">📉 Produtos Parados (60+ dias sem venda) — {produtosParadosTotal} no total, top {produtosParados.length} por estoque parado</SectionTitle>
+        {produtosParados.length === 0 ? (
+          <div style={{ fontSize:12, color:"var(--text-4)" }}>Nenhum produto parado — tudo girando.</div>
+        ) : (
+          <div className="admin-chart-grid" style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10 }}>
+            {produtosParados.map((p, i) => (
+              <div key={i} style={{
+                background:"rgba(96,165,250,0.08)",
+                border:"1px solid rgba(96,165,250,0.25)",
+                borderRadius:10, padding:"12px 14px",
+                display:"flex", alignItems:"center", justifyContent:"space-between",
+              }}>
+                <div>
+                  <div style={{ fontSize:12, fontWeight:700, color:"var(--text-2)" }}>{p.produto}</div>
+                  <div style={{ fontSize:11, color:"var(--text-3)" }}>{p.estoqueTotal} un. em estoque</div>
+                </div>
+                <div style={{ textAlign:"right" }}>
+                  <div style={{ fontSize:11, color:"var(--text-4)" }}>Sem venda há</div>
+                  <div style={{ fontSize:16, fontWeight:800, color:"#60a5fa", fontFamily:"'DM Mono',monospace" }}>
+                    {p.diasSemVenda === null ? "sempre" : `${p.diasSemVenda}d`}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </Card>
     </>
   );

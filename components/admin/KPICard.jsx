@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function KPICard({ icon, label, value, sub, accent = "#c084fc", delay = 0 }) {
+export default function KPICard({ icon, label, value, sub, trend, accent = "#c084fc", delay = 0 }) {
   const [hovered, setHovered] = React.useState(false);
   return (
     <div
@@ -23,13 +23,27 @@ export default function KPICard({ icon, label, value, sub, accent = "#c084fc", d
     >
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <span style={{ fontSize: 20 }}>{icon}</span>
-        {sub && (
-          <span style={{
-            fontSize: 10, color: "var(--text-4)",
-            background: "var(--surface-5)",
-            padding: "2px 8px", borderRadius: 20,
-          }}>{sub}</span>
-        )}
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          {trend && (
+            <span
+              title="Comparado ao mês anterior (mês atual pode estar em andamento)"
+              style={{
+                fontSize: 10, fontWeight: 700,
+                color: trend.up ? "#34d399" : "#ef4444",
+                display: "flex", alignItems: "center", gap: 2,
+              }}
+            >
+              {trend.up ? "▲" : "▼"} {Math.abs(trend.pct)}% mês
+            </span>
+          )}
+          {sub && (
+            <span style={{
+              fontSize: 10, color: "var(--text-4)",
+              background: "var(--surface-5)",
+              padding: "2px 8px", borderRadius: 20,
+            }}>{sub}</span>
+          )}
+        </div>
       </div>
       <div style={{
         fontSize: 26, fontWeight: 800, color: accent,
