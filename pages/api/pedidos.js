@@ -1,8 +1,7 @@
-import { Preference } from 'mercadopago';
-import { mpClient } from '../../lib/mercadopago';
 import { supabaseAdmin } from '../../lib/supabaseAdmin';
 import { computeOrderItems } from '../../lib/pricing';
 import { findShortages, formatShortages } from '../../lib/stock';
+import { createOrderPreference } from '../../lib/mercadopagoPreference';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: { code: 'METHOD_NOT_ALLOWED', message: 'Use POST', details: [] } });
@@ -116,26 +115,18 @@ export default async function handler(req, res) {
     if (itemsErr) throw itemsErr;
 
     const origin = `https://${req.headers.host}`;
-    const preference = new Preference(mpClient);
-    const pref = await preference.create({
-      body: {
-        items: priced.items.map((i) => ({
-          title: `${i.nome} — ${i.cor}/${i.tam}`,
-          quantity: i.quantity,
-          unit_price: i.unitPrice,
-          currency_id: 'BRL',
-        })),
-        external_reference: order.id,
-        back_urls: {
-          success: `${origin}/pedido-confirmado?numero=${orderNumber}`,
-          pending: `${origin}/pedido-confirmado?numero=${orderNumber}`,
-          failure: `${origin}/`,
-        },
-        auto_return: 'approved',
-        notification_url: `${origin}/api/webhook-pagamento`,
-      },
-    });
 
+    // Cartão exige aprovação manual do operador antes do cliente poder
+    // pagar (fraude é comum no atacado — cartão cancelado depois do
+    // envio). O pedido fica parado em aguardando_aprovacao até o
+    // operador aprovar no painel (rota /api/admin/pedidos/aprovar),
+    // que é quem de fato gera a preferência do Mercado Pago.
+    if (pagamento === 'cartao') {
+      await supabaseAdmin.from('orders').update({ status: 'aguardando_aprovacao' }).eq('id', order.id);
+      return res.status(200).json({ order_number: orderNumber, status: 'aguardando_aprovacao' });
+    }
+
+    const pref = await createOrderPreference(order, priced.items, origin);
     await supabaseAdmin.from('orders').update({ payment_id: pref.id }).eq('id', order.id);
 
     return res.status(200).json({ order_number: orderNumber, checkout_url: pref.init_point });
