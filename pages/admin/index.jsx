@@ -4,6 +4,7 @@ import Overview     from "../../components/admin/tabs/Overview";
 import Vendas       from "../../components/admin/tabs/Vendas";
 import Estoque      from "../../components/admin/tabs/Estoque";
 import Pedidos      from "../../components/admin/tabs/Pedidos";
+import Relatorios   from "../../components/admin/tabs/Relatorios";
 import LoginPage    from "../../components/admin/LoginPage";
 import SettingsPage from "../../components/admin/SettingsPage";
 import { fetchDashboardData } from "../../lib/adminData";
@@ -15,6 +16,7 @@ const TABS = [
   { id:"vendas",    label:"Vendas",       icon:"💰" },
   { id:"estoque",   label:"Estoque",      icon:"📦" },
   { id:"pedidos",   label:"Pedidos",      icon:"🛒" },
+  { id:"relatorios", label:"Relatórios",  icon:"📈" },
   { id:"settings",  label:"Integrações",  icon:"⚙️" },
 ];
 
@@ -245,6 +247,7 @@ export default function AdminPage() {
             {activeTab==="vendas"   && <Vendas   data={data} />}
             {activeTab==="estoque"  && <Estoque  data={data} />}
             {activeTab==="pedidos"  && <Pedidos data={data} onRefresh={loadData} justUpdated={justUpdated} />}
+            {activeTab==="relatorios" && <Relatorios data={data} />}
           </>
         )}
         {activeTab==="settings" && <SettingsPage />}
