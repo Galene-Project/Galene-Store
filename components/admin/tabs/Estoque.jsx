@@ -8,9 +8,10 @@ import KPICard from "../KPICard";
 import { SectionTitle, CustomTooltip, Card, CORES_TAM } from "../shared";
 
 export default function Estoque({ data }) {
-  const { vendasPorCategoria, estoqueAlertas, distribuicaoTamanho, kpis } = data;
-  const estoqueSimulado = vendasPorCategoria.map(v => ({
-    nome: v.nome, estoque: Math.round(v.vendas * 1.8), vendido: v.vendas,
+  const { vendasPorCategoria, estoqueAlertas, distribuicaoTamanho, kpis, estoquePorCategoria } = data;
+  const vendidoPorCategoria = new Map(vendasPorCategoria.map((v) => [v.nome, v.vendas]));
+  const estoqueReal = estoquePorCategoria.map((e) => ({
+    nome: e.nome, estoque: e.estoque, vendido: vendidoPorCategoria.get(e.nome) || 0,
   }));
 
   return (
@@ -26,7 +27,7 @@ export default function Estoque({ data }) {
         <Card delay={0.1}>
           <SectionTitle>Estoque por Categoria (un.)</SectionTitle>
           <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={estoqueSimulado} layout="vertical">
+            <BarChart data={estoqueReal} layout="vertical">
               <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-4)" horizontal={false} />
               <XAxis type="number" tick={{ fill:"var(--text-4)", fontSize:10 }} axisLine={false} tickLine={false} />
               <YAxis type="category" dataKey="nome" tick={{ fill:"var(--text-3)", fontSize:10 }} axisLine={false} tickLine={false} width={130} />
