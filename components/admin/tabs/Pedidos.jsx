@@ -202,7 +202,7 @@ export default function Pedidos({ data, onRefresh, justUpdated }) {
                               </button>
                             </div>
                           ) : p.statusRaw === "aguardando_aprovacao" ? (
-                            <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                            <div style={{ display:"flex", alignItems:"center", gap:10, flexWrap:"wrap" }}>
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleApprove(p.id); }}
                                 disabled={approvingId === p.id}
@@ -213,6 +213,22 @@ export default function Pedidos({ data, onRefresh, justUpdated }) {
                                 }}>
                                 {approvingId === p.id ? "Aprovando..." : "✅ Aprovar"}
                               </button>
+                              <label style={{ fontSize:11, color:"var(--text-4)", fontWeight:600 }}>Status:</label>
+                              <select
+                                value={p.statusRaw}
+                                disabled={updatingId === p.id}
+                                onChange={(e) => handleStatusChange(p.id, e.target.value)}
+                                onClick={(e) => e.stopPropagation()}
+                                style={{
+                                  padding:"6px 10px", borderRadius:8, fontSize:12,
+                                  background:"var(--surface-3)", color:"var(--text-2)",
+                                  border:"1px solid var(--surface-7)",
+                                }}>
+                                {VALID_STATUSES.map((s) => (
+                                  <option key={s} value={s}>{STATUS_LABEL[s] || s}</option>
+                                ))}
+                              </select>
+                              {updatingId === p.id && <span style={{ fontSize:11, color:"var(--text-4)" }}>Salvando...</span>}
                             </div>
                           ) : (
                             <div style={{ display:"flex", alignItems:"center", gap:10 }}>
