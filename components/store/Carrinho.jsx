@@ -42,7 +42,11 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack }) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error?.message || 'Erro ao criar pedido');
-      window.location.href = data.checkout_url;
+      if (data.checkout_url) {
+        window.location.href = data.checkout_url;
+      } else {
+        window.location.href = `/pedido-confirmado?numero=${data.order_number}&emAnalise=1`;
+      }
     } catch (e) {
       setSalvando(false);
       setErroServidor("Não foi possível registrar o pedido. Tente novamente.");
@@ -166,7 +170,7 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack }) {
               <div style={{ display: "grid", gridTemplateColumns: mob ? "1fr" : "1fr 1fr", gap: 14, marginBottom: 16 }}>
                 {[
                   ["pix",    "PIX", "PIX",              "Pagamento à vista via chave PIX",         T.jade, "#EAF5EE"],
-                  ["cartao", "💳",  "Cartão de Crédito","Pague na maquininha no ato da entrega",    T.gold, T.goldXlt],
+                  ["cartao", "💳",  "Cartão de Crédito","Pagamento online, sujeito a aprovação do operador",    T.gold, T.goldXlt],
                 ].map(([v, ic, lb, sub, co, bg]) => (
                   <div
                     key={v}

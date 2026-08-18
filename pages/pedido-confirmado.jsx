@@ -4,7 +4,7 @@ import { T } from '../lib/galeneTheme';
 
 export default function PedidoConfirmado() {
   const router = useRouter();
-  const { numero } = router.query;
+  const { numero, emAnalise } = router.query;
 
   return (
     <div style={{ minHeight: '100vh', background: T.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Lato',sans-serif", padding: 24 }}>
@@ -17,7 +17,9 @@ export default function PedidoConfirmado() {
           <p style={{ fontFamily: "'Lato',sans-serif", fontSize: 12, color: T.ink4, marginBottom: 12 }}>Nº {numero}</p>
         )}
         <p style={{ fontSize: 13, color: T.ink3, lineHeight: 1.7, marginBottom: 32 }}>
-          Assim que o pagamento for confirmado pelo Mercado Pago, nossa equipe vai preparar seu pedido.
+          {emAnalise
+            ? 'Seu pedido está em análise. Nossa equipe vai entrar em contato assim que for aprovado pra você finalizar o pagamento.'
+            : 'Assim que o pagamento for confirmado pelo Mercado Pago, nossa equipe vai preparar seu pedido.'}
         </p>
         <Link href="/" style={{ display: 'inline-block', background: T.goldDk, borderRadius: 12, padding: '14px 36px', color: 'white', textDecoration: 'none', fontSize: 13, fontWeight: 700, letterSpacing: 1 }}>
           Voltar ao catálogo
