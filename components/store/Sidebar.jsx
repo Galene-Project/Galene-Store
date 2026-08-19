@@ -1,6 +1,6 @@
 import { T, CATS } from "../../lib/galeneTheme";
 
-export default function Sidebar({ cat, setCat, mobile, onClose, produtos }) {
+export default function Sidebar({ cat, setCat, mobile, onClose, produtos, minOrder }) {
   const counts = { destaques: produtos.filter((p) => p.destaque).length };
   CATS.forEach((c) => {
     if (c.id !== "destaques") counts[c.id] = produtos.filter((p) => p.cat === c.id).length;
@@ -53,7 +53,7 @@ export default function Sidebar({ cat, setCat, mobile, onClose, produtos }) {
           <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 9, letterSpacing: 2, color: T.ink4, textTransform: "uppercase", marginBottom: 10 }}>
             Condições
           </div>
-          {[["Pedido min.", "6 peças"], ["Pagamento", "PIX ou Cartão"]].map(([k, v]) => (
+          {[["Pedido min.", `${minOrder} peças`], ["Pagamento", "PIX ou Cartão"]].map(([k, v]) => (
             <div key={k} style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
               <span style={{ fontFamily: "'Lato',sans-serif", fontSize: 11, color: T.ink2, fontWeight: 600 }}>{k}</span>
               <span style={{ fontFamily: "'Lato',sans-serif", fontSize: 10, color: T.ink3 }}>{v}</span>

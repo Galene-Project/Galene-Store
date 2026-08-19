@@ -24,10 +24,11 @@ export default function GaleneStore() {
   const [toast, setToast] = useState(null);
   const [produtos, setProdutos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [minOrder, setMinOrder] = useState(6);
 
   useEffect(() => {
     async function fetchProdutos() {
-      const [{ data, error }, { data: statusRows, error: statusErr }] = await Promise.all([
+      const [{ data, error }, { data: statusRows, error: statusErr }, { data: settingsRow }] = await Promise.all([
         supabase
           .from("products")
           .select(`
@@ -37,9 +38,11 @@ export default function GaleneStore() {
           `)
           .eq("is_active", true),
         supabase.from("estoque_status_publico").select("product_id, color_id, size_id, status").limit(5000),
+        supabase.from("store_settings").select("min_order").limit(1).single(),
       ]);
       if (error) { console.error("Erro ao buscar produtos:", error); setLoading(false); return; }
       if (statusErr) { console.error("Erro ao buscar status de estoque:", statusErr); }
+      if (settingsRow?.min_order) setMinOrder(settingsRow.min_order);
 
       const baseProdutos = (data || []).map((p) => ({
         id: p.id,
@@ -114,14 +117,14 @@ export default function GaleneStore() {
         <div style={{ position: "fixed", inset: 0, zIndex: 600 }}>
           <div onClick={() => setDrawer(false)} style={{ position: "absolute", inset: 0, background: "rgba(26,23,20,0.4)" }} />
           <div style={{ position: "absolute", top: 0, left: 0, bottom: 0 }}>
-            <Sidebar cat={cat} setCat={setCat} mobile={true} onClose={() => setDrawer(false)} produtos={produtos} />
+            <Sidebar cat={cat} setCat={setCat} mobile={true} onClose={() => setDrawer(false)} produtos={produtos} minOrder={minOrder} />
           </div>
         </div>
       )}
 
       <header style={{ position: "sticky", top: 0, zIndex: 400, background: T.panel, borderBottom: `1px solid ${T.border}`, boxShadow: "0 2px 12px rgba(26,23,20,0.06)" }}>
         <div style={{ background: T.goldDk, padding: "7px 16px", textAlign: "center", fontFamily: "'Lato',sans-serif", fontSize: 10, letterSpacing: 2.5, color: "white", fontWeight: 700 }}>
-          ✦ ATACADO ✦ PIX E CARTÃO ✦ PEDIDO MÍNIMO 6 PEÇAS ✦
+          ✦ ATACADO ✦ PIX E CARTÃO ✦ PEDIDO MÍNIMO {minOrder} PEÇAS ✦
         </div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: mob ? "12px 14px" : "14px 24px" }}>
           {mob && (
@@ -189,12 +192,13 @@ export default function GaleneStore() {
           onRemove={(idx) => setCart((p) => p.filter((_, i) => i !== idx))}
           onFinish={handleFinish}
           onBack={() => setCurrentView("loja")}
+          minOrder={minOrder}
         />
       ) : (
         <div style={{ display: "flex", minHeight: "calc(100vh - 112px)" }}>
           {!mob && (
             <div style={{ position: "sticky", top: 112, height: "calc(100vh - 112px)", overflowY: "auto", flexShrink: 0 }}>
-              <Sidebar cat={cat} setCat={setCat} mobile={false} produtos={produtos} />
+              <Sidebar cat={cat} setCat={setCat} mobile={false} produtos={produtos} minOrder={minOrder} />
             </div>
           )}
 

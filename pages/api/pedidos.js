@@ -29,11 +29,14 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: { code: 'VALIDATION_FAILED', message: e.message, details: [] } });
     }
 
+    const { data: settingsRow } = await supabaseAdmin.from('store_settings').select('min_order').limit(1).single();
+    const minOrder = settingsRow?.min_order || 6;
+
     // Peças mínimas recalculadas do carrinho de verdade — não confia no
-    // totalPecas que o client mandava (dava pra declarar 6 e mandar 1).
+    // totalPecas que o client mandava (dava pra declarar o mínimo e mandar menos).
     const totalPecas = priced.items.reduce((s, i) => s + i.quantity, 0);
-    if (totalPecas < 6) {
-      return res.status(400).json({ error: { code: 'VALIDATION_FAILED', message: 'Pedido mínimo de 6 peças.', details: [] } });
+    if (totalPecas < minOrder) {
+      return res.status(400).json({ error: { code: 'VALIDATION_FAILED', message: `Pedido mínimo de ${minOrder} peças.`, details: [] } });
     }
 
     // Cor/tamanho e estoque são resolvidos ANTES de gravar qualquer coisa:

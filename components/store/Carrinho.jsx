@@ -3,7 +3,7 @@ import Sil from "./Sil";
 import { T, COR_HEX, fmt } from "../../lib/galeneTheme";
 import { useWindowWidth } from "../../hooks/useWindowWidth";
 
-export default function Carrinho({ cart, onRemove, onFinish, onBack }) {
+export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder }) {
   const [step, setStep] = useState(1);
   const [met, setMet]   = useState(null);
   const [salvando, setSalvando] = useState(false);
@@ -17,7 +17,7 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack }) {
 
   const totPcs = cart.reduce((s, i) => s + i.sel.reduce((a, x) => a + x.qtd, 0), 0);
   const totVal = cart.reduce((s, i) => s + i.sel.reduce((a, x) => a + x.qtd * i.preco, 0), 0);
-  const ok6 = totPcs >= 6;
+  const ok6 = totPcs >= minOrder;
 
   const validarForm = () => {
     const erros = {};
@@ -64,13 +64,13 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack }) {
           Meu Pedido
         </h1>
         <div style={{ marginLeft: "auto", fontFamily: "'Lato',sans-serif", fontSize: 11, color: ok6 ? T.jade : T.ruby, fontWeight: 700 }}>
-          {totPcs} pc {ok6 ? "— mínimo atingido" : `— faltam ${6 - totPcs}`}
+          {totPcs} pc {ok6 ? "— mínimo atingido" : `— faltam ${minOrder - totPcs}`}
         </div>
       </div>
 
       {!ok6 && totPcs > 0 && (
         <div style={{ background: "#FFF8E6", border: "1px solid #E8C96A", borderRadius: 10, padding: "12px 16px", marginBottom: 20, fontFamily: "'Lato',sans-serif", fontSize: 12, color: "#8A6A00" }}>
-          Adicione mais {6 - totPcs} peça{6 - totPcs > 1 ? "s" : ""} para finalizar — pedido mínimo de 6 peças.
+          Adicione mais {minOrder - totPcs} peça{minOrder - totPcs > 1 ? "s" : ""} para finalizar — pedido mínimo de {minOrder} peças.
         </div>
       )}
 
@@ -125,7 +125,7 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack }) {
                     </div>
                   ))}
                   <button onClick={() => ok6 && setStep(2)} disabled={!ok6} style={{ width: "100%", height: 50, marginTop: 8, background: ok6 ? T.goldDk : T.bg2, border: "none", borderRadius: 12, cursor: ok6 ? "pointer" : "not-allowed", fontFamily: "'Lato',sans-serif", fontSize: 13, fontWeight: 700, color: ok6 ? "white" : T.ink4, letterSpacing: 1 }}>
-                    {ok6 ? "Continuar" : `Mínimo 6 peças (faltam ${6 - totPcs})`}
+                    {ok6 ? "Continuar" : `Mínimo ${minOrder} peças (faltam ${minOrder - totPcs})`}
                   </button>
                 </>
               )}
