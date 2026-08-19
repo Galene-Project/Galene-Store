@@ -1,7 +1,46 @@
 import React, { useEffect, useMemo, useState } from "react";
+import JsBarcode from "jsbarcode";
 import { SectionTitle, Card } from "../shared";
 import { supabase } from "../../../lib/supabaseClient";
 import { getSession } from "../../../lib/adminAuth";
+
+// Etiqueta genérica 60x40mm — ajustar quando a impressora/rolo real for confirmado.
+function svgStringFor(code) {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  JsBarcode(svg, code, { format: "CODE128", displayValue: true, fontSize: 12, height: 36, margin: 4 });
+  return svg.outerHTML;
+}
+
+function imprimirEtiquetas(etiquetas) {
+  const win = window.open("", "_blank", "width=420,height=600");
+  if (!win) return;
+  const corpo = etiquetas.map((e) => `
+    <div class="etiqueta">
+      <div class="nome">${e.produto}</div>
+      <div class="variante">${e.corNome} / ${e.tamanhoNome}</div>
+      ${svgStringFor(e.code)}
+    </div>
+  `).join("");
+  win.document.write(`
+    <html>
+      <head>
+        <title>Etiquetas</title>
+        <style>
+          @page { size: 60mm 40mm; margin: 0; }
+          body { margin: 0; font-family: sans-serif; }
+          .etiqueta { width: 60mm; height: 40mm; box-sizing: border-box; padding: 3mm; text-align: center; page-break-after: always; }
+          .nome { font-size: 10px; font-weight: 700; }
+          .variante { font-size: 9px; color: #444; margin-bottom: 2px; }
+          svg { max-width: 100%; }
+        </style>
+      </head>
+      <body>${corpo}</body>
+    </html>
+  `);
+  win.document.close();
+  win.focus();
+  win.print();
+}
 
 const inputStyle = {
   padding: "6px 10px", borderRadius: 8, border: "1px solid var(--surface-7)",
@@ -59,6 +98,7 @@ function NovoProdutoForm({ cores, tamanhos, onCancel, onCreated }) {
   const [variantes, setVariantes] = useState([{ color_id: "", size_id: "", quantity: "" }]);
   const [saving, setSaving] = useState(false);
   const [erro, setErro] = useState("");
+  const [etiquetas, setEtiquetas] = useState(null);
 
   function setVariante(i, campo, valor) {
     setVariantes((prev) => prev.map((v, idx) => (idx === i ? { ...v, [campo]: valor } : v)));
@@ -73,17 +113,47 @@ function NovoProdutoForm({ cores, tamanhos, onCancel, onCreated }) {
       validas.forEach((v) => {
         if (v.photo_url && !fotoPorCor[v.color_id]) fotoPorCor[v.color_id] = v.photo_url;
       });
-      await callApi("/api/admin/produtos/criar", {
+      const resp = await callApi("/api/admin/produtos/criar", {
         ...form,
         variants: validas.map((v) => ({ color_id: v.color_id, size_id: v.size_id, quantity: v.quantity === "" ? 0 : Number(v.quantity) })),
         colorPhotos: fotoPorCor,
       });
-      onCreated();
+      setEtiquetas(resp.variants.map((v) => ({
+        code: v.code,
+        produto: `${form.name} (${resp.sku})`,
+        corNome: cores.find((c) => c.id === v.color_id)?.name || "-",
+        tamanhoNome: tamanhos.find((s) => s.id === v.size_id)?.name || "-",
+      })));
     } catch (err) {
       setErro(err.message);
     } finally {
       setSaving(false);
     }
+  }
+
+  if (etiquetas) {
+    return (
+      <Card style={{ marginBottom: 16 }}>
+        <SectionTitle accent="#34d399">Produto criado — códigos de barras gerados</SectionTitle>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 14 }}>
+          {etiquetas.map((e) => (
+            <div key={e.code} style={{ fontSize: 12, color: "var(--text-2)" }}>
+              <strong>{e.code}</strong> — {e.corNome} / {e.tamanhoNome}
+            </div>
+          ))}
+        </div>
+        <div style={{ display: "flex", gap: 10 }}>
+          <button onClick={() => imprimirEtiquetas(etiquetas)}
+            style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#c084fc,#818cf8)", color: "white", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+            🖨️ Imprimir etiquetas
+          </button>
+          <button onClick={onCreated}
+            style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid var(--surface-7)", background: "transparent", color: "var(--text-3)", fontSize: 12, cursor: "pointer" }}>
+            Fechar
+          </button>
+        </div>
+      </Card>
+    );
   }
 
   return (
@@ -181,7 +251,9 @@ export default function Catalogo() {
       if (!map.has(cat)) map.set(cat, []);
       map.get(cat).push(p);
     });
-    return [...map.entries()];
+    const entries = [...map.entries()];
+    const promoProdutos = produtos.filter((p) => p.price_original != null);
+    return promoProdutos.length > 0 ? [["🏷️ Promoções", promoProdutos], ...entries] : entries;
   }, [produtos]);
 
   const filtrados = useMemo(() => {
@@ -190,12 +262,22 @@ export default function Catalogo() {
     return produtos.filter((p) => p.name.toLowerCase().includes(termo));
   }, [produtos, busca]);
 
+  function aplicarUpdateLocal(productId, campos) {
+    setProdutos((prev) => prev.map((pr) => (pr.id === productId ? { ...pr, ...campos } : pr)));
+  }
+
+  function limparFormPromocao(productId) {
+    setFormOpenIds((prev) => { const next = new Set(prev); next.delete(productId); return next; });
+    setPrecoInputs((prev) => { const next = { ...prev }; delete next[productId]; return next; });
+  }
+
   async function handleRemoverPromocao(productId) {
     setSavingId(productId);
     setErrorMsg("");
     try {
-      await callApi("/api/admin/produtos/promocao", { productId, action: "remover" });
-      await loadProdutos();
+      const resp = await callApi("/api/admin/produtos/promocao", { productId, action: "remover" });
+      if (resp.product) aplicarUpdateLocal(productId, resp.product);
+      limparFormPromocao(productId);
     } catch (err) {
       setErrorMsg(err.message);
     } finally {
@@ -208,9 +290,9 @@ export default function Catalogo() {
     setSavingId(productId);
     setErrorMsg("");
     try {
-      await callApi("/api/admin/produtos/promocao", { productId, action: "aplicar", novoPreco });
-      setFormOpenIds((prev) => { const next = new Set(prev); next.delete(productId); return next; });
-      await loadProdutos();
+      const resp = await callApi("/api/admin/produtos/promocao", { productId, action: "aplicar", novoPreco });
+      if (resp.product) aplicarUpdateLocal(productId, resp.product);
+      limparFormPromocao(productId);
     } catch (err) {
       setErrorMsg(err.message);
     } finally {
@@ -223,7 +305,7 @@ export default function Catalogo() {
     setErrorMsg("");
     try {
       await callApi("/api/admin/produtos/destaque", { productId, featured });
-      await loadProdutos();
+      aplicarUpdateLocal(productId, { featured });
     } catch (err) {
       setErrorMsg(err.message);
     } finally {
@@ -238,7 +320,7 @@ export default function Catalogo() {
     } else if (p.price_original != null) {
       handleRemoverPromocao(p.id);
     } else {
-      setFormOpenIds((prev) => { const next = new Set(prev); next.delete(p.id); return next; });
+      limparFormPromocao(p.id);
     }
   }
 

@@ -56,7 +56,7 @@ export default async function handler(req, res) {
     const { error: updateErr } = await supabaseAdmin.from('products').update(update).eq('id', productId);
     if (updateErr) throw updateErr;
 
-    return res.status(200).json({ ok: true });
+    return res.status(200).json({ ok: true, product: update });
   } catch (err) {
     console.error('Erro ao atualizar promoção do produto:', err);
     return res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Não foi possível atualizar a promoção.', details: [] } });
