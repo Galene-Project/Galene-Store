@@ -12,6 +12,34 @@ function formatBRL(v) {
   return `R$${Number(v).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
 }
 
+function Toggle({ checked, onChange, disabled, label }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 11, color: "var(--text-4)" }}>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        aria-label={label}
+        disabled={disabled}
+        onClick={() => onChange(!checked)}
+        style={{
+          position: "relative", width: 34, height: 20, borderRadius: 20, border: "none", padding: 0,
+          background: checked ? "linear-gradient(135deg,#c084fc,#818cf8)" : "var(--surface-5)",
+          cursor: disabled ? "default" : "pointer", opacity: disabled ? 0.5 : 1,
+          transition: "background 0.2s ease", flexShrink: 0,
+        }}
+      >
+        <span style={{
+          position: "absolute", top: 2, left: checked ? 16 : 2,
+          width: 16, height: 16, borderRadius: "50%", background: "white",
+          transition: "left 0.2s ease", boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
+        }} />
+      </button>
+      <span>{label}</span>
+    </div>
+  );
+}
+
 async function callApi(path, body) {
   const session = await getSession();
   const res = await fetch(path, {
@@ -133,32 +161,31 @@ export default function Catalogo() {
           {formatBRL(p.price)}
         </div>
 
-        <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "var(--text-4)" }}>
-          <input type="checkbox" checked={formAberto} disabled={savingId === p.id} onChange={(e) => togglePromocaoCheckbox(p, e.target.checked)} />
-          Promoção
-        </label>
+        <Toggle checked={formAberto} disabled={savingId === p.id} onChange={(checked) => togglePromocaoCheckbox(p, checked)} label="Promoção" />
 
-        {formAberto && (
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <input
-              type="number" step="0.01" placeholder="Preço promocional"
-              value={precoInputs[p.id] ?? ""}
-              onChange={(e) => setPrecoInputs((prev) => ({ ...prev, [p.id]: e.target.value }))}
-              style={{ ...inputStyle, width: 130 }}
-            />
-            <button
-              onClick={() => handleSalvarPromocao(p.id)}
-              disabled={savingId === p.id || !precoInputs[p.id]}
-              style={{ padding: "6px 12px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#c084fc,#818cf8)", color: "white", fontSize: 11, fontWeight: 700, cursor: savingId === p.id ? "wait" : "pointer" }}>
-              {savingId === p.id ? "Salvando..." : "Salvar"}
-            </button>
-          </div>
-        )}
+        <div style={{
+          display: "flex", alignItems: "center", gap: 6,
+          maxWidth: formAberto ? 260 : 0,
+          opacity: formAberto ? 1 : 0,
+          pointerEvents: formAberto ? "auto" : "none",
+          overflow: "hidden",
+          transition: "max-width 0.25s ease, opacity 0.2s ease",
+        }}>
+          <input
+            type="number" step="0.01" placeholder="Preço promocional"
+            value={precoInputs[p.id] ?? ""}
+            onChange={(e) => setPrecoInputs((prev) => ({ ...prev, [p.id]: e.target.value }))}
+            style={{ ...inputStyle, width: 130, flexShrink: 0 }}
+          />
+          <button
+            onClick={() => handleSalvarPromocao(p.id)}
+            disabled={savingId === p.id || !precoInputs[p.id]}
+            style={{ padding: "6px 12px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#c084fc,#818cf8)", color: "white", fontSize: 11, fontWeight: 700, cursor: savingId === p.id ? "wait" : "pointer", flexShrink: 0 }}>
+            {savingId === p.id ? "Salvando..." : "Salvar"}
+          </button>
+        </div>
 
-        <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, color: "var(--text-4)" }}>
-          <input type="checkbox" checked={!!p.featured} disabled={savingId === p.id} onChange={(e) => handleToggleDestaque(p.id, e.target.checked)} />
-          Destaque
-        </label>
+        <Toggle checked={!!p.featured} disabled={savingId === p.id} onChange={(checked) => handleToggleDestaque(p.id, checked)} label="Destaque" />
       </div>
     );
   }
