@@ -70,6 +70,11 @@ export default function ModalProd({ prod, onClose, onAdd }) {
               <Sil cat={prod.cat} cor={COR_HEX[cor] || T.gold} sz={92} />
             </div>
             <div style={{ flex: 1 }}>
+              {prod.precoOriginal && (
+                <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 13, color: T.ink4, textDecoration: "line-through" }}>
+                  {fmt(prod.precoOriginal)}
+                </div>
+              )}
               <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 34, color: T.goldDk, fontWeight: 600, lineHeight: 1 }}>
                 {fmt(prod.preco)}
               </div>

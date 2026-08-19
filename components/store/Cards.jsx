@@ -62,6 +62,11 @@ export function CardDest({ prod, onClick }) {
         </p>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
+            {prod.precoOriginal && (
+              <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 11, color: T.ink4, textDecoration: "line-through" }}>
+                {fmt(prod.precoOriginal)}
+              </div>
+            )}
             <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: mob ? 24 : 28, color: T.goldDk, fontWeight: 600 }}>
               {fmt(prod.preco)}
             </div>
@@ -127,8 +132,15 @@ export function Card({ prod, onClick }) {
           {prod.nome}
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 19, color: T.goldDk, fontWeight: 600 }}>
-            {fmt(prod.preco)}
+          <div>
+            {prod.precoOriginal && (
+              <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 9.5, color: T.ink4, textDecoration: "line-through" }}>
+                {fmt(prod.precoOriginal)}
+              </div>
+            )}
+            <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 19, color: T.goldDk, fontWeight: 600 }}>
+              {fmt(prod.preco)}
+            </div>
           </div>
           <button type="button" onClick={(e) => { e.stopPropagation(); onClick(); }} aria-label={`Ver ${prod.nome}`} style={{
             background: hov ? T.goldDk : "transparent",

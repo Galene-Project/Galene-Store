@@ -31,7 +31,7 @@ export default function GaleneStore() {
         supabase
           .from("products")
           .select(`
-            id, name, category, material, price, description, featured, tag,
+            id, name, category, material, price, price_original, discount_percentage, description, featured, tag,
             product_colors ( colors ( name ) ),
             stock ( color_id, size_id, colors ( name ), sizes ( name ) )
           `)
@@ -47,6 +47,8 @@ export default function GaleneStore() {
         cat: p.category,
         sub: p.material,
         preco: Number(p.price),
+        precoOriginal: p.price_original ? Number(p.price_original) : null,
+        descontoPct: p.discount_percentage ? Number(p.discount_percentage) : null,
         destaque: p.featured,
         tag: p.tag,
         desc: p.description,
