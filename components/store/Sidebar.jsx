@@ -4,9 +4,11 @@ export default function Sidebar({ cat, setCat, mobile, onClose, produtos, minOrd
   const counts = {
     destaques: produtos.filter((p) => p.destaque).length,
     promocoes: produtos.filter((p) => p.precoOriginal != null).length,
+    lancamentos: produtos.filter((p) => p.instagramUrls?.length > 0).length,
   };
+  const especiais = new Set(["destaques", "promocoes", "lancamentos"]);
   CATS.forEach((c) => {
-    if (c.id !== "destaques" && c.id !== "promocoes") counts[c.id] = produtos.filter((p) => p.cat === c.id).length;
+    if (!especiais.has(c.id)) counts[c.id] = produtos.filter((p) => p.cat === c.id).length;
   });
 
   return (

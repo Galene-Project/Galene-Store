@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import Sil from "./Sil";
+import InstagramEmbed from "./InstagramEmbed";
 import { T, COR_HEX, fmt, sortSizes } from "../../lib/galeneTheme";
 import { useWindowWidth } from "../../hooks/useWindowWidth";
 
@@ -64,6 +65,12 @@ export default function ModalProd({ prod, onClose, onAdd }) {
             </div>
             <button onClick={onClose} aria-label="Fechar" style={{ background: "none", border: `1.5px solid ${T.border}`, borderRadius: 8, width: 36, height: 36, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: T.ink3, fontSize: 18, flexShrink: 0 }}>✕</button>
           </div>
+
+          {prod.instagramUrls?.length > 0 && (
+            <div style={{ marginBottom: 24, display: "flex", flexDirection: "column", gap: 16, alignItems: "center" }}>
+              {prod.instagramUrls.map((url) => <InstagramEmbed key={url} url={url} />)}
+            </div>
+          )}
 
           <div style={{ display: "flex", gap: 16, marginBottom: 24 }}>
             <div style={{ width: 110, height: 120, background: `linear-gradient(135deg,${T.bg2},${T.bg3})`, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>

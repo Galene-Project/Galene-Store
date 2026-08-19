@@ -32,7 +32,7 @@ export default function GaleneStore() {
         supabase
           .from("products")
           .select(`
-            id, name, category, material, price, price_original, discount_percentage, description, featured, tag,
+            id, name, category, material, price, price_original, discount_percentage, description, featured, tag, instagram_urls,
             product_colors ( colors ( name ) ),
             stock ( color_id, size_id, colors ( name ), sizes ( name ) )
           `)
@@ -54,6 +54,7 @@ export default function GaleneStore() {
         descontoPct: p.discount_percentage ? Number(p.discount_percentage) : null,
         destaque: p.featured,
         tag: p.tag,
+        instagramUrls: p.instagram_urls || [],
         desc: p.description,
         cores: [...new Set(p.product_colors.map((pc) => pc.colors.name))],
         tamanhos: sortSizes([...new Set(
@@ -77,6 +78,8 @@ export default function GaleneStore() {
     ? produtos.filter((p) => p.destaque)
     : cat === "promocoes"
     ? produtos.filter((p) => p.precoOriginal != null)
+    : cat === "lancamentos"
+    ? produtos.filter((p) => p.instagramUrls.length > 0)
     : produtos.filter((p) => p.cat === cat);
 
   const addToCart = useCallback((prod, sel) => {

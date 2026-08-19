@@ -1,6 +1,7 @@
 import { supabaseAdmin } from '../../../../lib/supabaseAdmin';
 import { validateNewProduct } from '../../../../lib/productCreate';
 import { computeVariantCodes } from '../../../../lib/barcode';
+import { validateInstagramUrls } from '../../../../lib/instagramUrl';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -25,13 +26,20 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: { code: 'VALIDATION_FAILED', message: e.message, details: [] } });
   }
 
-  const { material, sku, description, photo_url, colorPhotos } = req.body || {};
+  const { material, sku, description, photo_url, colorPhotos, instagramUrls } = req.body || {};
   const { name, category, price, variants } = parsed;
   const finalSku = sku || `AUTO-${Date.now().toString(36).toUpperCase()}`;
 
+  let finalInstagramUrls;
+  try {
+    finalInstagramUrls = validateInstagramUrls(instagramUrls);
+  } catch (e) {
+    return res.status(400).json({ error: { code: 'VALIDATION_FAILED', message: e.message, details: [] } });
+  }
+
   const { data: product, error: prodErr } = await supabaseAdmin
     .from('products')
-    .insert({ name, category, price, material: material || null, sku: finalSku, description: description || null, photo_url: photo_url || null })
+    .insert({ name, category, price, material: material || null, sku: finalSku, description: description || null, photo_url: photo_url || null, instagram_urls: finalInstagramUrls })
     .select('id')
     .single();
 

@@ -96,6 +96,7 @@ const emptyNovoProduto = { name: "", category: "", material: "", sku: "", price:
 function NovoProdutoForm({ cores, tamanhos, onCancel, onCreated }) {
   const [form, setForm] = useState(emptyNovoProduto);
   const [variantes, setVariantes] = useState([{ color_id: "", size_id: "", quantity: "" }]);
+  const [instagramLinks, setInstagramLinks] = useState([""]);
   const [saving, setSaving] = useState(false);
   const [erro, setErro] = useState("");
   const [etiquetas, setEtiquetas] = useState(null);
@@ -117,6 +118,7 @@ function NovoProdutoForm({ cores, tamanhos, onCancel, onCreated }) {
         ...form,
         variants: validas.map((v) => ({ color_id: v.color_id, size_id: v.size_id, quantity: v.quantity === "" ? 0 : Number(v.quantity) })),
         colorPhotos: fotoPorCor,
+        instagramUrls: instagramLinks.filter((l) => l.trim()),
       });
       setEtiquetas(resp.variants.map((v) => ({
         code: v.code,
@@ -197,6 +199,22 @@ function NovoProdutoForm({ cores, tamanhos, onCancel, onCreated }) {
         + Variante
       </button>
 
+      <div style={{ fontSize: 11, color: "var(--text-4)", marginBottom: 8 }}>Fotos/vídeos (links de post ou reel do Instagram, opcional)</div>
+      {instagramLinks.map((link, i) => (
+        <div key={i} style={{ display: "flex", gap: 8, marginBottom: 6 }}>
+          <input placeholder="https://www.instagram.com/p/... ou /reel/..." value={link}
+            onChange={(e) => setInstagramLinks((prev) => prev.map((l, idx) => (idx === i ? e.target.value : l)))}
+            style={{ ...inputStyle, flex: 1 }} />
+          {instagramLinks.length > 1 && (
+            <button type="button" onClick={() => setInstagramLinks((prev) => prev.filter((_, idx) => idx !== i))} style={{ padding: "6px 10px", borderRadius: 8, border: "none", background: "var(--surface-5)", color: "var(--text-3)", fontSize: 11, cursor: "pointer" }}>Remover</button>
+          )}
+        </div>
+      ))}
+      <button type="button" onClick={() => setInstagramLinks((prev) => [...prev, ""])}
+        style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid var(--surface-7)", background: "transparent", color: "var(--text-3)", fontSize: 11, cursor: "pointer", marginBottom: 14 }}>
+        + Link
+      </button>
+
       <div style={{ display: "flex", gap: 10 }}>
         <button onClick={handleCriar} disabled={saving}
           style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#c084fc,#818cf8)", color: "white", fontSize: 12, fontWeight: 700, cursor: saving ? "wait" : "pointer" }}>
@@ -223,6 +241,8 @@ export default function Catalogo() {
   const [novoAberto, setNovoAberto] = useState(false);
   const [cores, setCores] = useState([]);
   const [tamanhos, setTamanhos] = useState([]);
+  const [videoFormOpenIds, setVideoFormOpenIds] = useState(new Set());
+  const [videoInputs, setVideoInputs] = useState({});
 
   useEffect(() => {
     supabase.from("colors").select("id, name").order("name").then(({ data }) => setCores(data || []));
@@ -233,7 +253,7 @@ export default function Catalogo() {
     setLoading(true);
     const { data, error } = await supabase
       .from("products")
-      .select("id, name, category, price, price_original, discount_percentage, featured")
+      .select("id, name, category, price, price_original, discount_percentage, featured, instagram_urls")
       .eq("is_active", true)
       .order("category")
       .order("name");
@@ -253,7 +273,11 @@ export default function Catalogo() {
     });
     const entries = [...map.entries()];
     const promoProdutos = produtos.filter((p) => p.price_original != null);
-    return promoProdutos.length > 0 ? [["🏷️ Promoções", promoProdutos], ...entries] : entries;
+    const videoProdutos = produtos.filter((p) => p.instagram_urls?.length > 0);
+    const extras = [];
+    if (videoProdutos.length > 0) extras.push(["▶️ Lançamentos", videoProdutos]);
+    if (promoProdutos.length > 0) extras.push(["🏷️ Promoções", promoProdutos]);
+    return [...extras, ...entries];
   }, [produtos]);
 
   const filtrados = useMemo(() => {
@@ -324,6 +348,51 @@ export default function Catalogo() {
     }
   }
 
+  function limparFormVideo(productId) {
+    setVideoFormOpenIds((prev) => { const next = new Set(prev); next.delete(productId); return next; });
+    setVideoInputs((prev) => { const next = { ...prev }; delete next[productId]; return next; });
+  }
+
+  async function handleRemoverVideo(productId) {
+    setSavingId(productId);
+    setErrorMsg("");
+    try {
+      await callApi("/api/admin/produtos/video", { productId, instagramUrls: [] });
+      aplicarUpdateLocal(productId, { instagram_urls: [] });
+      limparFormVideo(productId);
+    } catch (err) {
+      setErrorMsg(err.message);
+    } finally {
+      setSavingId(null);
+    }
+  }
+
+  async function handleSalvarVideo(productId) {
+    setSavingId(productId);
+    setErrorMsg("");
+    try {
+      const links = (videoInputs[productId] || "").split("\n").map((l) => l.trim()).filter(Boolean);
+      const resp = await callApi("/api/admin/produtos/video", { productId, instagramUrls: links });
+      aplicarUpdateLocal(productId, { instagram_urls: resp.instagram_urls });
+      limparFormVideo(productId);
+    } catch (err) {
+      setErrorMsg(err.message);
+    } finally {
+      setSavingId(null);
+    }
+  }
+
+  function toggleVideoCheckbox(p, checked) {
+    if (checked) {
+      setVideoFormOpenIds((prev) => new Set(prev).add(p.id));
+      setVideoInputs((prev) => ({ ...prev, [p.id]: (p.instagram_urls || []).join("\n") }));
+    } else if (p.instagram_urls?.length > 0) {
+      handleRemoverVideo(p.id);
+    } else {
+      limparFormVideo(p.id);
+    }
+  }
+
   function renderProduto(p) {
     const emPromocao = p.price_original != null;
     const formAberto = emPromocao || formOpenIds.has(p.id);
@@ -370,6 +439,40 @@ export default function Catalogo() {
         </div>
 
         <Toggle checked={!!p.featured} disabled={savingId === p.id} onChange={(checked) => handleToggleDestaque(p.id, checked)} label="Destaque" />
+
+        <Toggle
+          checked={p.instagram_urls?.length > 0 || videoFormOpenIds.has(p.id)}
+          disabled={savingId === p.id}
+          onChange={(checked) => toggleVideoCheckbox(p, checked)}
+          label="Fotos/vídeos"
+        />
+
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: (p.instagram_urls?.length > 0 || videoFormOpenIds.has(p.id)) ? "1fr" : "0fr",
+          transition: "grid-template-columns 0.25s ease",
+          overflow: "hidden",
+        }}>
+          <div style={{
+            display: "flex", alignItems: "flex-start", gap: 6, minWidth: 0,
+            opacity: (p.instagram_urls?.length > 0 || videoFormOpenIds.has(p.id)) ? 1 : 0,
+            pointerEvents: (p.instagram_urls?.length > 0 || videoFormOpenIds.has(p.id)) ? "auto" : "none",
+            transition: "opacity 0.2s ease",
+          }}>
+            <textarea
+              placeholder={"1 link por linha\nhttps://www.instagram.com/p/... ou /reel/..."}
+              value={videoInputs[p.id] ?? (p.instagram_urls || []).join("\n")}
+              onChange={(e) => setVideoInputs((prev) => ({ ...prev, [p.id]: e.target.value }))}
+              style={{ ...inputStyle, width: 260, minHeight: 50, flexShrink: 0, resize: "vertical" }}
+            />
+            <button
+              onClick={() => handleSalvarVideo(p.id)}
+              disabled={savingId === p.id}
+              style={{ padding: "6px 12px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#c084fc,#818cf8)", color: "white", fontSize: 11, fontWeight: 700, cursor: savingId === p.id ? "wait" : "pointer", flexShrink: 0 }}>
+              {savingId === p.id ? "Salvando..." : "Salvar"}
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
