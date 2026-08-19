@@ -68,11 +68,15 @@ function NovoProdutoForm({ cores, tamanhos, onCancel, onCreated }) {
     setSaving(true);
     setErro("");
     try {
+      const validas = variantes.filter((v) => v.color_id && v.size_id);
+      const fotoPorCor = {};
+      validas.forEach((v) => {
+        if (v.photo_url && !fotoPorCor[v.color_id]) fotoPorCor[v.color_id] = v.photo_url;
+      });
       await callApi("/api/admin/produtos/criar", {
         ...form,
-        variants: variantes
-          .filter((v) => v.color_id && v.size_id)
-          .map((v) => ({ color_id: v.color_id, size_id: v.size_id, quantity: v.quantity === "" ? 0 : Number(v.quantity) })),
+        variants: validas.map((v) => ({ color_id: v.color_id, size_id: v.size_id, quantity: v.quantity === "" ? 0 : Number(v.quantity) })),
+        colorPhotos: fotoPorCor,
       });
       onCreated();
     } catch (err) {
@@ -112,6 +116,7 @@ function NovoProdutoForm({ cores, tamanhos, onCancel, onCreated }) {
             {tamanhos.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
           </select>
           <input type="number" placeholder="Qtd" value={v.quantity} onChange={(e) => setVariante(i, "quantity", e.target.value)} style={{ ...inputStyle, width: 80 }} />
+          <input placeholder="URL da foto dessa cor (opcional)" value={v.photo_url || ""} onChange={(e) => setVariante(i, "photo_url", e.target.value)} style={{ ...inputStyle, width: 220 }} />
           {variantes.length > 1 && (
             <button type="button" onClick={() => setVariantes((prev) => prev.filter((_, idx) => idx !== i))} style={{ padding: "6px 10px", borderRadius: 8, border: "none", background: "var(--surface-5)", color: "var(--text-3)", fontSize: 11, cursor: "pointer" }}>Remover</button>
           )}

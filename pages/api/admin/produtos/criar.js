@@ -24,7 +24,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: { code: 'VALIDATION_FAILED', message: e.message, details: [] } });
   }
 
-  const { material, sku, description, photo_url } = req.body || {};
+  const { material, sku, description, photo_url, colorPhotos } = req.body || {};
   const { name, category, price, variants } = parsed;
 
   const { data: product, error: prodErr } = await supabaseAdmin
@@ -46,7 +46,7 @@ export default async function handler(req, res) {
 
   const { error: colorErr } = await supabaseAdmin
     .from('product_colors')
-    .insert(colorIds.map((color_id) => ({ product_id: productId, color_id })));
+    .insert(colorIds.map((color_id) => ({ product_id: productId, color_id, photo_url: (colorPhotos && colorPhotos[color_id]) || null })));
 
   const { error: stockErr } = colorErr ? { error: colorErr } : await supabaseAdmin
     .from('stock')
