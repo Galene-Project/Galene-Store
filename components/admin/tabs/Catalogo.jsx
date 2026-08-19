@@ -253,7 +253,7 @@ export default function Catalogo() {
     setLoading(true);
     const { data, error } = await supabase
       .from("products")
-      .select("id, name, category, price, price_original, discount_percentage, featured, instagram_urls")
+      .select("id, name, category, price, price_original, discount_percentage, featured, instagram_urls, is_launch")
       .eq("is_active", true)
       .order("category")
       .order("name");
@@ -273,7 +273,7 @@ export default function Catalogo() {
     });
     const entries = [...map.entries()];
     const promoProdutos = produtos.filter((p) => p.price_original != null);
-    const videoProdutos = produtos.filter((p) => p.instagram_urls?.length > 0);
+    const videoProdutos = produtos.filter((p) => p.is_launch);
     const extras = [];
     if (videoProdutos.length > 0) extras.push(["▶️ Lançamentos", videoProdutos]);
     if (promoProdutos.length > 0) extras.push(["🏷️ Promoções", promoProdutos]);
@@ -330,6 +330,19 @@ export default function Catalogo() {
     try {
       await callApi("/api/admin/produtos/destaque", { productId, featured });
       aplicarUpdateLocal(productId, { featured });
+    } catch (err) {
+      setErrorMsg(err.message);
+    } finally {
+      setSavingId(null);
+    }
+  }
+
+  async function handleToggleLancamento(productId, isLaunch) {
+    setSavingId(productId);
+    setErrorMsg("");
+    try {
+      await callApi("/api/admin/produtos/lancamento", { productId, isLaunch });
+      aplicarUpdateLocal(productId, { is_launch: isLaunch });
     } catch (err) {
       setErrorMsg(err.message);
     } finally {
@@ -439,6 +452,8 @@ export default function Catalogo() {
         </div>
 
         <Toggle checked={!!p.featured} disabled={savingId === p.id} onChange={(checked) => handleToggleDestaque(p.id, checked)} label="Destaque" />
+
+        <Toggle checked={!!p.is_launch} disabled={savingId === p.id} onChange={(checked) => handleToggleLancamento(p.id, checked)} label="Lançamento" />
 
         <Toggle
           checked={p.instagram_urls?.length > 0 || videoFormOpenIds.has(p.id)}

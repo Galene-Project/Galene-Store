@@ -4,7 +4,7 @@ export default function Sidebar({ cat, setCat, mobile, onClose, produtos, minOrd
   const counts = {
     destaques: produtos.filter((p) => p.destaque).length,
     promocoes: produtos.filter((p) => p.precoOriginal != null).length,
-    lancamentos: produtos.filter((p) => p.instagramUrls?.length > 0).length,
+    lancamentos: produtos.filter((p) => p.isLaunch).length,
   };
   const especiais = new Set(["destaques", "promocoes", "lancamentos"]);
   CATS.forEach((c) => {

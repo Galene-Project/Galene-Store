@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Sil from "./Sil";
 import InstagramEmbed from "./InstagramEmbed";
+import { sortVideoFirst } from "../../lib/instagramUrl";
 import { T, COR_HEX, fmt, sortSizes } from "../../lib/galeneTheme";
 import { useWindowWidth } from "../../hooks/useWindowWidth";
 
@@ -68,7 +69,7 @@ export default function ModalProd({ prod, onClose, onAdd }) {
 
           {prod.instagramUrls?.length > 0 && (
             <div style={{ marginBottom: 24, display: "flex", flexDirection: "column", gap: 16, alignItems: "center" }}>
-              {prod.instagramUrls.map((url) => <InstagramEmbed key={url} url={url} />)}
+              {sortVideoFirst(prod.instagramUrls).map((url) => <InstagramEmbed key={url} url={url} />)}
             </div>
           )}
 
