@@ -2,6 +2,19 @@ import React, { useEffect, useMemo, useState } from "react";
 import { productReport } from "../../../lib/reportMetrics";
 import { SectionTitle, Card } from "../shared";
 import { supabase } from "../../../lib/supabaseClient";
+import { getSession } from "../../../lib/adminAuth";
+
+async function callApi(path, body) {
+  const session = await getSession();
+  const res = await fetch(path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token}` },
+    body: JSON.stringify(body),
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json?.error?.message || "Falha na requisição.");
+  return json;
+}
 
 const selectStyle = {
   padding: "8px 12px", borderRadius: 8, border: "1px solid var(--surface-7)",
@@ -37,14 +50,19 @@ export default function Relatorios({ data }) {
   const [tipo, setTipo] = useState("vendas");
   const [estoqueRows, setEstoqueRows] = useState([]);
   const [estoqueCarregando, setEstoqueCarregando] = useState(false);
+  const [defeitoRows, setDefeitoRows] = useState([]);
+  const [moverAbertoId, setMoverAbertoId] = useState(null);
+  const [moverForm, setMoverForm] = useState({ quantity: "", defectPrice: "", reason: "" });
+  const [defeitoSaving, setDefeitoSaving] = useState(false);
+  const [defeitoErro, setDefeitoErro] = useState("");
 
-  useEffect(() => {
-    if (tipo !== "estoque" || !produtoId) { setEstoqueRows([]); return; }
+  function carregarEstoque() {
+    if (tipo !== "estoque" || !produtoId) { setEstoqueRows([]); return () => {}; }
     let cancelled = false;
     setEstoqueCarregando(true);
     supabase
       .from("stock")
-      .select("quantity, colors(name), sizes(name)")
+      .select("id, quantity, color_id, size_id, colors(name), sizes(name)")
       .eq("product_id", produtoId)
       .then(({ data: rows }) => {
         if (cancelled) return;
@@ -52,7 +70,62 @@ export default function Relatorios({ data }) {
         setEstoqueCarregando(false);
       });
     return () => { cancelled = true; };
+  }
+
+  function carregarDefeito() {
+    if (tipo !== "estoque" || !produtoId) { setDefeitoRows([]); return; }
+    callApi("/api/admin/estoque/defeito", { action: "listar", productId: produtoId })
+      .then((json) => setDefeitoRows(json.rows || []))
+      .catch(() => setDefeitoRows([]));
+  }
+
+  useEffect(() => {
+    const cleanup = carregarEstoque();
+    carregarDefeito();
+    return cleanup;
   }, [tipo, produtoId]);
+
+  async function handleMover(row) {
+    setDefeitoSaving(true);
+    setDefeitoErro("");
+    try {
+      await callApi("/api/admin/estoque/defeito", {
+        action: "mover",
+        productId: produtoId,
+        colorId: row.color_id,
+        sizeId: row.size_id,
+        quantity: moverForm.quantity,
+        defectPrice: moverForm.defectPrice,
+        reason: moverForm.reason,
+      });
+      setMoverAbertoId(null);
+      setMoverForm({ quantity: "", defectPrice: "", reason: "" });
+      carregarEstoque();
+      carregarDefeito();
+    } catch (err) {
+      setDefeitoErro(err.message);
+    } finally {
+      setDefeitoSaving(false);
+    }
+  }
+
+  async function handleBaixar(defectRow) {
+    setDefeitoSaving(true);
+    setDefeitoErro("");
+    try {
+      await callApi("/api/admin/estoque/defeito", {
+        action: "baixar",
+        productId: produtoId,
+        defectStockId: defectRow.id,
+        quantity: defectRow.quantity,
+      });
+      carregarDefeito();
+    } catch (err) {
+      setDefeitoErro(err.message);
+    } finally {
+      setDefeitoSaving(false);
+    }
+  }
 
   useEffect(() => {
     supabase
@@ -181,37 +254,119 @@ export default function Relatorios({ data }) {
           )}
 
           {tipo === "estoque" && (
-            <Card>
-              <SectionTitle accent="#34d399">Estoque atual por cor/tamanho</SectionTitle>
-              {estoqueCarregando ? (
-                <div style={{ fontSize: 12, color: "var(--text-4)", padding: "12px 0" }}>Carregando...</div>
-              ) : estoqueRows.length === 0 ? (
-                <div style={{ fontSize: 12, color: "var(--text-4)", padding: "12px 0" }}>
-                  Nenhuma linha de estoque cadastrada pra esse produto.
-                </div>
-              ) : (
-                <div style={{ overflowX: "auto" }}>
-                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
-                    <thead>
-                      <tr style={{ textAlign: "left", color: "var(--text-4)" }}>
-                        <th style={{ padding: "8px 10px" }}>Cor</th>
-                        <th style={{ padding: "8px 10px" }}>Tamanho</th>
-                        <th style={{ padding: "8px 10px" }}>Quantidade</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {agruparPorCor(estoqueRows, (row) => row.colors?.name || "-").map(({ row, stripe }, i) => (
-                        <tr key={i} style={{ borderTop: "1px solid var(--surface-5)", background: stripe % 2 === 1 ? "var(--surface-2)" : "transparent" }}>
-                          <td style={{ padding: "8px 10px", color: "var(--text-2)" }}>{row.colors?.name || "-"}</td>
-                          <td style={{ padding: "8px 10px", color: "var(--text-2)" }}>{row.sizes?.name || "-"}</td>
-                          <td style={{ padding: "8px 10px", color: "var(--text-2)" }}>{row.quantity}</td>
+            <>
+              <Card style={{ marginBottom: 16 }}>
+                <SectionTitle accent="#34d399">Estoque atual por cor/tamanho</SectionTitle>
+                {defeitoErro && (
+                  <div style={{ marginBottom: 10, padding: "8px 12px", borderRadius: 8, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)", color: "#fca5a5", fontSize: 12 }}>
+                    ⚠️ {defeitoErro}
+                  </div>
+                )}
+                {estoqueCarregando ? (
+                  <div style={{ fontSize: 12, color: "var(--text-4)", padding: "12px 0" }}>Carregando...</div>
+                ) : estoqueRows.length === 0 ? (
+                  <div style={{ fontSize: 12, color: "var(--text-4)", padding: "12px 0" }}>
+                    Nenhuma linha de estoque cadastrada pra esse produto.
+                  </div>
+                ) : (
+                  <div style={{ overflowX: "auto" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+                      <thead>
+                        <tr style={{ textAlign: "left", color: "var(--text-4)" }}>
+                          <th style={{ padding: "8px 10px" }}>Cor</th>
+                          <th style={{ padding: "8px 10px" }}>Tamanho</th>
+                          <th style={{ padding: "8px 10px" }}>Quantidade</th>
+                          <th style={{ padding: "8px 10px" }}></th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </Card>
+                      </thead>
+                      <tbody>
+                        {agruparPorCor(estoqueRows, (row) => row.colors?.name || "-").map(({ row, stripe }, i) => (
+                          <React.Fragment key={i}>
+                            <tr style={{ borderTop: "1px solid var(--surface-5)", background: stripe % 2 === 1 ? "var(--surface-2)" : "transparent" }}>
+                              <td style={{ padding: "8px 10px", color: "var(--text-2)" }}>{row.colors?.name || "-"}</td>
+                              <td style={{ padding: "8px 10px", color: "var(--text-2)" }}>{row.sizes?.name || "-"}</td>
+                              <td style={{ padding: "8px 10px", color: "var(--text-2)" }}>{row.quantity}</td>
+                              <td style={{ padding: "8px 10px" }}>
+                                <button
+                                  onClick={() => { setMoverAbertoId(moverAbertoId === row.id ? null : row.id); setDefeitoErro(""); }}
+                                  disabled={row.quantity === 0}
+                                  style={{ padding: "4px 10px", borderRadius: 6, border: "1px solid var(--surface-7)", background: "transparent", color: "var(--text-3)", fontSize: 11, cursor: row.quantity === 0 ? "default" : "pointer", opacity: row.quantity === 0 ? 0.4 : 1 }}>
+                                  Mover p/ defeito
+                                </button>
+                              </td>
+                            </tr>
+                            {moverAbertoId === row.id && (
+                              <tr style={{ background: "var(--surface-2)" }}>
+                                <td colSpan={4} style={{ padding: "10px" }}>
+                                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+                                    <input type="number" placeholder={`Qtd (máx ${row.quantity})`} value={moverForm.quantity}
+                                      onChange={(e) => setMoverForm((f) => ({ ...f, quantity: e.target.value }))}
+                                      style={{ ...selectStyle, width: 130 }} />
+                                    <input type="number" step="0.01" placeholder="Preço defeito" value={moverForm.defectPrice}
+                                      onChange={(e) => setMoverForm((f) => ({ ...f, defectPrice: e.target.value }))}
+                                      style={{ ...selectStyle, width: 130 }} />
+                                    <input placeholder="Motivo (opcional)" value={moverForm.reason}
+                                      onChange={(e) => setMoverForm((f) => ({ ...f, reason: e.target.value }))}
+                                      style={{ ...selectStyle, flex: 1, minWidth: 140 }} />
+                                    <button onClick={() => handleMover(row)} disabled={defeitoSaving}
+                                      style={{ padding: "6px 12px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#c084fc,#818cf8)", color: "white", fontSize: 11, fontWeight: 700, cursor: defeitoSaving ? "wait" : "pointer" }}>
+                                      {defeitoSaving ? "Movendo..." : "Confirmar"}
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                          </React.Fragment>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </Card>
+
+              <Card>
+                <SectionTitle accent="#fb923c">Peças com defeito (venda separada)</SectionTitle>
+                {defeitoRows.length === 0 ? (
+                  <div style={{ fontSize: 12, color: "var(--text-4)", padding: "12px 0" }}>
+                    Nenhuma peça com defeito registrada pra esse produto.
+                  </div>
+                ) : (
+                  <div style={{ overflowX: "auto" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+                      <thead>
+                        <tr style={{ textAlign: "left", color: "var(--text-4)" }}>
+                          <th style={{ padding: "8px 10px" }}>Cor</th>
+                          <th style={{ padding: "8px 10px" }}>Tamanho</th>
+                          <th style={{ padding: "8px 10px" }}>Quantidade</th>
+                          <th style={{ padding: "8px 10px" }}>Preço</th>
+                          <th style={{ padding: "8px 10px" }}>Motivo</th>
+                          <th style={{ padding: "8px 10px" }}></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {defeitoRows.map((row) => (
+                          <tr key={row.id} style={{ borderTop: "1px solid var(--surface-5)" }}>
+                            <td style={{ padding: "8px 10px", color: "var(--text-2)" }}>{row.colors?.name || "-"}</td>
+                            <td style={{ padding: "8px 10px", color: "var(--text-2)" }}>{row.sizes?.name || "-"}</td>
+                            <td style={{ padding: "8px 10px", color: "var(--text-2)" }}>{row.quantity}</td>
+                            <td style={{ padding: "8px 10px", color: "var(--text-2)" }}>
+                              R${Number(row.defect_price).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                            </td>
+                            <td style={{ padding: "8px 10px", color: "var(--text-4)" }}>{row.reason || "-"}</td>
+                            <td style={{ padding: "8px 10px" }}>
+                              <button onClick={() => handleBaixar(row)} disabled={defeitoSaving}
+                                style={{ padding: "4px 10px", borderRadius: 6, border: "1px solid var(--surface-7)", background: "transparent", color: "var(--text-3)", fontSize: 11, cursor: defeitoSaving ? "wait" : "pointer" }}>
+                                Dar baixa (vendido)
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </Card>
+            </>
           )}
         </>
       )}
