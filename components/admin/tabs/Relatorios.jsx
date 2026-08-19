@@ -8,6 +8,25 @@ const selectStyle = {
   background: "var(--surface-3)", color: "var(--text-2)", fontSize: 12,
 };
 
+// Agrupa linhas cor×tamanho por cor (bloco visual) — dentro de cada
+// cor, mantém a ordenação que já veio (mais vendido/maior estoque
+// primeiro), só reordena pra cores ficarem contíguas.
+function agruparPorCor(rows, corDaLinha) {
+  const porCor = new Map();
+  rows.forEach((row) => {
+    const cor = corDaLinha(row);
+    if (!porCor.has(cor)) porCor.set(cor, []);
+    porCor.get(cor).push(row);
+  });
+  const linhas = [];
+  let stripe = 0;
+  for (const grupo of porCor.values()) {
+    grupo.forEach((row) => linhas.push({ row, stripe }));
+    stripe++;
+  }
+  return linhas;
+}
+
 export default function Relatorios({ data }) {
   const { items = [], orders = [] } = data || {};
   const [produtos, setProdutos] = useState([]);
@@ -143,8 +162,8 @@ export default function Relatorios({ data }) {
                         </tr>
                       </thead>
                       <tbody>
-                        {report.breakdown.map((row, i) => (
-                          <tr key={i} style={{ borderTop: "1px solid var(--surface-5)" }}>
+                        {agruparPorCor(report.breakdown, (row) => row.cor).map(({ row, stripe }, i) => (
+                          <tr key={i} style={{ borderTop: "1px solid var(--surface-5)", background: stripe % 2 === 1 ? "var(--surface-2)" : "transparent" }}>
                             <td style={{ padding: "8px 10px", color: "var(--text-2)" }}>{row.cor}</td>
                             <td style={{ padding: "8px 10px", color: "var(--text-2)" }}>{row.tamanho}</td>
                             <td style={{ padding: "8px 10px", color: "var(--text-2)" }}>{row.pecas}</td>
@@ -181,8 +200,8 @@ export default function Relatorios({ data }) {
                       </tr>
                     </thead>
                     <tbody>
-                      {estoqueRows.map((row, i) => (
-                        <tr key={i} style={{ borderTop: "1px solid var(--surface-5)" }}>
+                      {agruparPorCor(estoqueRows, (row) => row.colors?.name || "-").map(({ row, stripe }, i) => (
+                        <tr key={i} style={{ borderTop: "1px solid var(--surface-5)", background: stripe % 2 === 1 ? "var(--surface-2)" : "transparent" }}>
                           <td style={{ padding: "8px 10px", color: "var(--text-2)" }}>{row.colors?.name || "-"}</td>
                           <td style={{ padding: "8px 10px", color: "var(--text-2)" }}>{row.sizes?.name || "-"}</td>
                           <td style={{ padding: "8px 10px", color: "var(--text-2)" }}>{row.quantity}</td>
