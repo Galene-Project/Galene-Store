@@ -34,6 +34,22 @@ export default function Relatorios({ data }) {
   const [produtoId, setProdutoId] = useState("");
   const [dataInicio, setDataInicio] = useState("");
   const [dataFim, setDataFim] = useState("");
+  const [tipo, setTipo] = useState("vendas");
+  const [estoqueRows, setEstoqueRows] = useState([]);
+  const [estoqueCarregando, setEstoqueCarregando] = useState(false);
+
+  useEffect(() => {
+    if (tipo !== "estoque" || !produtoId) { setEstoqueRows([]); return; }
+    setEstoqueCarregando(true);
+    supabase
+      .from("stock")
+      .select("quantity, colors(name), sizes(name)")
+      .eq("product_id", produtoId)
+      .then(({ data: rows }) => {
+        setEstoqueRows([...(rows || [])].sort((a, b) => b.quantity - a.quantity));
+        setEstoqueCarregando(false);
+      });
+  }, [tipo, produtoId]);
 
   useEffect(() => {
     supabase
@@ -84,16 +100,23 @@ export default function Relatorios({ data }) {
             <option value="">Selecione um produto</option>
             {produtosFiltrados.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
+
+          <select value={tipo} onChange={(e) => setTipo(e.target.value)} style={selectStyle}>
+            <option value="vendas">Vendas</option>
+            <option value="estoque">Estoque</option>
+          </select>
         </div>
 
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
-          <input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} style={selectStyle} />
-          <input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} style={selectStyle} />
-          <button onClick={() => aplicarPreset("7d")} style={{ ...selectStyle, cursor: "pointer" }}>7 dias</button>
-          <button onClick={() => aplicarPreset("30d")} style={{ ...selectStyle, cursor: "pointer" }}>30 dias</button>
-          <button onClick={() => aplicarPreset("mes")} style={{ ...selectStyle, cursor: "pointer" }}>Mês atual</button>
-          <button onClick={() => aplicarPreset("todo")} style={{ ...selectStyle, cursor: "pointer" }}>Todo período</button>
-        </div>
+        {tipo === "vendas" && (
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+            <input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} style={selectStyle} />
+            <input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} style={selectStyle} />
+            <button onClick={() => aplicarPreset("7d")} style={{ ...selectStyle, cursor: "pointer" }}>7 dias</button>
+            <button onClick={() => aplicarPreset("30d")} style={{ ...selectStyle, cursor: "pointer" }}>30 dias</button>
+            <button onClick={() => aplicarPreset("mes")} style={{ ...selectStyle, cursor: "pointer" }}>Mês atual</button>
+            <button onClick={() => aplicarPreset("todo")} style={{ ...selectStyle, cursor: "pointer" }}>Todo período</button>
+          </div>
+        )}
       </Card>
 
       {!produtoId && (
@@ -113,52 +136,90 @@ export default function Relatorios({ data }) {
             </div>
           </Card>
 
-          <div className="admin-chart-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
-            <Card>
-              <div style={{ fontSize: 11, color: "var(--text-4)", marginBottom: 6 }}>Peças vendidas</div>
-              <div style={{ fontSize: 28, fontWeight: 800, color: "var(--text-1)" }}>{report.totalPecas}</div>
-            </Card>
-            <Card>
-              <div style={{ fontSize: 11, color: "var(--text-4)", marginBottom: 6 }}>Receita</div>
-              <div style={{ fontSize: 28, fontWeight: 800, color: "var(--text-1)" }}>
-                R${report.totalReceita.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+          {tipo === "vendas" && (
+            <>
+              <div className="admin-chart-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+                <Card>
+                  <div style={{ fontSize: 11, color: "var(--text-4)", marginBottom: 6 }}>Peças vendidas</div>
+                  <div style={{ fontSize: 28, fontWeight: 800, color: "var(--text-1)" }}>{report.totalPecas}</div>
+                </Card>
+                <Card>
+                  <div style={{ fontSize: 11, color: "var(--text-4)", marginBottom: 6 }}>Receita</div>
+                  <div style={{ fontSize: 28, fontWeight: 800, color: "var(--text-1)" }}>
+                    R${report.totalReceita.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                  </div>
+                </Card>
               </div>
-            </Card>
-          </div>
 
-          <Card>
-            <SectionTitle accent="#38bdf8">Detalhamento por cor/tamanho</SectionTitle>
-            {report.breakdown.length === 0 ? (
-              <div style={{ fontSize: 12, color: "var(--text-4)", padding: "12px 0" }}>
-                Nenhuma venda desse produto no período selecionado.
-              </div>
-            ) : (
-              <div style={{ overflowX: "auto" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
-                  <thead>
-                    <tr style={{ textAlign: "left", color: "var(--text-4)" }}>
-                      <th style={{ padding: "8px 10px" }}>Cor</th>
-                      <th style={{ padding: "8px 10px" }}>Tamanho</th>
-                      <th style={{ padding: "8px 10px" }}>Peças</th>
-                      <th style={{ padding: "8px 10px" }}>Receita</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {report.breakdown.map((row, i) => (
-                      <tr key={i} style={{ borderTop: "1px solid var(--surface-5)" }}>
-                        <td style={{ padding: "8px 10px", color: "var(--text-2)" }}>{row.cor}</td>
-                        <td style={{ padding: "8px 10px", color: "var(--text-2)" }}>{row.tamanho}</td>
-                        <td style={{ padding: "8px 10px", color: "var(--text-2)" }}>{row.pecas}</td>
-                        <td style={{ padding: "8px 10px", color: "var(--text-2)" }}>
-                          R${row.receita.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                        </td>
+              <Card>
+                <SectionTitle accent="#38bdf8">Detalhamento por cor/tamanho</SectionTitle>
+                {report.breakdown.length === 0 ? (
+                  <div style={{ fontSize: 12, color: "var(--text-4)", padding: "12px 0" }}>
+                    Nenhuma venda desse produto no período selecionado.
+                  </div>
+                ) : (
+                  <div style={{ overflowX: "auto" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+                      <thead>
+                        <tr style={{ textAlign: "left", color: "var(--text-4)" }}>
+                          <th style={{ padding: "8px 10px" }}>Cor</th>
+                          <th style={{ padding: "8px 10px" }}>Tamanho</th>
+                          <th style={{ padding: "8px 10px" }}>Peças</th>
+                          <th style={{ padding: "8px 10px" }}>Receita</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {report.breakdown.map((row, i) => (
+                          <tr key={i} style={{ borderTop: "1px solid var(--surface-5)" }}>
+                            <td style={{ padding: "8px 10px", color: "var(--text-2)" }}>{row.cor}</td>
+                            <td style={{ padding: "8px 10px", color: "var(--text-2)" }}>{row.tamanho}</td>
+                            <td style={{ padding: "8px 10px", color: "var(--text-2)" }}>{row.pecas}</td>
+                            <td style={{ padding: "8px 10px", color: "var(--text-2)" }}>
+                              R${row.receita.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </Card>
+            </>
+          )}
+
+          {tipo === "estoque" && (
+            <Card>
+              <SectionTitle accent="#34d399">Estoque atual por cor/tamanho</SectionTitle>
+              {estoqueCarregando ? (
+                <div style={{ fontSize: 12, color: "var(--text-4)", padding: "12px 0" }}>Carregando...</div>
+              ) : estoqueRows.length === 0 ? (
+                <div style={{ fontSize: 12, color: "var(--text-4)", padding: "12px 0" }}>
+                  Nenhuma linha de estoque cadastrada pra esse produto.
+                </div>
+              ) : (
+                <div style={{ overflowX: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+                    <thead>
+                      <tr style={{ textAlign: "left", color: "var(--text-4)" }}>
+                        <th style={{ padding: "8px 10px" }}>Cor</th>
+                        <th style={{ padding: "8px 10px" }}>Tamanho</th>
+                        <th style={{ padding: "8px 10px" }}>Quantidade</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </Card>
+                    </thead>
+                    <tbody>
+                      {estoqueRows.map((row, i) => (
+                        <tr key={i} style={{ borderTop: "1px solid var(--surface-5)" }}>
+                          <td style={{ padding: "8px 10px", color: "var(--text-2)" }}>{row.colors?.name || "-"}</td>
+                          <td style={{ padding: "8px 10px", color: "var(--text-2)" }}>{row.sizes?.name || "-"}</td>
+                          <td style={{ padding: "8px 10px", color: "var(--text-2)" }}>{row.quantity}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </Card>
+          )}
         </>
       )}
     </div>
