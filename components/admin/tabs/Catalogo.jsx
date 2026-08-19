@@ -52,6 +52,90 @@ async function callApi(path, body) {
   return json;
 }
 
+const emptyNovoProduto = { name: "", category: "", material: "", sku: "", price: "", description: "", photo_url: "" };
+
+function NovoProdutoForm({ cores, tamanhos, onCancel, onCreated }) {
+  const [form, setForm] = useState(emptyNovoProduto);
+  const [variantes, setVariantes] = useState([{ color_id: "", size_id: "", quantity: "" }]);
+  const [saving, setSaving] = useState(false);
+  const [erro, setErro] = useState("");
+
+  function setVariante(i, campo, valor) {
+    setVariantes((prev) => prev.map((v, idx) => (idx === i ? { ...v, [campo]: valor } : v)));
+  }
+
+  async function handleCriar() {
+    setSaving(true);
+    setErro("");
+    try {
+      await callApi("/api/admin/produtos/criar", {
+        ...form,
+        variants: variantes
+          .filter((v) => v.color_id && v.size_id)
+          .map((v) => ({ color_id: v.color_id, size_id: v.size_id, quantity: v.quantity === "" ? 0 : Number(v.quantity) })),
+      });
+      onCreated();
+    } catch (err) {
+      setErro(err.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Card style={{ marginBottom: 16 }}>
+      <SectionTitle accent="#818cf8">Novo produto</SectionTitle>
+      {erro && (
+        <div style={{ marginBottom: 12, padding: "8px 12px", borderRadius: 8, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)", color: "#fca5a5", fontSize: 12 }}>
+          ⚠️ {erro}
+        </div>
+      )}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
+        <input placeholder="Nome" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} style={inputStyle} />
+        <input placeholder="Categoria" value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))} style={inputStyle} />
+        <input placeholder="Material" value={form.material} onChange={(e) => setForm((f) => ({ ...f, material: e.target.value }))} style={inputStyle} />
+        <input placeholder="SKU (opcional)" value={form.sku} onChange={(e) => setForm((f) => ({ ...f, sku: e.target.value }))} style={inputStyle} />
+        <input type="number" step="0.01" placeholder="Preço" value={form.price} onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))} style={inputStyle} />
+        <input placeholder="URL da foto (opcional)" value={form.photo_url} onChange={(e) => setForm((f) => ({ ...f, photo_url: e.target.value }))} style={inputStyle} />
+      </div>
+      <textarea placeholder="Descrição (opcional)" value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} style={{ ...inputStyle, width: "100%", minHeight: 60, marginBottom: 12 }} />
+
+      <div style={{ fontSize: 11, color: "var(--text-4)", marginBottom: 8 }}>Variantes (cor / tamanho / quantidade em estoque)</div>
+      {variantes.map((v, i) => (
+        <div key={i} style={{ display: "flex", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
+          <select value={v.color_id} onChange={(e) => setVariante(i, "color_id", e.target.value)} style={inputStyle}>
+            <option value="">Cor</option>
+            {cores.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+          <select value={v.size_id} onChange={(e) => setVariante(i, "size_id", e.target.value)} style={inputStyle}>
+            <option value="">Tamanho</option>
+            {tamanhos.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+          </select>
+          <input type="number" placeholder="Qtd" value={v.quantity} onChange={(e) => setVariante(i, "quantity", e.target.value)} style={{ ...inputStyle, width: 80 }} />
+          {variantes.length > 1 && (
+            <button type="button" onClick={() => setVariantes((prev) => prev.filter((_, idx) => idx !== i))} style={{ padding: "6px 10px", borderRadius: 8, border: "none", background: "var(--surface-5)", color: "var(--text-3)", fontSize: 11, cursor: "pointer" }}>Remover</button>
+          )}
+        </div>
+      ))}
+      <button type="button" onClick={() => setVariantes((prev) => [...prev, { color_id: "", size_id: "", quantity: "" }])}
+        style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid var(--surface-7)", background: "transparent", color: "var(--text-3)", fontSize: 11, cursor: "pointer", marginBottom: 14 }}>
+        + Variante
+      </button>
+
+      <div style={{ display: "flex", gap: 10 }}>
+        <button onClick={handleCriar} disabled={saving}
+          style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#c084fc,#818cf8)", color: "white", fontSize: 12, fontWeight: 700, cursor: saving ? "wait" : "pointer" }}>
+          {saving ? "Criando..." : "Criar produto"}
+        </button>
+        <button onClick={onCancel} disabled={saving}
+          style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid var(--surface-7)", background: "transparent", color: "var(--text-3)", fontSize: 12, cursor: "pointer" }}>
+          Cancelar
+        </button>
+      </div>
+    </Card>
+  );
+}
+
 export default function Catalogo() {
   const [produtos, setProdutos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -61,6 +145,14 @@ export default function Catalogo() {
   const [errorMsg, setErrorMsg] = useState("");
   const [formOpenIds, setFormOpenIds] = useState(new Set());
   const [precoInputs, setPrecoInputs] = useState({});
+  const [novoAberto, setNovoAberto] = useState(false);
+  const [cores, setCores] = useState([]);
+  const [tamanhos, setTamanhos] = useState([]);
+
+  useEffect(() => {
+    supabase.from("colors").select("id, name").order("name").then(({ data }) => setCores(data || []));
+    supabase.from("sizes").select("id, name").order("name").then(({ data }) => setTamanhos(data || []));
+  }, []);
 
   async function loadProdutos() {
     setLoading(true);
@@ -199,14 +291,29 @@ export default function Catalogo() {
     <div style={{ maxWidth: 980, margin: "0 auto" }}>
       <Card style={{ marginBottom: 16 }}>
         <SectionTitle>Catálogo</SectionTitle>
-        <input
-          type="text"
-          placeholder="Buscar produto por nome..."
-          value={busca}
-          onChange={(e) => setBusca(e.target.value)}
-          style={{ ...inputStyle, width: "100%", maxWidth: 320 }}
-        />
+        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+          <input
+            type="text"
+            placeholder="Buscar produto por nome..."
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+            style={{ ...inputStyle, flex: 1, minWidth: 200, maxWidth: 320 }}
+          />
+          <button onClick={() => setNovoAberto((v) => !v)}
+            style={{ padding: "8px 14px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#c084fc,#818cf8)", color: "white", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+            {novoAberto ? "Fechar" : "+ Novo produto"}
+          </button>
+        </div>
       </Card>
+
+      {novoAberto && (
+        <NovoProdutoForm
+          cores={cores}
+          tamanhos={tamanhos}
+          onCancel={() => setNovoAberto(false)}
+          onCreated={() => { setNovoAberto(false); loadProdutos(); }}
+        />
+      )}
 
       {errorMsg && (
         <div style={{ marginBottom: 14, padding: "10px 14px", borderRadius: 10, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)", color: "#fca5a5", fontSize: 12 }}>
