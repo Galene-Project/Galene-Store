@@ -253,7 +253,7 @@ export default function Catalogo() {
     setLoading(true);
     const { data, error } = await supabase
       .from("products")
-      .select("id, name, category, price, price_original, discount_percentage, featured, instagram_urls, is_launch")
+      .select("id, name, category, price, price_original, discount_percentage, featured, instagram_urls, is_launch, product_media(id, type, url, storage_path)")
       .eq("is_active", true)
       .order("category")
       .order("name");
@@ -343,6 +343,44 @@ export default function Catalogo() {
     try {
       await callApi("/api/admin/produtos/lancamento", { productId, isLaunch });
       aplicarUpdateLocal(productId, { is_launch: isLaunch });
+    } catch (err) {
+      setErrorMsg(err.message);
+    } finally {
+      setSavingId(null);
+    }
+  }
+
+  async function handleUploadMedia(productId, file) {
+    setSavingId(productId);
+    setErrorMsg("");
+    try {
+      const type = file.type.startsWith("video") ? "video" : "image";
+      const path = `${productId}/${Date.now()}-${file.name}`;
+      const { error: uploadErr } = await supabase.storage.from("product-media").upload(path, file);
+      if (uploadErr) throw uploadErr;
+      const { data: pub } = supabase.storage.from("product-media").getPublicUrl(path);
+      const { data: row, error: insertErr } = await supabase
+        .from("product_media")
+        .insert({ product_id: productId, type, url: pub.publicUrl, storage_path: path })
+        .select("id, type, url, storage_path")
+        .single();
+      if (insertErr) throw insertErr;
+      setProdutos((prev) => prev.map((pr) => (pr.id === productId ? { ...pr, product_media: [...(pr.product_media || []), row] } : pr)));
+    } catch (err) {
+      setErrorMsg(err.message);
+    } finally {
+      setSavingId(null);
+    }
+  }
+
+  async function handleDeleteMedia(productId, media) {
+    setSavingId(productId);
+    setErrorMsg("");
+    try {
+      await supabase.storage.from("product-media").remove([media.storage_path]);
+      const { error: delErr } = await supabase.from("product_media").delete().eq("id", media.id);
+      if (delErr) throw delErr;
+      setProdutos((prev) => prev.map((pr) => (pr.id === productId ? { ...pr, product_media: (pr.product_media || []).filter((m) => m.id !== media.id) } : pr)));
     } catch (err) {
       setErrorMsg(err.message);
     } finally {
@@ -487,6 +525,35 @@ export default function Catalogo() {
               {savingId === p.id ? "Salvando..." : "Salvar"}
             </button>
           </div>
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 11, color: "var(--text-4)" }}>Mídia própria:</span>
+          {(p.product_media || []).map((m) => (
+            <div key={m.id} style={{ position: "relative", width: 40, height: 40, borderRadius: 6, overflow: "hidden", flexShrink: 0 }}>
+              {m.type === "video" ? (
+                <video src={m.url} muted style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              ) : (
+                <img src={m.url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              )}
+              <button
+                onClick={() => handleDeleteMedia(p.id, m)}
+                disabled={savingId === p.id}
+                style={{ position: "absolute", top: 0, right: 0, width: 16, height: 16, border: "none", borderRadius: "0 0 0 6px", background: "rgba(0,0,0,0.6)", color: "white", fontSize: 10, cursor: "pointer", lineHeight: "16px", padding: 0 }}>
+                ×
+              </button>
+            </div>
+          ))}
+          <label style={{ padding: "6px 10px", borderRadius: 8, border: "1px dashed var(--surface-7)", background: "transparent", color: "var(--text-3)", fontSize: 11, cursor: savingId === p.id ? "wait" : "pointer" }}>
+            + Upload
+            <input
+              type="file"
+              accept="image/*,video/*"
+              disabled={savingId === p.id}
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleUploadMedia(p.id, f); e.target.value = ""; }}
+              style={{ display: "none" }}
+            />
+          </label>
         </div>
       </div>
     );

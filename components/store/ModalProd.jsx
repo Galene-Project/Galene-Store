@@ -67,6 +67,18 @@ export default function ModalProd({ prod, onClose, onAdd }) {
             <button onClick={onClose} aria-label="Fechar" style={{ background: "none", border: `1.5px solid ${T.border}`, borderRadius: 8, width: 36, height: 36, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: T.ink3, fontSize: 18, flexShrink: 0 }}>✕</button>
           </div>
 
+          {prod.media?.length > 0 && (
+            <div style={{ marginBottom: prod.instagramUrls?.length > 0 ? 12 : 24, display: "flex", flexDirection: "column", gap: 12, alignItems: "center" }}>
+              {[...prod.media].sort((a, b) => Number(b.type === "video") - Number(a.type === "video")).map((m) => (
+                m.type === "video" ? (
+                  <video key={m.url} src={m.url} controls style={{ width: "100%", maxWidth: 400, borderRadius: 10 }} />
+                ) : (
+                  <img key={m.url} src={m.url} alt={prod.nome} style={{ width: "100%", maxWidth: 400, borderRadius: 10, objectFit: "cover" }} />
+                )
+              ))}
+            </div>
+          )}
+
           {prod.instagramUrls?.length > 0 && (
             <div style={{ marginBottom: 24, display: "flex", flexDirection: "column", gap: 16, alignItems: "center" }}>
               {sortVideoFirst(prod.instagramUrls).map((url) => <InstagramEmbed key={url} url={url} />)}

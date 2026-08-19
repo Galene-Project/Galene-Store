@@ -34,7 +34,8 @@ export default function GaleneStore() {
           .select(`
             id, name, category, material, price, price_original, discount_percentage, description, featured, tag, instagram_urls, is_launch,
             product_colors ( colors ( name ) ),
-            stock ( color_id, size_id, colors ( name ), sizes ( name ) )
+            stock ( color_id, size_id, colors ( name ), sizes ( name ) ),
+            product_media ( type, url )
           `)
           .eq("is_active", true),
         supabase.from("estoque_status_publico").select("product_id, color_id, size_id, status").limit(5000),
@@ -56,6 +57,7 @@ export default function GaleneStore() {
         tag: p.tag,
         instagramUrls: p.instagram_urls || [],
         isLaunch: p.is_launch,
+        media: p.product_media || [],
         desc: p.description,
         cores: [...new Set(p.product_colors.map((pc) => pc.colors.name))],
         tamanhos: sortSizes([...new Set(
@@ -66,7 +68,7 @@ export default function GaleneStore() {
       }));
 
       const mapped = mapProdutos(baseProdutos, statusRows || [], TAMANHOS_VISIVEIS)
-        .map(({ product_colors, stock, ...p }) => p)
+        .map(({ product_colors, stock, product_media, ...p }) => p)
         .filter((p) => p.cores.length && p.tamanhos.length);
       setProdutos(mapped);
       setLoading(false);
