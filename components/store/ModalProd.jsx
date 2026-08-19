@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Sil from "./Sil";
 import InstagramEmbed from "./InstagramEmbed";
+import MediaCarousel from "./MediaCarousel";
 import { sortVideoFirst } from "../../lib/instagramUrl";
 import { T, COR_HEX, fmt, sortSizes } from "../../lib/galeneTheme";
 import { useWindowWidth } from "../../hooks/useWindowWidth";
@@ -67,28 +68,14 @@ export default function ModalProd({ prod, onClose, onAdd }) {
             <button onClick={onClose} aria-label="Fechar" style={{ background: "none", border: `1.5px solid ${T.border}`, borderRadius: 8, width: 36, height: 36, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: T.ink3, fontSize: 18, flexShrink: 0 }}>✕</button>
           </div>
 
-          {prod.media?.length > 0 && (
-            <div style={{ marginBottom: prod.instagramUrls?.length > 0 ? 12 : 24, display: "flex", flexDirection: "column", gap: 12, alignItems: "center" }}>
-              {[...prod.media].sort((a, b) => Number(b.type === "video") - Number(a.type === "video")).map((m) => (
-                m.type === "video" ? (
-                  <video key={m.url} src={m.url} controls style={{ width: "100%", maxWidth: 400, borderRadius: 10 }} />
-                ) : (
-                  <img key={m.url} src={m.url} alt={prod.nome} style={{ width: "100%", maxWidth: 400, borderRadius: 10, objectFit: "cover" }} />
-                )
-              ))}
-            </div>
-          )}
-
-          {prod.instagramUrls?.length > 0 && (
-            <div style={{ marginBottom: 24, display: "flex", flexDirection: "column", gap: 16, alignItems: "center" }}>
-              {sortVideoFirst(prod.instagramUrls).map((url) => <InstagramEmbed key={url} url={url} />)}
-            </div>
-          )}
-
           <div style={{ display: "flex", gap: 16, marginBottom: 24 }}>
-            <div style={{ width: 110, height: 120, background: `linear-gradient(135deg,${T.bg2},${T.bg3})`, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <Sil cat={prod.cat} cor={COR_HEX[cor] || T.gold} sz={92} />
-            </div>
+            {prod.media?.length > 0 ? (
+              <MediaCarousel items={[...prod.media].sort((a, b) => Number(b.type === "video") - Number(a.type === "video"))} />
+            ) : (
+              <div style={{ width: 110, height: 120, background: `linear-gradient(135deg,${T.bg2},${T.bg3})`, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <Sil cat={prod.cat} cor={COR_HEX[cor] || T.gold} sz={92} />
+              </div>
+            )}
             <div style={{ flex: 1 }}>
               {prod.precoOriginal && (
                 <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 13, color: T.ink4, textDecoration: "line-through" }}>
@@ -212,6 +199,12 @@ export default function ModalProd({ prod, onClose, onAdd }) {
           <button onClick={handleAdd} disabled={!sel.length} style={{ width: "100%", height: 52, background: sel.length ? T.goldDk : T.bg2, border: "none", borderRadius: 12, cursor: sel.length ? "pointer" : "not-allowed", fontFamily: "'Lato',sans-serif", fontSize: 13, fontWeight: 700, color: sel.length ? "white" : T.ink4, letterSpacing: 1, transition: "all .2s" }}>
             {sel.length ? `Adicionar ao Pedido — ${fmt(totVal)}` : "Selecione cor e tamanho"}
           </button>
+
+          {prod.instagramUrls?.length > 0 && (
+            <div style={{ marginTop: 24, paddingTop: 20, borderTop: `1px solid ${T.border}`, display: "flex", flexDirection: "column", gap: 16, alignItems: "center" }}>
+              {sortVideoFirst(prod.instagramUrls).map((url) => <InstagramEmbed key={url} url={url} />)}
+            </div>
+          )}
         </div>
       </div>
     </div>
