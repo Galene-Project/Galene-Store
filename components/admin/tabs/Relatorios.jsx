@@ -8,25 +8,6 @@ const selectStyle = {
   background: "var(--surface-3)", color: "var(--text-2)", fontSize: 12,
 };
 
-function toISODate(d) { return d.toISOString().slice(0, 10); }
-
-function presetRange(preset) {
-  const today = new Date();
-  if (preset === "7d") {
-    const start = new Date(today); start.setDate(start.getDate() - 7);
-    return { startDate: toISODate(start), endDate: toISODate(today) };
-  }
-  if (preset === "30d") {
-    const start = new Date(today); start.setDate(start.getDate() - 30);
-    return { startDate: toISODate(start), endDate: toISODate(today) };
-  }
-  if (preset === "mes") {
-    const start = new Date(today.getFullYear(), today.getMonth(), 1);
-    return { startDate: toISODate(start), endDate: toISODate(today) };
-  }
-  return { startDate: "", endDate: "" }; // "todo"
-}
-
 export default function Relatorios({ data }) {
   const { items = [], orders = [] } = data || {};
   const [produtos, setProdutos] = useState([]);
@@ -78,12 +59,6 @@ export default function Relatorios({ data }) {
     [produtos, produtoId]
   );
 
-  function aplicarPreset(preset) {
-    const { startDate, endDate } = presetRange(preset);
-    setDataInicio(startDate);
-    setDataFim(endDate);
-  }
-
   const report = useMemo(
     () => productReport(items, orders, { productId: produtoId, startDate: dataInicio || null, endDate: dataFim || null }),
     [items, orders, produtoId, dataInicio, dataFim]
@@ -94,19 +69,19 @@ export default function Relatorios({ data }) {
       <Card style={{ marginBottom: 16 }}>
         <SectionTitle>Relatório por Produto</SectionTitle>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
+          <select value={tipo} onChange={(e) => setTipo(e.target.value)} style={selectStyle}>
+            <option value="vendas">Vendas</option>
+            <option value="estoque">Estoque</option>
+          </select>
+
           <select value={categoria} onChange={(e) => { setCategoria(e.target.value); setProdutoId(""); }} style={selectStyle}>
-            <option value="">Todas as categorias</option>
+            <option value="">Produto: todos</option>
             {categorias.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
 
           <select value={produtoId} onChange={(e) => setProdutoId(e.target.value)} style={{ ...selectStyle, minWidth: 220 }}>
-            <option value="">Selecione um produto</option>
+            <option value="">Tipo de produto</option>
             {produtosFiltrados.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-          </select>
-
-          <select value={tipo} onChange={(e) => setTipo(e.target.value)} style={selectStyle}>
-            <option value="vendas">Vendas</option>
-            <option value="estoque">Estoque</option>
           </select>
         </div>
 
@@ -114,10 +89,6 @@ export default function Relatorios({ data }) {
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
             <input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} style={selectStyle} />
             <input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} style={selectStyle} />
-            <button onClick={() => aplicarPreset("7d")} style={{ ...selectStyle, cursor: "pointer" }}>7 dias</button>
-            <button onClick={() => aplicarPreset("30d")} style={{ ...selectStyle, cursor: "pointer" }}>30 dias</button>
-            <button onClick={() => aplicarPreset("mes")} style={{ ...selectStyle, cursor: "pointer" }}>Mês atual</button>
-            <button onClick={() => aplicarPreset("todo")} style={{ ...selectStyle, cursor: "pointer" }}>Todo período</button>
           </div>
         )}
       </Card>
