@@ -164,25 +164,30 @@ export default function Catalogo() {
         <Toggle checked={formAberto} disabled={savingId === p.id} onChange={(checked) => togglePromocaoCheckbox(p, checked)} label="Promoção" />
 
         <div style={{
-          display: "flex", alignItems: "center", gap: 6,
-          maxWidth: formAberto ? 260 : 0,
-          opacity: formAberto ? 1 : 0,
-          pointerEvents: formAberto ? "auto" : "none",
+          display: "grid",
+          gridTemplateColumns: formAberto ? "1fr" : "0fr",
+          transition: "grid-template-columns 0.25s ease",
           overflow: "hidden",
-          transition: "max-width 0.25s ease, opacity 0.2s ease",
         }}>
-          <input
-            type="number" step="0.01" placeholder="Preço promocional"
-            value={precoInputs[p.id] ?? ""}
-            onChange={(e) => setPrecoInputs((prev) => ({ ...prev, [p.id]: e.target.value }))}
-            style={{ ...inputStyle, width: 130, flexShrink: 0 }}
-          />
-          <button
-            onClick={() => handleSalvarPromocao(p.id)}
-            disabled={savingId === p.id || !precoInputs[p.id]}
-            style={{ padding: "6px 12px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#c084fc,#818cf8)", color: "white", fontSize: 11, fontWeight: 700, cursor: savingId === p.id ? "wait" : "pointer", flexShrink: 0 }}>
-            {savingId === p.id ? "Salvando..." : "Salvar"}
-          </button>
+          <div style={{
+            display: "flex", alignItems: "center", gap: 6, minWidth: 0,
+            opacity: formAberto ? 1 : 0,
+            pointerEvents: formAberto ? "auto" : "none",
+            transition: "opacity 0.2s ease",
+          }}>
+            <input
+              type="number" step="0.01" placeholder="Preço promocional"
+              value={precoInputs[p.id] ?? ""}
+              onChange={(e) => setPrecoInputs((prev) => ({ ...prev, [p.id]: e.target.value }))}
+              style={{ ...inputStyle, width: 130, flexShrink: 0 }}
+            />
+            <button
+              onClick={() => handleSalvarPromocao(p.id)}
+              disabled={savingId === p.id || !precoInputs[p.id]}
+              style={{ padding: "6px 12px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#c084fc,#818cf8)", color: "white", fontSize: 11, fontWeight: 700, cursor: savingId === p.id ? "wait" : "pointer", flexShrink: 0 }}>
+              {savingId === p.id ? "Salvando..." : "Salvar"}
+            </button>
+          </div>
         </div>
 
         <Toggle checked={!!p.featured} disabled={savingId === p.id} onChange={(checked) => handleToggleDestaque(p.id, checked)} label="Destaque" />
