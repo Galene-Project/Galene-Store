@@ -239,7 +239,7 @@ export default function AdminPage() {
       </div>
 
       <div className="admin-content" style={{ padding:"28px 32px", maxWidth:1400, margin:"0 auto" }} key={activeTab}>
-        {!data && activeTab !== "settings" ? (
+        {!data && activeTab !== "settings" && activeTab !== "catalogo" ? (
           <div style={{ textAlign:"center", padding:"80px 0", color:"var(--text-4)", fontSize:13 }}>
             Carregando dados do painel...
           </div>
