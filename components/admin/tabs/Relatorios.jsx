@@ -1,6 +1,7 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { productReport } from "../../../lib/reportMetrics";
 import { SectionTitle, Card } from "../shared";
+import { supabase } from "../../../lib/supabaseClient";
 
 const selectStyle = {
   padding: "8px 12px", borderRadius: 8, border: "1px solid var(--surface-7)",
@@ -23,66 +24,95 @@ function presetRange(preset) {
     const start = new Date(today.getFullYear(), today.getMonth(), 1);
     return { startDate: toISODate(start), endDate: toISODate(today) };
   }
-  return { startDate: null, endDate: null }; // "todo"
+  return { startDate: "", endDate: "" }; // "todo"
 }
 
 export default function Relatorios({ data }) {
   const { items = [], orders = [] } = data || {};
-  const [productName, setProductName] = useState("");
-  const [preset, setPreset] = useState("todo");
-  const [customStart, setCustomStart] = useState("");
-  const [customEnd, setCustomEnd] = useState("");
+  const [produtos, setProdutos] = useState([]);
+  const [categoria, setCategoria] = useState("");
+  const [produtoId, setProdutoId] = useState("");
+  const [dataInicio, setDataInicio] = useState("");
+  const [dataFim, setDataFim] = useState("");
 
-  const produtos = useMemo(() => {
-    const set = new Set();
-    items.forEach((i) => { if (i.products?.name) set.add(i.products.name); });
+  useEffect(() => {
+    supabase
+      .from("products")
+      .select("id, name, category, sku, material, price")
+      .eq("is_active", true)
+      .order("category")
+      .order("name")
+      .then(({ data: rows }) => setProdutos(rows || []));
+  }, []);
+
+  const categorias = useMemo(() => {
+    const set = new Set(produtos.map((p) => p.category).filter(Boolean));
     return [...set].sort((a, b) => a.localeCompare(b, "pt-BR"));
-  }, [items]);
+  }, [produtos]);
 
-  const { startDate, endDate } = preset === "custom"
-    ? { startDate: customStart || null, endDate: customEnd || null }
-    : presetRange(preset);
+  const produtosFiltrados = useMemo(() => {
+    return categoria ? produtos.filter((p) => p.category === categoria) : produtos;
+  }, [produtos, categoria]);
+
+  const produtoSelecionado = useMemo(
+    () => produtos.find((p) => p.id === produtoId) || null,
+    [produtos, produtoId]
+  );
+
+  function aplicarPreset(preset) {
+    const { startDate, endDate } = presetRange(preset);
+    setDataInicio(startDate);
+    setDataFim(endDate);
+  }
 
   const report = useMemo(
-    () => productReport(items, orders, { productName, startDate, endDate }),
-    [items, orders, productName, startDate, endDate]
+    () => productReport(items, orders, { productId: produtoId, startDate: dataInicio || null, endDate: dataFim || null }),
+    [items, orders, produtoId, dataInicio, dataFim]
   );
 
   return (
     <div style={{ maxWidth: 900, margin: "0 auto" }}>
       <Card style={{ marginBottom: 16 }}>
         <SectionTitle>Relatório por Produto</SectionTitle>
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-          <select value={productName} onChange={(e) => setProductName(e.target.value)} style={{ ...selectStyle, minWidth: 220 }}>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
+          <select value={categoria} onChange={(e) => { setCategoria(e.target.value); setProdutoId(""); }} style={selectStyle}>
+            <option value="">Todas as categorias</option>
+            {categorias.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+
+          <select value={produtoId} onChange={(e) => setProdutoId(e.target.value)} style={{ ...selectStyle, minWidth: 220 }}>
             <option value="">Selecione um produto</option>
-            {produtos.map((p) => <option key={p} value={p}>{p}</option>)}
+            {produtosFiltrados.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
+        </div>
 
-          <select value={preset} onChange={(e) => setPreset(e.target.value)} style={selectStyle}>
-            <option value="todo">Todo período</option>
-            <option value="7d">Últimos 7 dias</option>
-            <option value="30d">Últimos 30 dias</option>
-            <option value="mes">Mês atual</option>
-            <option value="custom">Intervalo customizado</option>
-          </select>
-
-          {preset === "custom" && (
-            <>
-              <input type="date" value={customStart} onChange={(e) => setCustomStart(e.target.value)} style={selectStyle} />
-              <input type="date" value={customEnd} onChange={(e) => setCustomEnd(e.target.value)} style={selectStyle} />
-            </>
-          )}
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+          <input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} style={selectStyle} />
+          <input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} style={selectStyle} />
+          <button onClick={() => aplicarPreset("7d")} style={{ ...selectStyle, cursor: "pointer" }}>7 dias</button>
+          <button onClick={() => aplicarPreset("30d")} style={{ ...selectStyle, cursor: "pointer" }}>30 dias</button>
+          <button onClick={() => aplicarPreset("mes")} style={{ ...selectStyle, cursor: "pointer" }}>Mês atual</button>
+          <button onClick={() => aplicarPreset("todo")} style={{ ...selectStyle, cursor: "pointer" }}>Todo período</button>
         </div>
       </Card>
 
-      {!productName && (
+      {!produtoId && (
         <div style={{ textAlign: "center", padding: "40px 0", color: "var(--text-4)", fontSize: 12 }}>
           Selecione um produto pra ver o relatório.
         </div>
       )}
 
-      {productName && (
+      {produtoId && produtoSelecionado && (
         <>
+          <Card style={{ marginBottom: 16 }}>
+            <SectionTitle accent="#818cf8">Dados do produto</SectionTitle>
+            <div className="admin-chart-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, fontSize: 12 }}>
+              <div><span style={{ color: "var(--text-4)" }}>SKU: </span><span style={{ color: "var(--text-2)" }}>{produtoSelecionado.sku || "—"}</span></div>
+              <div><span style={{ color: "var(--text-4)" }}>Material: </span><span style={{ color: "var(--text-2)" }}>{produtoSelecionado.material || "—"}</span></div>
+              <div><span style={{ color: "var(--text-4)" }}>Preço atual: </span><span style={{ color: "var(--text-2)" }}>R${Number(produtoSelecionado.price).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span></div>
+            </div>
+          </Card>
+
           <div className="admin-chart-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
             <Card>
               <div style={{ fontSize: 11, color: "var(--text-4)", marginBottom: 6 }}>Peças vendidas</div>
