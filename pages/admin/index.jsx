@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import Overview     from "../../components/admin/tabs/Overview";
 import Vendas       from "../../components/admin/tabs/Vendas";
 import Estoque      from "../../components/admin/tabs/Estoque";
+import Catalogo     from "../../components/admin/tabs/Catalogo";
 import Pedidos      from "../../components/admin/tabs/Pedidos";
 import Relatorios   from "../../components/admin/tabs/Relatorios";
 import LoginPage    from "../../components/admin/LoginPage";
@@ -15,6 +16,7 @@ const TABS = [
   { id:"overview",  label:"Visão Geral",  icon:"📊" },
   { id:"vendas",    label:"Vendas",       icon:"💰" },
   { id:"estoque",   label:"Estoque",      icon:"📦" },
+  { id:"catalogo",  label:"Catálogo",     icon:"👗" },
   { id:"pedidos",   label:"Pedidos",      icon:"🛒" },
   { id:"relatorios", label:"Relatórios",  icon:"📈" },
   { id:"settings",  label:"Integrações",  icon:"⚙️" },
@@ -251,6 +253,7 @@ export default function AdminPage() {
           </>
         )}
         {activeTab==="settings" && <SettingsPage />}
+        {activeTab==="catalogo" && <Catalogo />}
       </div>
 
       {showLogout && (
