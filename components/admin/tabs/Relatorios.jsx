@@ -40,15 +40,18 @@ export default function Relatorios({ data }) {
 
   useEffect(() => {
     if (tipo !== "estoque" || !produtoId) { setEstoqueRows([]); return; }
+    let cancelled = false;
     setEstoqueCarregando(true);
     supabase
       .from("stock")
       .select("quantity, colors(name), sizes(name)")
       .eq("product_id", produtoId)
       .then(({ data: rows }) => {
+        if (cancelled) return;
         setEstoqueRows([...(rows || [])].sort((a, b) => b.quantity - a.quantity));
         setEstoqueCarregando(false);
       });
+    return () => { cancelled = true; };
   }, [tipo, produtoId]);
 
   useEffect(() => {
