@@ -4,7 +4,7 @@ import Sidebar from "./Sidebar";
 import ModalProd from "./ModalProd";
 import Carrinho from "./Carrinho";
 import { CardDest, Card } from "./Cards";
-import { T, sortSizes } from "../../lib/galeneTheme";
+import { T, CATS, sortSizes } from "../../lib/galeneTheme";
 import { mapProdutos } from "../../lib/catalogo";
 import { useWindowWidth } from "../../hooks/useWindowWidth";
 import { supabase } from "../../lib/supabaseClient";
@@ -75,6 +75,8 @@ export default function GaleneStore() {
   const totPcs = cart.reduce((s, i) => s + i.sel.reduce((a, x) => a + x.qtd, 0), 0);
   const prods = cat === "destaques"
     ? produtos.filter((p) => p.destaque)
+    : cat === "promocoes"
+    ? produtos.filter((p) => p.precoOriginal != null)
     : produtos.filter((p) => p.cat === cat);
 
   const addToCart = useCallback((prod, sel) => {
@@ -222,7 +224,7 @@ export default function GaleneStore() {
               <div style={{ marginBottom: 22, paddingBottom: 16, borderBottom: `1px solid ${T.border}` }}>
                 <div style={{ display: "flex", alignItems: "baseline", gap: 14 }}>
                   <h2 style={{ margin: 0, fontFamily: "'Cormorant Garamond',serif", fontSize: mob ? 26 : 32, color: T.ink, fontWeight: 600 }}>
-                    {cat}
+                    {CATS.find((c) => c.id === cat)?.label || cat}
                   </h2>
                   <span style={{ fontFamily: "'Lato',sans-serif", fontSize: 11, color: T.ink4 }}>
                     {prods.length} produtos

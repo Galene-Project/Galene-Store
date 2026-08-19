@@ -1,9 +1,12 @@
 import { T, CATS } from "../../lib/galeneTheme";
 
 export default function Sidebar({ cat, setCat, mobile, onClose, produtos, minOrder }) {
-  const counts = { destaques: produtos.filter((p) => p.destaque).length };
+  const counts = {
+    destaques: produtos.filter((p) => p.destaque).length,
+    promocoes: produtos.filter((p) => p.precoOriginal != null).length,
+  };
   CATS.forEach((c) => {
-    if (c.id !== "destaques") counts[c.id] = produtos.filter((p) => p.cat === c.id).length;
+    if (c.id !== "destaques" && c.id !== "promocoes") counts[c.id] = produtos.filter((p) => p.cat === c.id).length;
   });
 
   return (
