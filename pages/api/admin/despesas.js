@@ -68,6 +68,9 @@ export default async function handler(req, res) {
     if (action === 'atualizar_recorrente') {
       const { id, ativo } = req.body || {};
       if (!id) return res.status(400).json({ error: { code: 'VALIDATION_FAILED', message: 'id obrigatório.', details: [] } });
+      if (typeof ativo !== 'boolean') {
+        return res.status(400).json({ error: { code: 'VALIDATION_FAILED', message: 'ativo obrigatório (true ou false).', details: [] } });
+      }
 
       let parsed;
       try {
@@ -78,7 +81,7 @@ export default async function handler(req, res) {
 
       const { error } = await supabaseAdmin
         .from('recurring_expenses')
-        .update({ ...parsed, ativo: ativo !== false, updated_at: new Date().toISOString() })
+        .update({ ...parsed, ativo, updated_at: new Date().toISOString() })
         .eq('id', id);
       if (error) throw error;
       return res.status(200).json({ ok: true });
