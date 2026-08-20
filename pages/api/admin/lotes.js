@@ -70,7 +70,12 @@ export default async function handler(req, res) {
         })
         .select('id')
         .single();
-      if (runErr) throw runErr;
+      if (runErr) {
+        if (!product_id) {
+          await supabaseAdmin.from('products').delete().eq('id', productId);
+        }
+        throw runErr;
+      }
 
       return res.status(200).json({ ok: true, productionRunId: run.id, productId, custoUnitario: parsedRun.custo_unitario });
     }
