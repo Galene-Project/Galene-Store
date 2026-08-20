@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { T } from "../../lib/galeneTheme";
 
-export default function MediaCarousel({ items, width = 78, height = 88 }) {
+// Mesmo tamanho da foto nos cards de produto (components/store/Cards.jsx,
+// componente Card: height 190, grid minmax(200px,1fr)) — fixo, não escala
+// com a largura do modal, senão fica desproporcional no desktop.
+export default function MediaCarousel({ items, width = 200, height = 190 }) {
   const [i, setI] = useState(0);
   if (!items.length) return null;
   const atual = items[i];
-  const arrowSize = width < 80 ? 18 : 26;
+  const arrowSize = 26;
 
   const prev = () => setI((p) => (p === 0 ? items.length - 1 : p - 1));
   const next = () => setI((p) => (p === items.length - 1 ? 0 : p + 1));

@@ -3,6 +3,10 @@ import Sil from "./Sil";
 import { T, COR_HEX, fmt } from "../../lib/galeneTheme";
 import { useWindowWidth } from "../../hooks/useWindowWidth";
 
+function cardImageUrl(prod) {
+  return prod.media?.find((m) => m.type === "image")?.url || null;
+}
+
 export function CardDest({ prod, onClick }) {
   const [hov, setHov] = useState(false);
   const [ci, setCi] = useState(0);
@@ -34,8 +38,14 @@ export function CardDest({ prod, onClick }) {
         </div>
       )}
       <div style={{ height: mob ? 240 : 300, background: `linear-gradient(160deg,${T.bg2},${T.bg3})`, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", inset: 0, backgroundImage: `radial-gradient(circle at 70% 30%, ${T.goldXlt}40 0%, transparent 60%)` }} />
-        <Sil cat={prod.cat} cor={COR_HEX[prod.cores[ci]] || T.gold} sz={mob ? 190 : 240} />
+        {cardImageUrl(prod) ? (
+          <img src={cardImageUrl(prod)} alt={prod.nome} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        ) : (
+          <>
+            <div style={{ position: "absolute", inset: 0, backgroundImage: `radial-gradient(circle at 70% 30%, ${T.goldXlt}40 0%, transparent 60%)` }} />
+            <Sil cat={prod.cat} cor={COR_HEX[prod.cores[ci]] || T.gold} sz={mob ? 190 : 240} />
+          </>
+        )}
         <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 80, background: `linear-gradient(to top, ${T.panel}CC, transparent)` }} />
         <div style={{ position: "absolute", bottom: 16, left: 0, right: 0, display: "flex", justifyContent: "center", gap: 6 }}>
           {prod.cores.map((c, i) => (
@@ -109,7 +119,11 @@ export function Card({ prod, onClick }) {
         </div>
       )}
       <div style={{ height: 190, background: `linear-gradient(160deg,${T.bg2},${T.bg3})`, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
-        <Sil cat={prod.cat} cor={COR_HEX[prod.cores[ci]] || T.gold} sz={155} />
+        {cardImageUrl(prod) ? (
+          <img src={cardImageUrl(prod)} alt={prod.nome} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        ) : (
+          <Sil cat={prod.cat} cor={COR_HEX[prod.cores[ci]] || T.gold} sz={155} />
+        )}
         <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 50, background: `linear-gradient(to top, ${T.panel}CC, transparent)` }} />
         <div style={{ position: "absolute", bottom: 12, left: 0, right: 0, display: "flex", justifyContent: "center", gap: 5 }}>
           {prod.cores.slice(0, 5).map((c, i) => (
