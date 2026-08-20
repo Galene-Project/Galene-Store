@@ -117,7 +117,7 @@ export default function AdminPage() {
         }
         .admin-root[data-theme="light"] {
           --bg-grad: linear-gradient(135deg,#f8f7fc 0%,#f3f0fa 50%,#eef2fb 100%);
-          --text-1:#0f172a; --text-2:#1e293b; --text-3:#475569; --text-4:#64748b; --text-5:#94a3b8;
+          --text-1:#0f172a; --text-2:#1e293b; --text-3:#334155; --text-4:#52606d; --text-5:#64748b;
           --panel-solid:#ffffff;
           --surface-1:rgba(255,255,255,0.75); --surface-2:rgba(15,23,42,0.035);
           --surface-3:rgba(15,23,42,0.05); --surface-4:rgba(15,23,42,0.06);
