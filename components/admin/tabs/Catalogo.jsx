@@ -529,7 +529,7 @@ export default function Catalogo() {
 
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
           <span style={{ fontSize: 11, color: "var(--text-4)" }}>Mídia própria:</span>
-          {(p.product_media || []).map((m) => (
+          {[...(p.product_media || [])].sort((a, b) => Number(b.type === "video") - Number(a.type === "video")).map((m) => (
             <div key={m.id} style={{ position: "relative", width: 40, height: 40, borderRadius: 6, overflow: "hidden", flexShrink: 0 }}>
               {m.type === "video" ? (
                 <video src={m.url} muted style={{ width: "100%", height: "100%", objectFit: "cover" }} />
