@@ -160,13 +160,23 @@ function DespesasFixasForm({ recurring, onChanged }) {
   }
 
   async function toggleAtivo(r) {
-    await callApi("/api/admin/despesas", { action: "atualizar_recorrente", id: r.id, categoria: r.categoria, subcategoria: r.subcategoria, valor: r.valor, dia_geracao: r.dia_geracao, ativo: !r.ativo });
-    onChanged();
+    setErro("");
+    try {
+      await callApi("/api/admin/despesas", { action: "atualizar_recorrente", id: r.id, categoria: r.categoria, subcategoria: r.subcategoria, valor: r.valor, dia_geracao: r.dia_geracao, ativo: !r.ativo });
+      onChanged();
+    } catch (e) {
+      setErro(e.message);
+    }
   }
 
   async function apagar(id) {
-    await callApi("/api/admin/despesas", { action: "apagar_recorrente", id });
-    onChanged();
+    setErro("");
+    try {
+      await callApi("/api/admin/despesas", { action: "apagar_recorrente", id });
+      onChanged();
+    } catch (e) {
+      setErro(e.message);
+    }
   }
 
   return (
@@ -326,6 +336,7 @@ function DistribuicaoLote({ lote, cores, tamanhos, onDistribuido }) {
     setErro("");
     try {
       await callApi("/api/admin/lotes", { action: "distribuir", production_run_id: lote.id, distribuicao: linhas });
+      setLinhas([{ color_id: "", size_id: "", quantity: "" }]);
       onDistribuido();
     } catch (e) {
       setErro(e.message);
@@ -371,6 +382,8 @@ export default function Despesas() {
   const [cores, setCores] = useState([]);
   const [tamanhos, setTamanhos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
 
   async function carregarDespesas() {
     const r = await callApi("/api/admin/despesas", { action: "listar" });
@@ -390,20 +403,33 @@ export default function Despesas() {
       supabase.from("products").select("id, name").eq("is_active", true).order("name").then(({ data }) => setProdutos(data || [])),
       supabase.from("colors").select("id, name").order("name").then(({ data }) => setCores(data || [])),
       supabase.from("sizes").select("id, name").order("name").then(({ data }) => setTamanhos(data || [])),
-    ]).finally(() => setLoading(false));
+    ])
+      .catch((e) => setLoadError(e.message))
+      .finally(() => setLoading(false));
   }, []);
 
   async function apagarDespesa(id) {
-    await callApi("/api/admin/despesas", { action: "apagar", id });
-    carregarDespesas();
+    setErrorMsg("");
+    try {
+      await callApi("/api/admin/despesas", { action: "apagar", id });
+      carregarDespesas();
+    } catch (e) {
+      setErrorMsg(e.message);
+    }
   }
 
   const lotesPendentes = lotes.filter((l) => l.quantidade_distribuida < l.quantidade_produzida);
 
   if (loading) return <div style={{ textAlign: "center", padding: "80px 0", color: "var(--text-4)", fontSize: 13 }}>Carregando despesas...</div>;
+  if (loadError) return <div style={{ textAlign: "center", padding: "80px 0", color: "#f87171", fontSize: 13 }}>Erro ao carregar despesas: {loadError}</div>;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      {errorMsg && (
+        <div style={{ padding: "10px 14px", borderRadius: 10, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)", color: "#fca5a5", fontSize: 12 }}>
+          ⚠️ {errorMsg}
+        </div>
+      )}
       <NovaDespesaForm onSaved={carregarDespesas} />
       <TabelaDespesas expenses={expenses} onApagar={apagarDespesa} />
       <DespesasFixasForm recurring={recurring} onChanged={carregarDespesas} />
