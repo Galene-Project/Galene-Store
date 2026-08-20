@@ -17,7 +17,7 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Sessão inválida ou expirada.', details: [] } });
   }
 
-  const { name, agent_name, whatsapp, instagram, min_order } = req.body || {};
+  const { name, agent_name, whatsapp, instagram, facebook, min_order } = req.body || {};
   if (!name?.trim() || !agent_name?.trim()) {
     return res.status(400).json({ error: { code: 'VALIDATION_FAILED', message: 'Nome da loja e nome do agente são obrigatórios.', details: [] } });
   }
@@ -42,6 +42,7 @@ export default async function handler(req, res) {
         agent_name: agent_name.trim(),
         whatsapp: whatsapp?.trim() || null,
         instagram: instagram?.trim() || null,
+        facebook: facebook?.trim() || null,
         min_order: minOrder,
         updated_at: new Date().toISOString(),
       })

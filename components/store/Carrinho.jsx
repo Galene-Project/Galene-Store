@@ -29,7 +29,7 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder })
     return Object.keys(erros).length === 0;
   };
 
-  const irParaPagamento = () => { if (validarForm()) setStep(3); };
+  const irParaPagamento = () => { if (validarForm()) { setMet("pix"); setStep(3); } };
 
   const confirmarPedido = async (pagamento) => {
     setSalvando(true);
@@ -165,36 +165,10 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder })
             </div>
           )}
 
-          {step === 3 && !met && (
+          {step === 3 && (
             <div>
-              <div style={{ display: "grid", gridTemplateColumns: mob ? "1fr" : "1fr 1fr", gap: 14, marginBottom: 16 }}>
-                {[
-                  ["pix",    "PIX", "PIX",              "Pagamento à vista via chave PIX",         T.jade, "#EAF5EE"],
-                  ["cartao", "💳",  "Cartão de Crédito","Pagamento online, sujeito a aprovação do operador",    T.gold, T.goldXlt],
-                ].map(([v, ic, lb, sub, co, bg]) => (
-                  <div
-                    key={v}
-                    onClick={() => setMet(v)}
-                    style={{ background: bg, border: `1.5px solid ${T.border}`, borderRadius: 14, padding: "22px 20px", cursor: "pointer", transition: "all .2s" }}
-                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = co; e.currentTarget.style.boxShadow = `0 4px 16px ${co}30`; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.boxShadow = "none"; }}
-                  >
-                    <div style={{ fontSize: 32, marginBottom: 10 }}>{ic}</div>
-                    <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 14, fontWeight: 700, color: T.ink2, marginBottom: 4 }}>{lb}</div>
-                    <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 11, color: T.ink3 }}>{sub}</div>
-                  </div>
-                ))}
-              </div>
-              <button onClick={() => setStep(2)} style={{ background: "none", border: `1.5px solid ${T.border}`, borderRadius: 10, padding: "10px 20px", cursor: "pointer", fontFamily: "'Lato',sans-serif", fontSize: 12, color: T.ink3, fontWeight: 700 }}>
-                Voltar
-              </button>
-            </div>
-          )}
-
-          {step === 3 && met && (
-            <div>
-              <button onClick={() => setMet(null)} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "'Lato',sans-serif", fontSize: 12, color: T.ink3, marginBottom: 16, fontWeight: 700 }}>
-                ← Escolher outra forma
+              <button onClick={() => setStep(2)} style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "'Lato',sans-serif", fontSize: 12, color: T.ink3, marginBottom: 16, fontWeight: 700 }}>
+                ← Voltar
               </button>
 
               {erroServidor && (

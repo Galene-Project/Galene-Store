@@ -101,6 +101,7 @@ export default function SettingsPage() {
           agent_name: data.agent_name || "",
           whatsapp: data.whatsapp || "",
           instagram: data.instagram || "",
+          facebook: data.facebook || "",
           min_order: data.min_order,
         });
       }
@@ -200,7 +201,12 @@ export default function SettingsPage() {
               </div>
               <div>
                 <div style={{ fontSize:11, fontWeight:600, color:"var(--text-3)", marginBottom:6, textTransform:"uppercase", letterSpacing:"0.05em" }}>Instagram</div>
-                <input value={loja.instagram} onChange={(e) => setLoja((p) => ({ ...p, instagram: e.target.value }))} placeholder="@galene"
+                <input value={loja.instagram} onChange={(e) => setLoja((p) => ({ ...p, instagram: e.target.value }))} placeholder="@galene ou link completo"
+                  style={{ width:"100%", padding:"11px 14px", borderRadius:10, background:"var(--surface-3)", border:"1.5px solid var(--surface-7)", color:"var(--text-2)", fontSize:12, boxSizing:"border-box" }} />
+              </div>
+              <div>
+                <div style={{ fontSize:11, fontWeight:600, color:"var(--text-3)", marginBottom:6, textTransform:"uppercase", letterSpacing:"0.05em" }}>Facebook</div>
+                <input value={loja.facebook} onChange={(e) => setLoja((p) => ({ ...p, facebook: e.target.value }))} placeholder="galene ou link completo"
                   style={{ width:"100%", padding:"11px 14px", borderRadius:10, background:"var(--surface-3)", border:"1.5px solid var(--surface-7)", color:"var(--text-2)", fontSize:12, boxSizing:"border-box" }} />
               </div>
               <div>
@@ -211,7 +217,7 @@ export default function SettingsPage() {
               <div>
                 <div style={{ fontSize:11, fontWeight:600, color:"var(--text-3)", marginBottom:6, textTransform:"uppercase", letterSpacing:"0.05em" }}>Pagamento</div>
                 <div style={{ padding:"11px 14px", borderRadius:10, background:"var(--surface-3)", border:"1.5px solid var(--surface-7)", color:"var(--text-4)", fontSize:12 }}>
-                  Pix (automático) · Cartão (pendente de aprovação)
+                  Pix (automático) — site público só oferece Pix. Cartão fica fora do site, só pra cliente selecionado ou compra na loja física.
                 </div>
               </div>
             </div>
