@@ -16,13 +16,15 @@ export default function Overview({ data }) {
 
   return (
     <>
-      <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(6,1fr)", gap: 14, marginBottom: 22 }}>
+      <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(8,1fr)", gap: 14, marginBottom: 22 }}>
         <KPICard icon="💰" label="Faturamento (6 meses)"  value={`R$${(totalFat/1000).toFixed(1)}k`} sub="6 meses"          trend={comparativo.faturamentoPct !== null ? { pct: comparativo.faturamentoPct, up: comparativo.faturamentoPct >= 0 } : null} accent="#c084fc" delay={0}    />
         <KPICard icon="🛒" label="Total de Pedidos"       value={totalPedidos}                        sub="6 meses"          trend={comparativo.pedidosPct !== null ? { pct: comparativo.pedidosPct, up: comparativo.pedidosPct >= 0 } : null} accent="#818cf8" delay={0.05}  />
         <KPICard icon="🎯" label="Ticket Médio"           value={`R$${ticketMedio}`}                  sub="por pedido"       accent="#38bdf8" delay={0.1}   />
         <KPICard icon="📦" label="SKUs Ativos"            value={kpis.totalSkus}                      sub={`${kpis.disponiveis} c/ estoque`} accent="#34d399" delay={0.15}  />
         <KPICard icon="⚠️" label="Alertas de Estoque"    value={estoqueAlertas.length}               sub={`${kpis.esgotados} esgotados`} accent="#fb923c" delay={0.2} />
         <KPICard icon="📅" label="Pedidos Hoje"           value={kpis.pedidosHoje}                    sub={`R$${kpis.faturamentoHoje.toFixed(2)}`}    accent="#f472b6" delay={0.25} />
+        <KPICard icon="📈" label="Lucro Líquido"          value={`R$${(kpis.lucroLiquido/1000).toFixed(1)}k`} sub="6 meses, aproximado" accent={kpis.lucroLiquido >= 0 ? "#34d399" : "#ef4444"} delay={0.3} />
+        <KPICard icon="⚖️" label="Ponto de Equilíbrio"   value={kpis.equilibrio.coberto ? "Coberto ✓" : `Faltam R$${kpis.equilibrio.falta.toFixed(0)}`} sub="fixo do mês corrente" accent={kpis.equilibrio.coberto ? "#34d399" : "#fb923c"} delay={0.35} />
       </div>
 
       <div className="admin-chart-grid" style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16, marginBottom: 16 }}>
