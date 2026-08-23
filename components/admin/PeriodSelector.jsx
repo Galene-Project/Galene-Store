@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { presetParaIntervalo } from "../../lib/dashboardMetrics";
 
 const PRESETS = [
@@ -21,6 +21,10 @@ const inputStyle = {
 
 export default function PeriodSelector({ value, onChange }) {
   const [customOpen, setCustomOpen] = useState(value.preset === "custom");
+
+  useEffect(() => {
+    setCustomOpen(value.preset === "custom");
+  }, [value.preset]);
 
   function escolherPreset(preset) {
     setCustomOpen(false);
