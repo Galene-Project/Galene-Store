@@ -47,7 +47,7 @@ function NovaDespesaForm({ onSaved }) {
         observacao,
       });
       setSubcategoria(""); setValor(""); setDataPagamento(""); setObservacao("");
-      onSaved();
+      await onSaved();
     } catch (e) {
       setErro(e.message);
     } finally {
@@ -412,7 +412,7 @@ export default function Despesas() {
     setErrorMsg("");
     try {
       await callApi("/api/admin/despesas", { action: "apagar", id });
-      carregarDespesas();
+      await carregarDespesas();
     } catch (e) {
       setErrorMsg(e.message);
     }

@@ -1,5 +1,6 @@
 import { supabaseAdmin } from '../../../lib/supabaseAdmin';
 import { validateProductionRun, validateProdutoBasico, validateDistribuicao } from '../../../lib/productionRun';
+import { computeVariantCodes } from '../../../lib/barcode';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -53,11 +54,17 @@ export default async function handler(req, res) {
         const sku = `AUTO-${Date.now().toString(36).toUpperCase()}`;
         const { data: novoProduto, error: prodErr } = await supabaseAdmin
           .from('products')
-          .insert({ name: parsedProduto.name, category: parsedProduto.category, price: parsedProduto.price, sku })
+          .insert({ name: parsedProduto.name, category: parsedProduto.category, price: parsedProduto.price, sku, is_active: false })
           .select('id')
           .single();
         if (prodErr) throw prodErr;
         productId = novoProduto.id;
+      } else {
+        const { data: existingProduct, error: checkErr } = await supabaseAdmin.from('products').select('id').eq('id', productId).maybeSingle();
+        if (checkErr) throw checkErr;
+        if (!existingProduct) {
+          return res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Produto não encontrado.', details: [] } });
+        }
       }
 
       const { data: run, error: runErr } = await supabaseAdmin
@@ -88,7 +95,7 @@ export default async function handler(req, res) {
 
       const { data: run, error: runErr } = await supabaseAdmin
         .from('production_runs')
-        .select('quantidade_produzida, quantidade_distribuida')
+        .select('quantidade_produzida, quantidade_distribuida, product_id')
         .eq('id', production_run_id)
         .single();
       if (runErr || !run) {
@@ -102,11 +109,23 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: { code: 'VALIDATION_FAILED', message: e.message, details: [] } });
       }
 
+      const { data: product, error: productErr } = await supabaseAdmin
+        .from('products')
+        .select('sku')
+        .eq('id', run.product_id)
+        .single();
+      if (productErr) throw productErr;
+
+      const codedDistribuicao = computeVariantCodes(product.sku, distribuicao);
+      const p_items = codedDistribuicao.map((d) => ({ color_id: d.color_id, size_id: d.size_id, quantity: d.quantity, barcode: d.code }));
+
       const { error: rpcErr } = await supabaseAdmin.rpc('distribute_production_run', {
         p_run_id: production_run_id,
-        p_items: distribuicao,
+        p_items,
       });
       if (rpcErr) throw rpcErr;
+
+      await supabaseAdmin.from('products').update({ is_active: true }).eq('id', run.product_id);
 
       return res.status(200).json({ ok: true });
     }
