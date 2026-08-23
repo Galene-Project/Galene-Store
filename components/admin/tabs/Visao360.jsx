@@ -80,21 +80,25 @@ export default function Visao360({ data }) {
 
       <Card>
         <SectionTitle>Faturamento no período</SectionTitle>
-        <ResponsiveContainer width="100%" height={220}>
-          <AreaChart data={serie}>
-            <defs>
-              <linearGradient id="gVisao360" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#c084fc" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#c084fc" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-4)" />
-            <XAxis dataKey="label" tick={{ fill: "var(--text-4)", fontSize: 11 }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fill: "var(--text-4)", fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `R$${(v / 1000).toFixed(1)}k`} />
-            <Tooltip content={<CustomTooltip prefix="R$" />} />
-            <Area type="monotone" dataKey="valor" name="Faturamento" stroke="#c084fc" strokeWidth={2.5} fill="url(#gVisao360)" dot={{ r: 3, fill: "#c084fc" }} />
-          </AreaChart>
-        </ResponsiveContainer>
+        {serie.length === 0 ? (
+          <div style={{ fontSize: 12, color: "var(--text-4)", padding: "20px 0", textAlign: "center" }}>Sem faturamento no período.</div>
+        ) : (
+          <ResponsiveContainer width="100%" height={220}>
+            <AreaChart data={serie}>
+              <defs>
+                <linearGradient id="gVisao360" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#c084fc" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#c084fc" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-4)" />
+              <XAxis dataKey="label" tick={{ fill: "var(--text-4)", fontSize: 11 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: "var(--text-4)", fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `R$${(v / 1000).toFixed(1)}k`} />
+              <Tooltip content={<CustomTooltip prefix="R$" />} />
+              <Area type="monotone" dataKey="valor" name="Faturamento" stroke="#c084fc" strokeWidth={2.5} fill="url(#gVisao360)" dot={{ r: 3, fill: "#c084fc" }} />
+            </AreaChart>
+          </ResponsiveContainer>
+        )}
       </Card>
 
       <div className="admin-chart-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
