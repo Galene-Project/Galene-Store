@@ -6,6 +6,7 @@ import Estoque      from "../../components/admin/tabs/Estoque";
 import Catalogo     from "../../components/admin/tabs/Catalogo";
 import Pedidos      from "../../components/admin/tabs/Pedidos";
 import Relatorios   from "../../components/admin/tabs/Relatorios";
+import Despesas     from "../../components/admin/tabs/Despesas";
 import LoginPage    from "../../components/admin/LoginPage";
 import SettingsPage from "../../components/admin/SettingsPage";
 import { fetchDashboardData } from "../../lib/adminData";
@@ -18,6 +19,7 @@ const TABS = [
   { id:"estoque",   label:"Estoque",      icon:"📦" },
   { id:"catalogo",  label:"Catálogo",     icon:"👗" },
   { id:"pedidos",   label:"Pedidos",      icon:"🛒" },
+  { id:"despesas",  label:"Despesas",     icon:"🧾" },
   { id:"relatorios", label:"Relatórios",  icon:"📈" },
   { id:"settings",  label:"Integrações",  icon:"⚙️" },
 ];
@@ -239,7 +241,7 @@ export default function AdminPage() {
       </div>
 
       <div className="admin-content" style={{ padding:"28px 32px", maxWidth:1400, margin:"0 auto" }} key={activeTab}>
-        {!data && activeTab !== "settings" && activeTab !== "catalogo" ? (
+        {!data && activeTab !== "settings" && activeTab !== "catalogo" && activeTab !== "despesas" ? (
           <div style={{ textAlign:"center", padding:"80px 0", color:"var(--text-4)", fontSize:13 }}>
             Carregando dados do painel...
           </div>
@@ -254,6 +256,7 @@ export default function AdminPage() {
         )}
         {activeTab==="settings" && <SettingsPage />}
         {activeTab==="catalogo" && <Catalogo />}
+        {activeTab==="despesas" && <Despesas />}
       </div>
 
       {showLogout && (
