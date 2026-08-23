@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Sil from "./Sil";
 import { T, COR_HEX, fmt } from "../../lib/galeneTheme";
 import { useWindowWidth } from "../../hooks/useWindowWidth";
@@ -13,6 +13,16 @@ export function CardDest({ prod, onClick }) {
   const [viewRef, inView] = useInView();
   const ativo = hov || inView;
   const { item: mediaAtual } = useMediaCycle(prod.media, ativo);
+  const videoRef = useRef(null);
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el) return;
+    if (ativo) {
+      el.play().catch(() => {});
+    } else {
+      el.pause();
+    }
+  }, [ativo, mediaAtual]);
 
   return (
     <div
@@ -43,12 +53,12 @@ export function CardDest({ prod, onClick }) {
         {mediaAtual ? (
           mediaAtual.type === "video" ? (
             <video
+              ref={videoRef}
               key={mediaAtual.url}
               src={mediaAtual.url}
               muted
               playsInline
               loop
-              autoPlay={ativo}
               preload="metadata"
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
@@ -112,6 +122,16 @@ export function Card({ prod, onClick }) {
   const [viewRef, inView] = useInView();
   const ativo = hov || inView;
   const { item: mediaAtual } = useMediaCycle(prod.media, ativo);
+  const videoRef = useRef(null);
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el) return;
+    if (ativo) {
+      el.play().catch(() => {});
+    } else {
+      el.pause();
+    }
+  }, [ativo, mediaAtual]);
 
   return (
     <div
@@ -141,12 +161,12 @@ export function Card({ prod, onClick }) {
         {mediaAtual ? (
           mediaAtual.type === "video" ? (
             <video
+              ref={videoRef}
               key={mediaAtual.url}
               src={mediaAtual.url}
               muted
               playsInline
               loop
-              autoPlay={ativo}
               preload="metadata"
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
