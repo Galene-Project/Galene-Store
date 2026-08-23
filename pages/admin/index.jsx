@@ -7,6 +7,7 @@ import Catalogo     from "../../components/admin/tabs/Catalogo";
 import Pedidos      from "../../components/admin/tabs/Pedidos";
 import Relatorios   from "../../components/admin/tabs/Relatorios";
 import Despesas     from "../../components/admin/tabs/Despesas";
+import Visao360      from "../../components/admin/tabs/Visao360";
 import LoginPage    from "../../components/admin/LoginPage";
 import SettingsPage from "../../components/admin/SettingsPage";
 import { fetchDashboardData } from "../../lib/adminData";
@@ -15,6 +16,7 @@ import { supabase } from "../../lib/supabaseClient";
 
 const TABS = [
   { id:"overview",  label:"Visão Geral",  icon:"📊" },
+  { id:"visao360",  label:"Visão 360",    icon:"🧭" },
   { id:"vendas",    label:"Vendas",       icon:"💰" },
   { id:"estoque",   label:"Estoque",      icon:"📦" },
   { id:"catalogo",  label:"Catálogo",     icon:"👗" },
@@ -248,6 +250,7 @@ export default function AdminPage() {
         ) : (
           <>
             {activeTab==="overview" && <Overview data={data} />}
+            {activeTab==="visao360" && <Visao360 data={data} />}
             {activeTab==="vendas"   && <Vendas   data={data} />}
             {activeTab==="estoque"  && <Estoque  data={data} />}
             {activeTab==="pedidos"  && <Pedidos data={data} onRefresh={loadData} justUpdated={justUpdated} />}
