@@ -2,19 +2,21 @@ import { useState } from "react";
 import Sil from "./Sil";
 import { T, COR_HEX, fmt } from "../../lib/galeneTheme";
 import { useWindowWidth } from "../../hooks/useWindowWidth";
-
-function cardImageUrl(prod) {
-  return prod.media?.find((m) => m.type === "image")?.url || null;
-}
+import { useInView } from "../../hooks/useInView";
+import { useMediaCycle } from "../../hooks/useMediaCycle";
 
 export function CardDest({ prod, onClick }) {
   const [hov, setHov] = useState(false);
   const [ci, setCi] = useState(0);
   const w = useWindowWidth();
   const mob = w < 640;
+  const [viewRef, inView] = useInView();
+  const ativo = hov || inView;
+  const { item: mediaAtual } = useMediaCycle(prod.media, ativo);
 
   return (
     <div
+      ref={viewRef}
       onClick={onClick}
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
@@ -38,8 +40,21 @@ export function CardDest({ prod, onClick }) {
         </div>
       )}
       <div style={{ height: mob ? 240 : 300, background: `linear-gradient(160deg,${T.bg2},${T.bg3})`, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
-        {cardImageUrl(prod) ? (
-          <img src={cardImageUrl(prod)} alt={prod.nome} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        {mediaAtual ? (
+          mediaAtual.type === "video" ? (
+            <video
+              key={mediaAtual.url}
+              src={mediaAtual.url}
+              muted
+              playsInline
+              loop
+              autoPlay={ativo}
+              preload="metadata"
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+          ) : (
+            <img src={mediaAtual.url} alt={prod.nome} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          )
         ) : (
           <>
             <div style={{ position: "absolute", inset: 0, backgroundImage: `radial-gradient(circle at 70% 30%, ${T.goldXlt}40 0%, transparent 60%)` }} />
@@ -94,9 +109,13 @@ export function CardDest({ prod, onClick }) {
 export function Card({ prod, onClick }) {
   const [hov, setHov] = useState(false);
   const [ci, setCi] = useState(0);
+  const [viewRef, inView] = useInView();
+  const ativo = hov || inView;
+  const { item: mediaAtual } = useMediaCycle(prod.media, ativo);
 
   return (
     <div
+      ref={viewRef}
       onClick={onClick}
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
@@ -119,8 +138,21 @@ export function Card({ prod, onClick }) {
         </div>
       )}
       <div style={{ height: 190, background: `linear-gradient(160deg,${T.bg2},${T.bg3})`, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
-        {cardImageUrl(prod) ? (
-          <img src={cardImageUrl(prod)} alt={prod.nome} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        {mediaAtual ? (
+          mediaAtual.type === "video" ? (
+            <video
+              key={mediaAtual.url}
+              src={mediaAtual.url}
+              muted
+              playsInline
+              loop
+              autoPlay={ativo}
+              preload="metadata"
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+          ) : (
+            <img src={mediaAtual.url} alt={prod.nome} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          )
         ) : (
           <Sil cat={prod.cat} cor={COR_HEX[prod.cores[ci]] || T.gold} sz={155} />
         )}
