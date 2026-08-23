@@ -12,7 +12,7 @@ export function CardDest({ prod, onClick }) {
   const mob = w < 640;
   const [viewRef, inView] = useInView();
   const ativo = hov || inView;
-  const { item: mediaAtual } = useMediaCycle(prod.media, ativo);
+  const { index: mediaIndex } = useMediaCycle(prod.media, ativo);
   const videoRef = useRef(null);
   useEffect(() => {
     const el = videoRef.current;
@@ -22,7 +22,7 @@ export function CardDest({ prod, onClick }) {
     } else {
       el.pause();
     }
-  }, [ativo, mediaAtual]);
+  }, [ativo, mediaIndex]);
 
   return (
     <div
@@ -50,21 +50,32 @@ export function CardDest({ prod, onClick }) {
         </div>
       )}
       <div style={{ height: mob ? 240 : 300, background: `linear-gradient(160deg,${T.bg2},${T.bg3})`, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
-        {mediaAtual ? (
-          mediaAtual.type === "video" ? (
-            <video
-              ref={videoRef}
-              key={mediaAtual.url}
-              src={mediaAtual.url}
-              muted
-              playsInline
-              loop
-              preload="metadata"
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
-            />
-          ) : (
-            <img src={mediaAtual.url} alt={prod.nome} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-          )
+        {prod.media && prod.media.length > 0 ? (
+          prod.media.map((m, i) => (
+            <div
+              key={m.url}
+              style={{
+                position: "absolute", inset: 0,
+                opacity: i === mediaIndex ? 1 : 0,
+                pointerEvents: "none",
+                transition: "opacity .3s",
+              }}
+            >
+              {m.type === "video" ? (
+                <video
+                  ref={i === mediaIndex ? videoRef : undefined}
+                  src={m.url}
+                  muted
+                  playsInline
+                  loop
+                  preload="metadata"
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              ) : (
+                <img src={m.url} alt={prod.nome} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              )}
+            </div>
+          ))
         ) : (
           <>
             <div style={{ position: "absolute", inset: 0, backgroundImage: `radial-gradient(circle at 70% 30%, ${T.goldXlt}40 0%, transparent 60%)` }} />
@@ -121,7 +132,7 @@ export function Card({ prod, onClick }) {
   const [ci, setCi] = useState(0);
   const [viewRef, inView] = useInView();
   const ativo = hov || inView;
-  const { item: mediaAtual } = useMediaCycle(prod.media, ativo);
+  const { index: mediaIndex } = useMediaCycle(prod.media, ativo);
   const videoRef = useRef(null);
   useEffect(() => {
     const el = videoRef.current;
@@ -131,7 +142,7 @@ export function Card({ prod, onClick }) {
     } else {
       el.pause();
     }
-  }, [ativo, mediaAtual]);
+  }, [ativo, mediaIndex]);
 
   return (
     <div
@@ -158,21 +169,32 @@ export function Card({ prod, onClick }) {
         </div>
       )}
       <div style={{ height: 190, background: `linear-gradient(160deg,${T.bg2},${T.bg3})`, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
-        {mediaAtual ? (
-          mediaAtual.type === "video" ? (
-            <video
-              ref={videoRef}
-              key={mediaAtual.url}
-              src={mediaAtual.url}
-              muted
-              playsInline
-              loop
-              preload="metadata"
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
-            />
-          ) : (
-            <img src={mediaAtual.url} alt={prod.nome} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-          )
+        {prod.media && prod.media.length > 0 ? (
+          prod.media.map((m, i) => (
+            <div
+              key={m.url}
+              style={{
+                position: "absolute", inset: 0,
+                opacity: i === mediaIndex ? 1 : 0,
+                pointerEvents: "none",
+                transition: "opacity .3s",
+              }}
+            >
+              {m.type === "video" ? (
+                <video
+                  ref={i === mediaIndex ? videoRef : undefined}
+                  src={m.url}
+                  muted
+                  playsInline
+                  loop
+                  preload="metadata"
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              ) : (
+                <img src={m.url} alt={prod.nome} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              )}
+            </div>
+          ))
         ) : (
           <Sil cat={prod.cat} cor={COR_HEX[prod.cores[ci]] || T.gold} sz={155} />
         )}
