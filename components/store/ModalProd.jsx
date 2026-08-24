@@ -5,6 +5,7 @@ import MediaCarousel from "./MediaCarousel";
 import { sortVideoFirst } from "../../lib/instagramUrl";
 import { T, COR_HEX, fmt, sortSizes } from "../../lib/galeneTheme";
 import { useWindowWidth } from "../../hooks/useWindowWidth";
+import { buildCarouselItems } from "../../lib/colorPhoto";
 
 export default function ModalProd({ prod, onClose, onAdd }) {
   const [sel, setSel] = useState([]);
@@ -12,6 +13,7 @@ export default function ModalProd({ prod, onClose, onAdd }) {
   const [tam, setTam] = useState(null);
   const w = useWindowWidth();
   const mob = w < 640;
+  const carouselItems = buildCarouselItems(prod.media || [], prod.coresFotos, cor);
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -68,14 +70,14 @@ export default function ModalProd({ prod, onClose, onAdd }) {
             <button onClick={onClose} aria-label="Fechar" style={{ background: "none", border: `1.5px solid ${T.border}`, borderRadius: 8, width: 36, height: 36, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: T.ink3, fontSize: 18, flexShrink: 0 }}>✕</button>
           </div>
 
-          {prod.media?.length > 0 && (
+          {carouselItems.length > 0 && (
             <div style={{ marginBottom: 16, display: "flex", justifyContent: "center" }}>
-              <MediaCarousel items={[...prod.media].sort((a, b) => Number(b.type === "video") - Number(a.type === "video"))} />
+              <MediaCarousel key={cor} items={[...carouselItems].sort((a, b) => Number(b.type === "video") - Number(a.type === "video"))} />
             </div>
           )}
 
           <div style={{ display: "flex", gap: 16, marginBottom: 24 }}>
-            {!prod.media?.length && (
+            {carouselItems.length === 0 && (
               <div style={{ width: 110, height: 120, background: `linear-gradient(135deg,${T.bg2},${T.bg3})`, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <Sil cat={prod.cat} cor={COR_HEX[cor] || T.gold} sz={92} />
               </div>
