@@ -11,7 +11,9 @@ export function CardDest({ prod, onClick }) {
   const w = useWindowWidth();
   const mob = w < 640;
   const [viewRef, inView] = useInView();
-  const ativo = hov || inView;
+  const ativo = hov || (mob && inView);
+  const everAtivoRef = useRef(false);
+  if (ativo) everAtivoRef.current = true;
   const { index: mediaIndex } = useMediaCycle(prod.media, ativo);
   const mediaLayersRef = useRef(null);
   useEffect(() => {
@@ -24,6 +26,7 @@ export function CardDest({ prod, onClick }) {
         v.play().catch(() => {});
       } else {
         v.pause();
+        v.currentTime = 0;
       }
     });
   }, [ativo, mediaIndex]);
@@ -54,32 +57,37 @@ export function CardDest({ prod, onClick }) {
         </div>
       )}
       <div ref={mediaLayersRef} style={{ height: mob ? 240 : 300, background: `linear-gradient(160deg,${T.bg2},${T.bg3})`, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
-        {prod.media && prod.media.length > 0 ? (
-          prod.media.map((m, i) => (
-            <div
-              key={m.url}
-              style={{
-                position: "absolute", inset: 0,
-                opacity: i === mediaIndex ? 1 : 0,
-                pointerEvents: "none",
-                transition: "opacity .3s",
-              }}
-            >
-              {m.type === "video" ? (
-                <video
-                  data-media-index={i}
-                  src={m.url}
-                  muted
-                  playsInline
-                  loop
-                  preload="metadata"
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                />
-              ) : (
-                <img src={m.url} alt={prod.nome} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-              )}
-            </div>
-          ))
+        {prod.media && prod.media.length > 0 && (everAtivoRef.current || prod.media[0].type === "image") ? (
+          everAtivoRef.current ? (
+            prod.media.map((m, i) => (
+              <div
+                key={m.url}
+                style={{
+                  position: "absolute", inset: 0,
+                  opacity: i === mediaIndex ? 1 : 0,
+                  pointerEvents: "none",
+                  transition: "opacity .3s",
+                }}
+                aria-hidden={i !== mediaIndex}
+              >
+                {m.type === "video" ? (
+                  <video
+                    data-media-index={i}
+                    src={m.url}
+                    muted
+                    playsInline
+                    loop
+                    preload="metadata"
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  />
+                ) : (
+                  <img src={m.url} alt={prod.nome} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                )}
+              </div>
+            ))
+          ) : (
+            <img src={prod.media[0].url} alt={prod.nome} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          )
         ) : (
           <>
             <div style={{ position: "absolute", inset: 0, backgroundImage: `radial-gradient(circle at 70% 30%, ${T.goldXlt}40 0%, transparent 60%)` }} />
@@ -134,8 +142,12 @@ export function CardDest({ prod, onClick }) {
 export function Card({ prod, onClick }) {
   const [hov, setHov] = useState(false);
   const [ci, setCi] = useState(0);
+  const w = useWindowWidth();
+  const mob = w < 640;
   const [viewRef, inView] = useInView();
-  const ativo = hov || inView;
+  const ativo = hov || (mob && inView);
+  const everAtivoRef = useRef(false);
+  if (ativo) everAtivoRef.current = true;
   const { index: mediaIndex } = useMediaCycle(prod.media, ativo);
   const mediaLayersRef = useRef(null);
   useEffect(() => {
@@ -148,6 +160,7 @@ export function Card({ prod, onClick }) {
         v.play().catch(() => {});
       } else {
         v.pause();
+        v.currentTime = 0;
       }
     });
   }, [ativo, mediaIndex]);
@@ -177,32 +190,37 @@ export function Card({ prod, onClick }) {
         </div>
       )}
       <div ref={mediaLayersRef} style={{ height: 190, background: `linear-gradient(160deg,${T.bg2},${T.bg3})`, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
-        {prod.media && prod.media.length > 0 ? (
-          prod.media.map((m, i) => (
-            <div
-              key={m.url}
-              style={{
-                position: "absolute", inset: 0,
-                opacity: i === mediaIndex ? 1 : 0,
-                pointerEvents: "none",
-                transition: "opacity .3s",
-              }}
-            >
-              {m.type === "video" ? (
-                <video
-                  data-media-index={i}
-                  src={m.url}
-                  muted
-                  playsInline
-                  loop
-                  preload="metadata"
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                />
-              ) : (
-                <img src={m.url} alt={prod.nome} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-              )}
-            </div>
-          ))
+        {prod.media && prod.media.length > 0 && (everAtivoRef.current || prod.media[0].type === "image") ? (
+          everAtivoRef.current ? (
+            prod.media.map((m, i) => (
+              <div
+                key={m.url}
+                style={{
+                  position: "absolute", inset: 0,
+                  opacity: i === mediaIndex ? 1 : 0,
+                  pointerEvents: "none",
+                  transition: "opacity .3s",
+                }}
+                aria-hidden={i !== mediaIndex}
+              >
+                {m.type === "video" ? (
+                  <video
+                    data-media-index={i}
+                    src={m.url}
+                    muted
+                    playsInline
+                    loop
+                    preload="metadata"
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  />
+                ) : (
+                  <img src={m.url} alt={prod.nome} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                )}
+              </div>
+            ))
+          ) : (
+            <img src={prod.media[0].url} alt={prod.nome} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          )
         ) : (
           <Sil cat={prod.cat} cor={COR_HEX[prod.cores[ci]] || T.gold} sz={155} />
         )}
