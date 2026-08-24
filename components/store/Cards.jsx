@@ -13,15 +13,19 @@ export function CardDest({ prod, onClick }) {
   const [viewRef, inView] = useInView();
   const ativo = hov || inView;
   const { index: mediaIndex } = useMediaCycle(prod.media, ativo);
-  const videoRef = useRef(null);
+  const mediaLayersRef = useRef(null);
   useEffect(() => {
-    const el = videoRef.current;
-    if (!el) return;
-    if (ativo) {
-      el.play().catch(() => {});
-    } else {
-      el.pause();
-    }
+    const container = mediaLayersRef.current;
+    if (!container) return;
+    const videos = container.querySelectorAll("video");
+    videos.forEach((v) => {
+      const isCurrent = Number(v.dataset.mediaIndex) === mediaIndex;
+      if (ativo && isCurrent) {
+        v.play().catch(() => {});
+      } else {
+        v.pause();
+      }
+    });
   }, [ativo, mediaIndex]);
 
   return (
@@ -49,7 +53,7 @@ export function CardDest({ prod, onClick }) {
           {prod.tag}
         </div>
       )}
-      <div style={{ height: mob ? 240 : 300, background: `linear-gradient(160deg,${T.bg2},${T.bg3})`, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
+      <div ref={mediaLayersRef} style={{ height: mob ? 240 : 300, background: `linear-gradient(160deg,${T.bg2},${T.bg3})`, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
         {prod.media && prod.media.length > 0 ? (
           prod.media.map((m, i) => (
             <div
@@ -63,7 +67,7 @@ export function CardDest({ prod, onClick }) {
             >
               {m.type === "video" ? (
                 <video
-                  ref={i === mediaIndex ? videoRef : undefined}
+                  data-media-index={i}
                   src={m.url}
                   muted
                   playsInline
@@ -133,15 +137,19 @@ export function Card({ prod, onClick }) {
   const [viewRef, inView] = useInView();
   const ativo = hov || inView;
   const { index: mediaIndex } = useMediaCycle(prod.media, ativo);
-  const videoRef = useRef(null);
+  const mediaLayersRef = useRef(null);
   useEffect(() => {
-    const el = videoRef.current;
-    if (!el) return;
-    if (ativo) {
-      el.play().catch(() => {});
-    } else {
-      el.pause();
-    }
+    const container = mediaLayersRef.current;
+    if (!container) return;
+    const videos = container.querySelectorAll("video");
+    videos.forEach((v) => {
+      const isCurrent = Number(v.dataset.mediaIndex) === mediaIndex;
+      if (ativo && isCurrent) {
+        v.play().catch(() => {});
+      } else {
+        v.pause();
+      }
+    });
   }, [ativo, mediaIndex]);
 
   return (
@@ -168,7 +176,7 @@ export function Card({ prod, onClick }) {
           {prod.tag}
         </div>
       )}
-      <div style={{ height: 190, background: `linear-gradient(160deg,${T.bg2},${T.bg3})`, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
+      <div ref={mediaLayersRef} style={{ height: 190, background: `linear-gradient(160deg,${T.bg2},${T.bg3})`, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
         {prod.media && prod.media.length > 0 ? (
           prod.media.map((m, i) => (
             <div
@@ -182,7 +190,7 @@ export function Card({ prod, onClick }) {
             >
               {m.type === "video" ? (
                 <video
-                  ref={i === mediaIndex ? videoRef : undefined}
+                  data-media-index={i}
                   src={m.url}
                   muted
                   playsInline
