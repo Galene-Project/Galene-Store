@@ -72,7 +72,7 @@ export default function ModalProd({ prod, onClose, onAdd }) {
 
           {carouselItems.length > 0 && (
             <div style={{ marginBottom: 16, display: "flex", justifyContent: "center" }}>
-              <MediaCarousel key={cor} items={[...carouselItems].sort((a, b) => Number(b.type === "video") - Number(a.type === "video"))} />
+              <MediaCarousel key={prod.coresFotos?.[cor] || ""} items={[...carouselItems].sort((a, b) => Number(b.type === "video") - Number(a.type === "video"))} />
             </div>
           )}
 

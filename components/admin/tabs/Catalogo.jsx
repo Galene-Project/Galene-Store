@@ -417,7 +417,7 @@ export default function Catalogo() {
       const { data: pub } = supabase.storage.from("product-media").getPublicUrl(path);
       setFotoCorInputs((prev) => ({
         ...prev,
-        [productId]: { ...prev[productId], [colorId]: pub.publicUrl },
+        [productId]: { ...prev[productId], [colorId]: `${pub.publicUrl}?v=${Date.now()}` },
       }));
     } catch (err) {
       setErrorMsg(err.message);
