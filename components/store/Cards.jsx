@@ -30,6 +30,9 @@ export function CardDest({ prod, onClick }) {
       }
     });
   }, [ativo, mediaIndex]);
+  useEffect(() => {
+    if (!ativo) setCi(0);
+  }, [ativo]);
 
   return (
     <div
@@ -57,7 +60,9 @@ export function CardDest({ prod, onClick }) {
         </div>
       )}
       <div ref={mediaLayersRef} style={{ height: mob ? 240 : 300, background: `linear-gradient(160deg,${T.bg2},${T.bg3})`, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
-        {prod.media && prod.media.length > 0 && (everAtivoRef.current || prod.media[0].type === "image") ? (
+        {prod.coresFotos?.[prod.cores[ci]] ? (
+          <img src={prod.coresFotos[prod.cores[ci]]} alt={`${prod.nome} — ${prod.cores[ci]}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        ) : prod.media && prod.media.length > 0 && (everAtivoRef.current || prod.media[0].type === "image") ? (
           everAtivoRef.current ? (
             prod.media.map((m, i) => (
               <div
@@ -164,6 +169,9 @@ export function Card({ prod, onClick }) {
       }
     });
   }, [ativo, mediaIndex]);
+  useEffect(() => {
+    if (!ativo) setCi(0);
+  }, [ativo]);
 
   return (
     <div
@@ -190,7 +198,9 @@ export function Card({ prod, onClick }) {
         </div>
       )}
       <div ref={mediaLayersRef} style={{ height: 190, background: `linear-gradient(160deg,${T.bg2},${T.bg3})`, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
-        {prod.media && prod.media.length > 0 && (everAtivoRef.current || prod.media[0].type === "image") ? (
+        {prod.coresFotos?.[prod.cores[ci]] ? (
+          <img src={prod.coresFotos[prod.cores[ci]]} alt={`${prod.nome} — ${prod.cores[ci]}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        ) : prod.media && prod.media.length > 0 && (everAtivoRef.current || prod.media[0].type === "image") ? (
           everAtivoRef.current ? (
             prod.media.map((m, i) => (
               <div
