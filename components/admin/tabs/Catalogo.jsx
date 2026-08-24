@@ -243,6 +243,8 @@ export default function Catalogo() {
   const [tamanhos, setTamanhos] = useState([]);
   const [videoFormOpenIds, setVideoFormOpenIds] = useState(new Set());
   const [videoInputs, setVideoInputs] = useState({});
+  const [fotoCorFormOpenIds, setFotoCorFormOpenIds] = useState(new Set());
+  const [fotoCorInputs, setFotoCorInputs] = useState({});
 
   useEffect(() => {
     supabase.from("colors").select("id, name").order("name").then(({ data }) => setCores(data || []));
@@ -253,7 +255,7 @@ export default function Catalogo() {
     setLoading(true);
     const { data, error } = await supabase
       .from("products")
-      .select("id, name, category, price, price_original, discount_percentage, featured, instagram_urls, is_launch, product_media(id, type, url, storage_path)")
+      .select("id, name, category, price, price_original, discount_percentage, featured, instagram_urls, is_launch, product_media(id, type, url, storage_path), product_colors(color_id, photo_url, colors(name))")
       .eq("is_active", true)
       .order("category")
       .order("name");
@@ -381,6 +383,63 @@ export default function Catalogo() {
       const { error: delErr } = await supabase.from("product_media").delete().eq("id", media.id);
       if (delErr) throw delErr;
       setProdutos((prev) => prev.map((pr) => (pr.id === productId ? { ...pr, product_media: (pr.product_media || []).filter((m) => m.id !== media.id) } : pr)));
+    } catch (err) {
+      setErrorMsg(err.message);
+    } finally {
+      setSavingId(null);
+    }
+  }
+
+  function limparFormFotoCor(productId) {
+    setFotoCorFormOpenIds((prev) => { const next = new Set(prev); next.delete(productId); return next; });
+    setFotoCorInputs((prev) => { const next = { ...prev }; delete next[productId]; return next; });
+  }
+
+  function toggleFotoCorCheckbox(p, checked) {
+    if (checked) {
+      setFotoCorFormOpenIds((prev) => new Set(prev).add(p.id));
+      const atual = {};
+      (p.product_colors || []).forEach((pc) => { atual[pc.color_id] = pc.photo_url || ""; });
+      setFotoCorInputs((prev) => ({ ...prev, [p.id]: atual }));
+    } else {
+      limparFormFotoCor(p.id);
+    }
+  }
+
+  async function handleUploadFotoCor(productId, colorId, file) {
+    setSavingId(productId);
+    setErrorMsg("");
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `${productId}/color-${colorId}.${ext}`;
+      const { error: uploadErr } = await supabase.storage.from("product-media").upload(path, file, { upsert: true });
+      if (uploadErr) throw uploadErr;
+      const { data: pub } = supabase.storage.from("product-media").getPublicUrl(path);
+      setFotoCorInputs((prev) => ({
+        ...prev,
+        [productId]: { ...prev[productId], [colorId]: pub.publicUrl },
+      }));
+    } catch (err) {
+      setErrorMsg(err.message);
+    } finally {
+      setSavingId(null);
+    }
+  }
+
+  async function handleSalvarFotoCor(productId) {
+    setSavingId(productId);
+    setErrorMsg("");
+    try {
+      const inputs = fotoCorInputs[productId] || {};
+      const colorPhotos = Object.entries(inputs).map(([color_id, photo_url]) => ({ color_id, photo_url }));
+      const resp = await callApi("/api/admin/produtos/foto-cor", { productId, colorPhotos });
+      const porCor = new Map(resp.colorPhotos.map((cp) => [cp.color_id, cp.photo_url]));
+      setProdutos((prev) => prev.map((pr) => (
+        pr.id === productId
+          ? { ...pr, product_colors: (pr.product_colors || []).map((pc) => ({ ...pc, photo_url: porCor.get(pc.color_id) || null })) }
+          : pr
+      )));
+      limparFormFotoCor(productId);
     } catch (err) {
       setErrorMsg(err.message);
     } finally {
@@ -523,6 +582,60 @@ export default function Catalogo() {
               disabled={savingId === p.id}
               style={{ padding: "6px 12px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#c084fc,#818cf8)", color: "white", fontSize: 11, fontWeight: 700, cursor: savingId === p.id ? "wait" : "pointer", flexShrink: 0 }}>
               {savingId === p.id ? "Salvando..." : "Salvar"}
+            </button>
+          </div>
+        </div>
+
+        <Toggle
+          checked={fotoCorFormOpenIds.has(p.id)}
+          disabled={savingId === p.id}
+          onChange={(checked) => toggleFotoCorCheckbox(p, checked)}
+          label="Foto por cor"
+        />
+
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: fotoCorFormOpenIds.has(p.id) ? "1fr" : "0fr",
+          transition: "grid-template-columns 0.25s ease",
+          overflow: "hidden",
+        }}>
+          <div style={{
+            display: "flex", flexDirection: "column", gap: 6, minWidth: 0,
+            opacity: fotoCorFormOpenIds.has(p.id) ? 1 : 0,
+            pointerEvents: fotoCorFormOpenIds.has(p.id) ? "auto" : "none",
+            transition: "opacity 0.2s ease",
+          }}>
+            {(p.product_colors || []).map((pc) => (
+              <div key={pc.color_id} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ fontSize: 11, color: "var(--text-4)", width: 70, flexShrink: 0 }}>
+                  {pc.colors?.name || "?"}
+                </span>
+                <input
+                  placeholder="URL da foto"
+                  value={fotoCorInputs[p.id]?.[pc.color_id] ?? ""}
+                  onChange={(e) => setFotoCorInputs((prev) => ({
+                    ...prev,
+                    [p.id]: { ...prev[p.id], [pc.color_id]: e.target.value },
+                  }))}
+                  style={{ ...inputStyle, width: 220 }}
+                />
+                <label style={{ padding: "6px 10px", borderRadius: 8, border: "1px dashed var(--surface-7)", background: "transparent", color: "var(--text-3)", fontSize: 11, cursor: savingId === p.id ? "wait" : "pointer" }}>
+                  Upload
+                  <input
+                    type="file"
+                    accept="image/*"
+                    disabled={savingId === p.id}
+                    onChange={(e) => { const f = e.target.files?.[0]; if (f) handleUploadFotoCor(p.id, pc.color_id, f); e.target.value = ""; }}
+                    style={{ display: "none" }}
+                  />
+                </label>
+              </div>
+            ))}
+            <button
+              onClick={() => handleSalvarFotoCor(p.id)}
+              disabled={savingId === p.id}
+              style={{ padding: "6px 12px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#c084fc,#818cf8)", color: "white", fontSize: 11, fontWeight: 700, cursor: savingId === p.id ? "wait" : "pointer", alignSelf: "flex-start" }}>
+              {savingId === p.id ? "Salvando..." : "Salvar fotos"}
             </button>
           </div>
         </div>
