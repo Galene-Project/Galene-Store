@@ -34,7 +34,7 @@ export default function GaleneStore() {
           .from("products")
           .select(`
             id, name, category, material, price, price_original, discount_percentage, description, featured, tag, instagram_urls, is_launch,
-            product_colors ( colors ( name ) ),
+            product_colors ( colors ( name ), photo_url ),
             stock ( color_id, size_id, colors ( name ), sizes ( name ) ),
             product_media ( type, url )
           `)
@@ -62,6 +62,9 @@ export default function GaleneStore() {
         media: p.product_media || [],
         desc: p.description,
         cores: [...new Set(p.product_colors.map((pc) => pc.colors.name))],
+        coresFotos: Object.fromEntries(
+          p.product_colors.filter((pc) => pc.photo_url).map((pc) => [pc.colors.name, pc.photo_url])
+        ),
         tamanhos: sortSizes([...new Set(
           p.stock.filter((s) => s.sizes?.name && TAMANHOS_VISIVEIS.has(s.sizes.name)).map((s) => s.sizes.name)
         )]),
