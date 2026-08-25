@@ -3,7 +3,7 @@ import Sil from "./Sil";
 import { T, COR_HEX, fmt } from "../../lib/galeneTheme";
 import { useWindowWidth } from "../../hooks/useWindowWidth";
 
-export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder }) {
+export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder, presencial = false, onBuscarCliente, onConfirmarPresencial }) {
   const [step, setStep] = useState(1);
   const [met, setMet]   = useState(null);
   const [salvando, setSalvando] = useState(false);
@@ -11,6 +11,9 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder })
 
   const [form, setForm] = useState({ razao: "", cnpj: "", email: "", tel: "", end: "", cidade: "" });
   const [formErros, setFormErros] = useState({});
+  const [telefoneBusca, setTelefoneBusca] = useState("");
+  const [buscando, setBuscando] = useState(false);
+  const [buscaResultado, setBuscaResultado] = useState(null); // null | "encontrado" | "nao_encontrado"
 
   const w = useWindowWidth();
   const mob = w < 768;
@@ -29,7 +32,7 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder })
     return Object.keys(erros).length === 0;
   };
 
-  const irParaPagamento = () => { if (validarForm()) { setMet("pix"); setStep(3); } };
+  const irParaPagamento = () => { if (validarForm()) { setMet(presencial ? null : "pix"); setStep(3); } };
 
   const confirmarPedido = async (pagamento) => {
     setSalvando(true);
@@ -50,6 +53,45 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder })
     } catch (e) {
       setSalvando(false);
       setErroServidor("Não foi possível registrar o pedido. Tente novamente.");
+    }
+  };
+
+  const buscarCliente = async () => {
+    if (!telefoneBusca.trim() || !onBuscarCliente) return;
+    setBuscando(true);
+    setBuscaResultado(null);
+    try {
+      const cliente = await onBuscarCliente(telefoneBusca.trim());
+      if (cliente) {
+        setForm({
+          razao: cliente.name || cliente.company_name || "",
+          cnpj: cliente.cnpj || "",
+          email: cliente.email || "",
+          tel: cliente.phone || telefoneBusca.trim(),
+          end: "",
+          cidade: "",
+        });
+        setBuscaResultado("encontrado");
+      } else {
+        setBuscaResultado("nao_encontrado");
+      }
+    } catch (e) {
+      setBuscaResultado("nao_encontrado");
+    } finally {
+      setBuscando(false);
+    }
+  };
+
+  const confirmarVendaPresencial = async () => {
+    setSalvando(true);
+    setErroServidor(null);
+    try {
+      const resultado = await onConfirmarPresencial({ form, cart, metodo: met, totalPecas: totPcs, totalValor: totVal });
+      onFinish?.(resultado);
+    } catch (e) {
+      setErroServidor(e.message || "Não foi possível registrar a venda.");
+    } finally {
+      setSalvando(false);
     }
   };
 
@@ -134,6 +176,34 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder })
 
           {step === 2 && (
             <div style={{ display: "grid", gridTemplateColumns: mob ? "1fr" : "1fr 1fr", gap: 14 }}>
+              {presencial && (
+                <div style={{ gridColumn: `span ${mob ? "1" : "2"}`, display: "flex", gap: 10, alignItems: "flex-end", marginBottom: 4 }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ display: "block", fontFamily: "'Lato',sans-serif", fontSize: 10, letterSpacing: 1.5, color: T.ink4, textTransform: "uppercase", marginBottom: 6 }}>
+                      Buscar cliente por telefone
+                    </label>
+                    <input
+                      value={telefoneBusca}
+                      onChange={(e) => setTelefoneBusca(e.target.value)}
+                      placeholder="(00) 00000-0000"
+                      style={{ width: "100%", background: T.panel, border: `1.5px solid ${T.border}`, borderRadius: 8, padding: "11px 14px", fontFamily: "'Lato',sans-serif", fontSize: 13, color: T.ink, outline: "none", boxSizing: "border-box" }}
+                    />
+                  </div>
+                  <button onClick={buscarCliente} disabled={buscando || !telefoneBusca.trim()} style={{ background: "none", border: `1.5px solid ${T.border}`, borderRadius: 8, padding: "11px 16px", cursor: buscando ? "wait" : "pointer", fontFamily: "'Lato',sans-serif", fontSize: 12, fontWeight: 700, color: T.ink3 }}>
+                    {buscando ? "Buscando..." : "Buscar"}
+                  </button>
+                </div>
+              )}
+              {presencial && buscaResultado === "encontrado" && (
+                <div style={{ gridColumn: `span ${mob ? "1" : "2"}`, fontFamily: "'Lato',sans-serif", fontSize: 11, color: T.jade }}>
+                  Cliente encontrado — dados preenchidos abaixo.
+                </div>
+              )}
+              {presencial && buscaResultado === "nao_encontrado" && (
+                <div style={{ gridColumn: `span ${mob ? "1" : "2"}`, fontFamily: "'Lato',sans-serif", fontSize: 11, color: T.ink4 }}>
+                  Cliente não encontrado — cadastre abaixo.
+                </div>
+              )}
               {[
                 ["razao",  "Razão Social *",          "2"],
                 ["cnpj",   "CNPJ / CPF",              "1"],
@@ -177,23 +247,51 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder })
                 </div>
               )}
 
-              <div style={{ textAlign: "center", padding: "24px 0" }}>
-                <div style={{ background: met === "pix" ? "#EAF5EE" : T.goldXlt, border: `1px solid ${met === "pix" ? "#B8D8C4" : T.border}`, borderRadius: 16, padding: "28px 24px", marginBottom: 20 }}>
-                  <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 11, color: T.ink3, marginBottom: 8, letterSpacing: 1 }}>TOTAL A PAGAR</div>
-                  <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 22, color: T.ink2, marginBottom: 4 }}>{totPcs} peças</div>
-                  <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 42, color: met === "pix" ? T.jade : T.gold, fontWeight: 600 }}>{fmt(totVal)}</div>
-                  <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 10, color: T.ink3, marginTop: 8, letterSpacing: 1 }}>
-                    Você vai finalizar em uma página segura do Mercado Pago
+              {presencial ? (
+                <div style={{ textAlign: "center", padding: "24px 0" }}>
+                  <div style={{ background: T.goldXlt, border: `1px solid ${T.border}`, borderRadius: 16, padding: "28px 24px", marginBottom: 20 }}>
+                    <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 11, color: T.ink3, marginBottom: 8, letterSpacing: 1 }}>TOTAL A RECEBER</div>
+                    <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 22, color: T.ink2, marginBottom: 4 }}>{totPcs} peças</div>
+                    <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 42, color: T.gold, fontWeight: 600 }}>{fmt(totVal)}</div>
                   </div>
+                  <div style={{ display: "flex", gap: 10, justifyContent: "center", marginBottom: 20, flexWrap: "wrap" }}>
+                    {[["cartao", "Cartão"], ["dinheiro", "Dinheiro"], ["pix", "Pix"]].map(([id, label]) => (
+                      <button
+                        key={id}
+                        onClick={() => setMet(id)}
+                        style={{ border: `1.5px solid ${met === id ? T.gold : T.border}`, background: met === id ? T.goldXlt : "none", borderRadius: 10, padding: "10px 18px", cursor: "pointer", fontFamily: "'Lato',sans-serif", fontWeight: 700, fontSize: 12, color: met === id ? T.goldDk : T.ink3 }}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    onClick={confirmarVendaPresencial}
+                    disabled={salvando || !met}
+                    style={{ width: "100%", background: (salvando || !met) ? T.bg2 : T.goldDk, border: "none", borderRadius: 12, padding: "16px", color: (salvando || !met) ? T.ink4 : "white", fontFamily: "'Lato',sans-serif", fontSize: 13, fontWeight: 700, cursor: (salvando || !met) ? "default" : "pointer", letterSpacing: 1 }}
+                  >
+                    {salvando ? "Registrando..." : "Confirmar pagamento e finalizar venda"}
+                  </button>
                 </div>
-                <button
-                  onClick={() => confirmarPedido(met)}
-                  disabled={salvando}
-                  style={{ width: "100%", background: salvando ? T.bg2 : T.goldDk, border: "none", borderRadius: 12, padding: "16px", color: salvando ? T.ink4 : "white", fontFamily: "'Lato',sans-serif", fontSize: 13, fontWeight: 700, cursor: salvando ? "wait" : "pointer", letterSpacing: 1 }}
-                >
-                  {salvando ? "Redirecionando…" : "Ir para o pagamento"}
-                </button>
-              </div>
+              ) : (
+                <div style={{ textAlign: "center", padding: "24px 0" }}>
+                  <div style={{ background: met === "pix" ? "#EAF5EE" : T.goldXlt, border: `1px solid ${met === "pix" ? "#B8D8C4" : T.border}`, borderRadius: 16, padding: "28px 24px", marginBottom: 20 }}>
+                    <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 11, color: T.ink3, marginBottom: 8, letterSpacing: 1 }}>TOTAL A PAGAR</div>
+                    <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 22, color: T.ink2, marginBottom: 4 }}>{totPcs} peças</div>
+                    <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 42, color: met === "pix" ? T.jade : T.gold, fontWeight: 600 }}>{fmt(totVal)}</div>
+                    <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 10, color: T.ink3, marginTop: 8, letterSpacing: 1 }}>
+                      Você vai finalizar em uma página segura do Mercado Pago
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => confirmarPedido(met)}
+                    disabled={salvando}
+                    style={{ width: "100%", background: salvando ? T.bg2 : T.goldDk, border: "none", borderRadius: 12, padding: "16px", color: salvando ? T.ink4 : "white", fontFamily: "'Lato',sans-serif", fontSize: 13, fontWeight: 700, cursor: salvando ? "wait" : "pointer", letterSpacing: 1 }}
+                  >
+                    {salvando ? "Redirecionando…" : "Ir para o pagamento"}
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
