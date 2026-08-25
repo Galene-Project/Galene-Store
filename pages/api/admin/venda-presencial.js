@@ -130,7 +130,11 @@ export default async function handler(req, res) {
     });
     if (rpcErr) {
       console.error('Erro ao confirmar pagamento presencial:', rpcErr);
-      return res.status(409).json({ error: { code: 'INSUFFICIENT_STOCK', message: 'Estoque mudou durante a venda — confira e tente novamente.', details: [] } });
+      const ehErroDeEstoque = rpcErr.code === '23514' || (rpcErr.message || '').includes('stock row not found');
+      if (ehErroDeEstoque) {
+        return res.status(409).json({ error: { code: 'INSUFFICIENT_STOCK', message: 'Estoque mudou durante a venda — confira e tente novamente.', details: [] } });
+      }
+      return res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Não foi possível confirmar o pagamento. O pedido foi criado mas não confirmado — avise o suporte.', details: [] } });
     }
 
     return res.status(200).json({ order_number: orderNumber, status: resultado });
