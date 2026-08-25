@@ -212,8 +212,9 @@ function DespesasFixasForm({ recurring, onChanged }) {
           <input type="number" min="0.01" step="0.01" value={valor} onChange={(e) => setValor(e.target.value)} style={{ ...inputStyle, width: "100%" }} />
         </div>
         <div>
-          <div style={{ fontSize: 10, color: "var(--text-4)", marginBottom: 4 }}>Dia do mês (1-28)</div>
-          <input type="number" min="1" max="28" value={diaGeracao} onChange={(e) => setDiaGeracao(e.target.value)} style={{ ...inputStyle, width: "100%" }} />
+          <div style={{ fontSize: 10, color: "var(--text-4)", marginBottom: 4 }}>Dia do mês (1-31)</div>
+          <input type="number" min="1" max="31" value={diaGeracao} onChange={(e) => setDiaGeracao(e.target.value)} style={{ ...inputStyle, width: "100%" }} />
+          <div style={{ fontSize: 9, color: "var(--text-5)", marginTop: 2 }}>Mês sem esse dia (ex: 30 em fevereiro) não gera naquele mês.</div>
         </div>
         <button onClick={salvar} disabled={saving || !valor} style={{
           padding: "8px 16px", borderRadius: 8, border: "none", cursor: saving ? "default" : "pointer",
