@@ -3,6 +3,7 @@ import { Card, SectionTitle } from "../shared";
 import { supabase } from "../../../lib/supabaseClient";
 import { getSession } from "../../../lib/adminAuth";
 import { CATEGORIAS, CATEGORIA_LABEL, SUBCATEGORIA_SUGESTOES } from "../../../lib/expenses";
+import { chipsDeLotes } from "../../../lib/productionRun";
 
 const inputStyle = {
   padding: "6px 10px", borderRadius: 8, border: "1px solid var(--surface-7)",
@@ -245,19 +246,7 @@ function LoteProducaoForm({ produtos, lotes, onSaved }) {
   const [erro, setErro] = useState("");
   const [ultimoLote, setUltimoLote] = useState(null);
 
-  const chips = useMemo(() => {
-    const usados = new Set(CATEGORIAS_PADRAO);
-    const extras = [];
-    (lotes || []).forEach((l) => {
-      (l.custo_itens || []).forEach((item) => {
-        if (item.label && !usados.has(item.label)) {
-          usados.add(item.label);
-          extras.push(item.label);
-        }
-      });
-    });
-    return [...CATEGORIAS_PADRAO, ...extras.sort((a, b) => a.localeCompare(b))];
-  }, [lotes]);
+  const chips = useMemo(() => chipsDeLotes(lotes), [lotes]);
 
   const total = itens.reduce((soma, item) => {
     const v = Number(item.valor);
@@ -335,7 +324,7 @@ function LoteProducaoForm({ produtos, lotes, onSaved }) {
         {itens.map((item, i) => (
           <div key={i} style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <input value={item.label} onChange={(e) => setItemLabel(i, e.target.value)} placeholder="Nome" style={{ ...inputStyle, flex: 1 }} />
-            <input type="number" step="0.01" value={item.valor} onChange={(e) => setItemValor(i, e.target.value)} placeholder="Valor" style={{ ...inputStyle, width: 120 }} />
+            <input type="number" min="0.01" step="0.01" value={item.valor} onChange={(e) => setItemValor(i, e.target.value)} placeholder="Valor" style={{ ...inputStyle, width: 120 }} />
             <button onClick={() => removerItem(i)} aria-label="Remover item" style={{ background: "none", border: "none", color: "var(--text-4)", cursor: "pointer", fontSize: 14, padding: "0 6px" }}>×</button>
           </div>
         ))}
