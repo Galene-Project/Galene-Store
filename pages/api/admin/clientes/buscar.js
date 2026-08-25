@@ -1,4 +1,5 @@
 import { supabaseAdmin } from '../../../../lib/supabaseAdmin';
+import { escapeIlikePattern } from '../../../../lib/customers';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -24,7 +25,7 @@ export default async function handler(req, res) {
   const { data, error } = await supabaseAdmin
     .from('customers')
     .select('id, name, company_name, cnpj, phone, email')
-    .ilike('phone', `%${telefone.trim()}%`)
+    .ilike('phone', `%${escapeIlikePattern(telefone.trim())}%`)
     .order('created_at', { ascending: false })
     .limit(5);
   if (error) {
