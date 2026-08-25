@@ -22,9 +22,9 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder })
   const validarForm = () => {
     const erros = {};
     if (!form.razao.trim()) erros.razao = true;
-    if (!form.cnpj.trim())  erros.cnpj  = true;
     if (!form.email.trim() || !form.email.includes("@")) erros.email = true;
     if (!form.tel.trim())   erros.tel   = true;
+    if (!form.end.trim())   erros.end   = true;
     setFormErros(erros);
     return Object.keys(erros).length === 0;
   };
@@ -136,10 +136,10 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder })
             <div style={{ display: "grid", gridTemplateColumns: mob ? "1fr" : "1fr 1fr", gap: 14 }}>
               {[
                 ["razao",  "Razão Social *",          "2"],
-                ["cnpj",   "CNPJ / CPF *",            "1"],
+                ["cnpj",   "CNPJ / CPF",              "1"],
                 ["email",  "E-mail *",                "1"],
                 ["tel",    "Telefone / WhatsApp *",   "1"],
-                ["end",    "Endereço",                "2"],
+                ["end",    "Endereço *",              "2"],
                 ["cidade", "Cidade / Estado",         "2"],
               ].map(([f, label, c]) => (
                 <div key={f} style={{ gridColumn: `span ${mob ? "1" : c}` }}>
