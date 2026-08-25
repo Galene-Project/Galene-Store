@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Card, SectionTitle } from "../shared";
 import { supabase } from "../../../lib/supabaseClient";
 import { getSession } from "../../../lib/adminAuth";
@@ -226,18 +226,59 @@ function DespesasFixasForm({ recurring, onChanged }) {
   );
 }
 
-function LoteProducaoForm({ produtos, onSaved }) {
+const CATEGORIAS_PADRAO = ['Tecido', 'Costura', 'Aviamento', 'Defeitos', 'Extras'];
+
+function linhasIniciais() {
+  return CATEGORIAS_PADRAO.map((label) => ({ label, valor: '' }));
+}
+
+function LoteProducaoForm({ produtos, lotes, onSaved }) {
   const [productId, setProductId] = useState("");
   const [novoProdutoAberto, setNovoProdutoAberto] = useState(false);
   const [novoNome, setNovoNome] = useState("");
   const [novaCategoria, setNovaCategoria] = useState("");
   const [novoPreco, setNovoPreco] = useState("");
-  const [custoTotal, setCustoTotal] = useState("");
+  const [itens, setItens] = useState(linhasIniciais);
   const [quantidade, setQuantidade] = useState("");
   const [data, setData] = useState(new Date().toISOString().slice(0, 10));
   const [saving, setSaving] = useState(false);
   const [erro, setErro] = useState("");
   const [ultimoLote, setUltimoLote] = useState(null);
+
+  const chips = useMemo(() => {
+    const usados = new Set(CATEGORIAS_PADRAO);
+    const extras = [];
+    (lotes || []).forEach((l) => {
+      (l.custo_itens || []).forEach((item) => {
+        if (item.label && !usados.has(item.label)) {
+          usados.add(item.label);
+          extras.push(item.label);
+        }
+      });
+    });
+    return [...CATEGORIAS_PADRAO, ...extras.sort((a, b) => a.localeCompare(b))];
+  }, [lotes]);
+
+  const total = itens.reduce((soma, item) => {
+    const v = Number(item.valor);
+    return Number.isFinite(v) && v > 0 ? soma + v : soma;
+  }, 0);
+
+  function setItemLabel(i, label) {
+    setItens((prev) => prev.map((item, idx) => (idx === i ? { ...item, label } : item)));
+  }
+
+  function setItemValor(i, valor) {
+    setItens((prev) => prev.map((item, idx) => (idx === i ? { ...item, valor } : item)));
+  }
+
+  function removerItem(i) {
+    setItens((prev) => prev.filter((_, idx) => idx !== i));
+  }
+
+  function adicionarItem(label = "") {
+    setItens((prev) => [...prev, { label, valor: "" }]);
+  }
 
   async function salvar() {
     setSaving(true);
@@ -245,7 +286,7 @@ function LoteProducaoForm({ produtos, onSaved }) {
     try {
       const body = {
         action: "criar",
-        custo_total: custoTotal,
+        custo_itens: itens,
         quantidade_produzida: quantidade,
         data,
       };
@@ -256,7 +297,7 @@ function LoteProducaoForm({ produtos, onSaved }) {
       }
       const resultado = await callApi("/api/admin/lotes", body);
       setUltimoLote(resultado);
-      setCustoTotal(""); setQuantidade(""); setNovoNome(""); setNovaCategoria(""); setNovoPreco("");
+      setItens(linhasIniciais()); setQuantidade(""); setNovoNome(""); setNovaCategoria(""); setNovoPreco("");
       onSaved(resultado);
     } catch (e) {
       setErro(e.message);
@@ -288,10 +329,32 @@ function LoteProducaoForm({ produtos, onSaved }) {
           <input type="number" step="0.01" value={novoPreco} onChange={(e) => setNovoPreco(e.target.value)} placeholder="Preço de venda" style={inputStyle} />
         </div>
       )}
+
+      <div style={{ fontSize: 10, color: "var(--text-4)", marginBottom: 4 }}>Itens de custo</div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 8 }}>
+        {itens.map((item, i) => (
+          <div key={i} style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <input value={item.label} onChange={(e) => setItemLabel(i, e.target.value)} placeholder="Nome" style={{ ...inputStyle, flex: 1 }} />
+            <input type="number" step="0.01" value={item.valor} onChange={(e) => setItemValor(i, e.target.value)} placeholder="Valor" style={{ ...inputStyle, width: 120 }} />
+            <button onClick={() => removerItem(i)} aria-label="Remover item" style={{ background: "none", border: "none", color: "var(--text-4)", cursor: "pointer", fontSize: 14, padding: "0 6px" }}>×</button>
+          </div>
+        ))}
+      </div>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12 }}>
+        {chips.map((label) => (
+          <button key={label} onClick={() => adicionarItem(label)} style={{ fontSize: 10, color: "var(--text-3)", background: "none", border: "1px solid var(--surface-7)", borderRadius: 20, padding: "3px 10px", cursor: "pointer" }}>
+            + {label}
+          </button>
+        ))}
+        <button onClick={() => adicionarItem()} style={{ fontSize: 10, color: "var(--text-3)", background: "none", border: "1px dashed var(--surface-7)", borderRadius: 20, padding: "3px 10px", cursor: "pointer" }}>
+          + item
+        </button>
+      </div>
+
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10, alignItems: "end" }}>
         <div>
-          <div style={{ fontSize: 10, color: "var(--text-4)", marginBottom: 4 }}>Custo total (tecido+costura+logística)</div>
-          <input type="number" step="0.01" value={custoTotal} onChange={(e) => setCustoTotal(e.target.value)} style={{ ...inputStyle, width: "100%" }} />
+          <div style={{ fontSize: 10, color: "var(--text-4)", marginBottom: 4 }}>Custo total</div>
+          <div style={{ ...inputStyle, width: "100%", boxSizing: "border-box", color: "var(--text-2)", fontWeight: 700 }}>{formatBRL(total)}</div>
         </div>
         <div>
           <div style={{ fontSize: 10, color: "var(--text-4)", marginBottom: 4 }}>Quantidade produzida</div>
@@ -301,7 +364,7 @@ function LoteProducaoForm({ produtos, onSaved }) {
           <div style={{ fontSize: 10, color: "var(--text-4)", marginBottom: 4 }}>Data</div>
           <input type="date" value={data} onChange={(e) => setData(e.target.value)} style={{ ...inputStyle, width: "100%" }} />
         </div>
-        <button onClick={salvar} disabled={saving || !custoTotal || !quantidade || (!novoProdutoAberto && !productId)} style={{
+        <button onClick={salvar} disabled={saving || total <= 0 || !quantidade || (!novoProdutoAberto && !productId)} style={{
           padding: "8px 16px", borderRadius: 8, border: "none", cursor: saving ? "default" : "pointer",
           background: "linear-gradient(135deg,#34d399,#38bdf8)", color: "white", fontSize: 12, fontWeight: 700,
           opacity: saving ? 0.6 : 1,
@@ -433,7 +496,7 @@ export default function Despesas() {
       <NovaDespesaForm onSaved={carregarDespesas} />
       <TabelaDespesas expenses={expenses} onApagar={apagarDespesa} />
       <DespesasFixasForm recurring={recurring} onChanged={carregarDespesas} />
-      <LoteProducaoForm produtos={produtos} onSaved={carregarLotes} />
+      <LoteProducaoForm produtos={produtos} lotes={lotes} onSaved={carregarLotes} />
       {lotesPendentes.length > 0 && (
         <Card delay={0.2}>
           <SectionTitle accent="#38bdf8">Lotes aguardando distribuição de estoque ({lotesPendentes.length})</SectionTitle>
