@@ -24,7 +24,7 @@ export default async function handler(req, res) {
     if (action === 'listar') {
       const { data, error } = await supabaseAdmin
         .from('production_runs')
-        .select('id, product_id, custo_total, quantidade_produzida, quantidade_distribuida, data, products(name)')
+        .select('id, product_id, custo_total, custo_itens, quantidade_produzida, quantidade_distribuida, data, products(name)')
         .order('data', { ascending: false })
         .limit(100);
       if (error) throw error;
@@ -32,11 +32,11 @@ export default async function handler(req, res) {
     }
 
     if (action === 'criar') {
-      const { product_id, novo_produto, custo_total, quantidade_produzida, data } = req.body || {};
+      const { product_id, novo_produto, custo_itens, quantidade_produzida, data } = req.body || {};
 
       let parsedRun;
       try {
-        parsedRun = validateProductionRun({ custo_total, quantidade_produzida, data });
+        parsedRun = validateProductionRun({ custo_itens, quantidade_produzida, data });
       } catch (e) {
         return res.status(400).json({ error: { code: 'VALIDATION_FAILED', message: e.message, details: [] } });
       }
@@ -72,6 +72,7 @@ export default async function handler(req, res) {
         .insert({
           product_id: productId,
           custo_total: parsedRun.custo_total,
+          custo_itens: parsedRun.custo_itens,
           quantidade_produzida: parsedRun.quantidade_produzida,
           data: parsedRun.data,
         })
