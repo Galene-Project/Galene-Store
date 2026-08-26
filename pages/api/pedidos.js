@@ -11,6 +11,9 @@ export default async function handler(req, res) {
   if (!form || !cart?.length) {
     return res.status(400).json({ error: { code: 'VALIDATION_FAILED', message: 'Dados do pedido incompletos.', details: [] } });
   }
+  if (!form.razao?.trim() || !form.end?.trim() || !form.tel?.trim() || !form.email?.trim() || !form.email.includes('@')) {
+    return res.status(400).json({ error: { code: 'VALIDATION_FAILED', message: 'Nome, endereço, telefone e email são obrigatórios.', details: [] } });
+  }
 
   try {
     // Preço vem sempre do banco, nunca do corpo do POST — ver lib/pricing.js.
@@ -84,7 +87,7 @@ export default async function handler(req, res) {
       .insert([{
         name: form.razao?.trim(),
         company_name: form.razao?.trim(),
-        cnpj: form.cnpj?.trim(),
+        cnpj: form.cnpj?.trim() || null,
         phone: form.tel?.trim(),
         email: form.email?.trim(),
       }])

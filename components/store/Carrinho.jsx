@@ -14,6 +14,8 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder, p
   const [telefoneBusca, setTelefoneBusca] = useState("");
   const [buscando, setBuscando] = useState(false);
   const [buscaResultado, setBuscaResultado] = useState(null); // null | "encontrado" | "nao_encontrado"
+  const [clienteId, setClienteId] = useState(null);
+  const [idempotencyKey] = useState(() => (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`));
 
   const w = useWindowWidth();
   const mob = w < 768;
@@ -63,6 +65,7 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder, p
     try {
       const cliente = await onBuscarCliente(telefoneBusca.trim());
       if (cliente) {
+        setClienteId(cliente.id);
         setForm({
           razao: cliente.name || cliente.company_name || "",
           cnpj: cliente.cnpj || "",
@@ -73,10 +76,13 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder, p
         });
         setBuscaResultado("encontrado");
       } else {
+        setClienteId(null);
         setBuscaResultado("nao_encontrado");
       }
     } catch (e) {
-      setBuscaResultado("nao_encontrado");
+      console.error('Erro ao buscar cliente:', e);
+      setClienteId(null);
+      setBuscaResultado("erro");
     } finally {
       setBuscando(false);
     }
@@ -86,7 +92,7 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder, p
     setSalvando(true);
     setErroServidor(null);
     try {
-      const resultado = await onConfirmarPresencial({ form, cart, metodo: met, totalPecas: totPcs, totalValor: totVal });
+      const resultado = await onConfirmarPresencial({ form, cart, metodo: met, clienteId, idempotencyKey });
       onFinish?.(resultado);
     } catch (e) {
       setErroServidor(e.message || "Não foi possível registrar a venda.");
@@ -202,6 +208,11 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder, p
               {presencial && buscaResultado === "nao_encontrado" && (
                 <div style={{ gridColumn: `span ${mob ? "1" : "2"}`, fontFamily: "'Lato',sans-serif", fontSize: 11, color: T.ink4 }}>
                   Cliente não encontrado — cadastre abaixo.
+                </div>
+              )}
+              {presencial && buscaResultado === "erro" && (
+                <div style={{ gridColumn: `span ${mob ? "1" : "2"}`, fontFamily: "'Lato',sans-serif", fontSize: 11, color: T.ruby }}>
+                  Erro ao buscar cliente — tente de novo.
                 </div>
               )}
               {[

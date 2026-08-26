@@ -1,6 +1,7 @@
 import { supabaseAdmin } from '../../../lib/supabaseAdmin';
 import { computeOrderItems } from '../../../lib/pricing';
 import { findShortages, formatShortages } from '../../../lib/stock';
+import { normalizePhone } from '../../../lib/customers';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -18,7 +19,7 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Sessão inválida ou expirada.', details: [] } });
   }
 
-  const { form, cart, metodo } = req.body || {};
+  const { form, cart, metodo, clienteId, idempotencyKey } = req.body || {};
   if (!form || !cart?.length) {
     return res.status(400).json({ error: { code: 'VALIDATION_FAILED', message: 'Dados da venda incompletos.', details: [] } });
   }
@@ -85,18 +86,49 @@ export default async function handler(req, res) {
       });
     }
 
-    const { data: customer, error: custErr } = await supabaseAdmin
-      .from('customers')
-      .insert([{
-        name: form.razao.trim(),
-        company_name: form.razao.trim(),
-        cnpj: form.cnpj?.trim() || null,
-        phone: form.tel.trim(),
-        email: form.email.trim(),
-      }])
-      .select()
-      .single();
-    if (custErr) throw custErr;
+    const paymentId = idempotencyKey ? `presencial-${idempotencyKey}` : null;
+    if (paymentId) {
+      const { data: existing } = await supabaseAdmin
+        .from('orders')
+        .select('order_number, status')
+        .eq('payment_id', paymentId)
+        .maybeSingle();
+      if (existing) {
+        return res.status(200).json({ order_number: existing.order_number, status: existing.status === 'pago' ? 'ok' : existing.status });
+      }
+    }
+
+    let customer;
+    if (clienteId) {
+      const { data: updated, error: updErr } = await supabaseAdmin
+        .from('customers')
+        .update({
+          name: form.razao.trim(),
+          company_name: form.razao.trim(),
+          cnpj: form.cnpj?.trim() || null,
+          phone: normalizePhone(form.tel),
+          email: form.email.trim(),
+        })
+        .eq('id', clienteId)
+        .select()
+        .single();
+      if (updErr) throw updErr;
+      customer = updated;
+    } else {
+      const { data: inserted, error: insErr } = await supabaseAdmin
+        .from('customers')
+        .insert([{
+          name: form.razao.trim(),
+          company_name: form.razao.trim(),
+          cnpj: form.cnpj?.trim() || null,
+          phone: normalizePhone(form.tel),
+          email: form.email.trim(),
+        }])
+        .select()
+        .single();
+      if (insErr) throw insErr;
+      customer = inserted;
+    }
 
     const orderNumber = `PED-${Date.now()}`;
     const { data: order, error: orderErr } = await supabaseAdmin
@@ -106,6 +138,7 @@ export default async function handler(req, res) {
         customer_id: customer.id,
         payment_provider: 'presencial',
         payment_method: metodo,
+        payment_id: paymentId,
         shipping_address: { endereco: form.end.trim(), cidade: form.cidade || '' },
         total: priced.total,
       }])
@@ -126,15 +159,16 @@ export default async function handler(req, res) {
 
     const { data: resultado, error: rpcErr } = await supabaseAdmin.rpc('claim_payment_and_decrement_stock', {
       p_order_id: order.id,
-      p_payment_id: `presencial-${Date.now()}`,
+      p_payment_id: paymentId || `presencial-${Date.now()}`,
     });
     if (rpcErr) {
       console.error('Erro ao confirmar pagamento presencial:', rpcErr);
+      await supabaseAdmin.from('orders').delete().eq('id', order.id);
       const ehErroDeEstoque = rpcErr.code === '23514' || (rpcErr.message || '').includes('stock row not found');
       if (ehErroDeEstoque) {
         return res.status(409).json({ error: { code: 'INSUFFICIENT_STOCK', message: 'Estoque mudou durante a venda — confira e tente novamente.', details: [] } });
       }
-      return res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Não foi possível confirmar o pagamento. O pedido foi criado mas não confirmado — avise o suporte.', details: [] } });
+      return res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Não foi possível confirmar o pagamento. Tente novamente.', details: [] } });
     }
 
     return res.status(200).json({ order_number: orderNumber, status: resultado });

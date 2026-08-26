@@ -6,7 +6,7 @@ import Sidebar from "../../components/store/Sidebar";
 import { CardDest, Card } from "../../components/store/Cards";
 import ModalProd from "../../components/store/ModalProd";
 import Carrinho from "../../components/store/Carrinho";
-import { T, sortSizes } from "../../lib/galeneTheme";
+import { T, CATS, sortSizes } from "../../lib/galeneTheme";
 import { mapProdutos } from "../../lib/catalogo";
 import { useWindowWidth } from "../../hooks/useWindowWidth";
 import { supabase } from "../../lib/supabaseClient";
@@ -33,58 +33,58 @@ export default function VendaPresencial() {
     getSession().then((s) => { setSession(s); setCheckingSession(false); });
   }, []);
 
-  useEffect(() => {
+  const fetchProdutos = useCallback(async () => {
     if (!session) return;
-    async function fetchProdutos() {
-      const [{ data, error }, { data: statusRows }, { data: settingsRow }] = await Promise.all([
-        supabase
-          .from("products")
-          .select(`
-            id, name, category, material, price, price_original, discount_percentage, description, featured, tag, instagram_urls, is_launch,
-            product_colors ( colors ( name ), photo_url ),
-            stock ( color_id, size_id, colors ( name ), sizes ( name ) ),
-            product_media ( type, url )
-          `)
-          .eq("is_active", true),
-        supabase.from("estoque_status_publico").select("product_id, color_id, size_id, status").limit(5000),
-        supabase.from("store_settings").select("min_order").limit(1).single(),
-      ]);
-      if (error) { console.error("Erro ao buscar produtos:", error); setLoading(false); return; }
-      if (settingsRow?.min_order) setMinOrder(settingsRow.min_order);
+    const [{ data, error }, { data: statusRows, error: statusErr }, { data: settingsRow }] = await Promise.all([
+      supabase
+        .from("products")
+        .select(`
+          id, name, category, material, price, price_original, discount_percentage, description, featured, tag, instagram_urls, is_launch,
+          product_colors ( colors ( name ), photo_url ),
+          stock ( color_id, size_id, colors ( name ), sizes ( name ) ),
+          product_media ( type, url )
+        `)
+        .eq("is_active", true),
+      supabase.from("estoque_status_publico").select("product_id, color_id, size_id, status").limit(5000),
+      supabase.from("store_settings").select("min_order").limit(1).single(),
+    ]);
+    if (error) { console.error("Erro ao buscar produtos:", error); setLoading(false); return; }
+    if (statusErr) { console.error("Erro ao buscar status de estoque:", statusErr); }
+    if (settingsRow?.min_order) setMinOrder(settingsRow.min_order);
 
-      const baseProdutos = (data || []).map((p) => ({
-        id: p.id,
-        nome: p.name,
-        cat: p.category,
-        sub: p.material,
-        preco: Number(p.price),
-        precoOriginal: p.price_original ? Number(p.price_original) : null,
-        descontoPct: p.discount_percentage ? Number(p.discount_percentage) : null,
-        destaque: p.featured,
-        tag: p.tag,
-        instagramUrls: p.instagram_urls || [],
-        isLaunch: p.is_launch,
-        media: p.product_media || [],
-        desc: p.description,
-        cores: [...new Set(p.product_colors.map((pc) => pc.colors.name))],
-        coresFotos: Object.fromEntries(
-          p.product_colors.filter((pc) => pc.photo_url).map((pc) => [pc.colors.name, pc.photo_url])
-        ),
-        tamanhos: sortSizes([...new Set(
-          p.stock.filter((s) => s.sizes?.name && TAMANHOS_VISIVEIS.has(s.sizes.name)).map((s) => s.sizes.name)
-        )]),
-        product_colors: p.product_colors,
-        stock: p.stock,
-      }));
+    const baseProdutos = (data || []).map((p) => ({
+      id: p.id,
+      nome: p.name,
+      cat: p.category,
+      sub: p.material,
+      preco: Number(p.price),
+      precoOriginal: p.price_original ? Number(p.price_original) : null,
+      descontoPct: p.discount_percentage ? Number(p.discount_percentage) : null,
+      destaque: p.featured,
+      tag: p.tag,
+      instagramUrls: p.instagram_urls || [],
+      isLaunch: p.is_launch,
+      media: p.product_media || [],
+      desc: p.description,
+      cores: [...new Set(p.product_colors.map((pc) => pc.colors.name))],
+      coresFotos: Object.fromEntries(
+        p.product_colors.filter((pc) => pc.photo_url).map((pc) => [pc.colors.name, pc.photo_url])
+      ),
+      tamanhos: sortSizes([...new Set(
+        p.stock.filter((s) => s.sizes?.name && TAMANHOS_VISIVEIS.has(s.sizes.name)).map((s) => s.sizes.name)
+      )]),
+      product_colors: p.product_colors,
+      stock: p.stock,
+    }));
 
-      const mapped = mapProdutos(baseProdutos, statusRows || [], TAMANHOS_VISIVEIS)
-        .map(({ product_colors, stock, product_media, ...p }) => p)
-        .filter((p) => p.cores.length && p.tamanhos.length);
-      setProdutos(mapped);
-      setLoading(false);
-    }
-    fetchProdutos();
+    const mapped = mapProdutos(baseProdutos, statusRows || [], TAMANHOS_VISIVEIS)
+      .map(({ product_colors, stock, product_media, ...p }) => p)
+      .filter((p) => p.cores.length && p.tamanhos.length);
+    setProdutos(mapped);
+    setLoading(false);
   }, [session]);
+
+  useEffect(() => { fetchProdutos(); }, [fetchProdutos]);
 
   const totPcs = cart.reduce((s, i) => s + i.sel.reduce((a, x) => a + x.qtd, 0), 0);
   const prods = cat === "destaques"
@@ -122,7 +122,8 @@ export default function VendaPresencial() {
     setCat("destaques");
     setToast(`Venda ${resultado?.order_number || ""} registrada com sucesso!`);
     setTimeout(() => setToast(null), 4000);
-  }, []);
+    fetchProdutos();
+  }, [fetchProdutos]);
 
   async function buscarClientePorTelefone(telefone) {
     const s = await getSession();
@@ -136,12 +137,12 @@ export default function VendaPresencial() {
     return data.clientes?.[0] || null;
   }
 
-  async function confirmarVendaPresencial({ form, cart: cartFinal, metodo }) {
+  async function confirmarVendaPresencial({ form, cart: cartFinal, metodo, clienteId, idempotencyKey }) {
     const s = await getSession();
     const res = await fetch("/api/admin/venda-presencial", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${s?.access_token}` },
-      body: JSON.stringify({ form, cart: cartFinal, metodo }),
+      body: JSON.stringify({ form, cart: cartFinal, metodo, clienteId, idempotencyKey }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data?.error?.message || "Erro ao registrar venda.");
@@ -198,6 +199,17 @@ export default function VendaPresencial() {
           {!mob && (
             <div style={{ position: "sticky", top: 65, height: "calc(100vh - 65px)", overflowY: "auto", flexShrink: 0 }}>
               <Sidebar cat={cat} setCat={setCat} mobile={false} produtos={produtos} redes={REDES_VAZIAS} />
+            </div>
+          )}
+          {mob && (
+            <div style={{ padding: "12px 14px 0", width: "100%" }}>
+              <select
+                value={cat}
+                onChange={(e) => setCat(e.target.value)}
+                style={{ width: "100%", background: T.panel, border: `1.5px solid ${T.border}`, borderRadius: 8, padding: "10px 12px", fontFamily: "'Lato',sans-serif", fontSize: 13, color: T.ink }}
+              >
+                {CATS.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
+              </select>
             </div>
           )}
           <main style={{ flex: 1, padding: mob ? "14px 12px 60px" : "28px 32px 60px", minWidth: 0 }}>

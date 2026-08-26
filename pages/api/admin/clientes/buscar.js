@@ -1,5 +1,5 @@
 import { supabaseAdmin } from '../../../../lib/supabaseAdmin';
-import { escapeIlikePattern } from '../../../../lib/customers';
+import { escapeIlikePattern, normalizePhone } from '../../../../lib/customers';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -18,16 +18,17 @@ export default async function handler(req, res) {
   }
 
   const { telefone } = req.body || {};
-  if (!telefone?.trim()) {
+  const telefoneNormalizado = normalizePhone(telefone);
+  if (!telefoneNormalizado) {
     return res.status(400).json({ error: { code: 'VALIDATION_FAILED', message: 'telefone obrigatório.', details: [] } });
   }
 
   const { data, error } = await supabaseAdmin
     .from('customers')
     .select('id, name, company_name, cnpj, phone, email')
-    .ilike('phone', `%${escapeIlikePattern(telefone.trim())}%`)
+    .ilike('phone', `%${escapeIlikePattern(telefoneNormalizado)}%`)
     .order('created_at', { ascending: false })
-    .limit(5);
+    .limit(1);
   if (error) {
     console.error('Erro ao buscar cliente:', error);
     return res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Não foi possível buscar o cliente.', details: [] } });
