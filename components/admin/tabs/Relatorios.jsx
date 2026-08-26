@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { productReport } from "../../../lib/reportMetrics";
-import { SectionTitle, Card, inputStyle } from "../shared";
+import { SectionTitle, Card, inputStyle, selectStyle } from "../shared";
 import { supabase } from "../../../lib/supabaseClient";
 import { getSession } from "../../../lib/adminAuth";
 
@@ -156,17 +156,17 @@ export default function Relatorios({ data }) {
       <Card style={{ marginBottom: 16 }}>
         <SectionTitle>Relatório por Produto</SectionTitle>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
-          <select value={tipo} onChange={(e) => setTipo(e.target.value)} style={inputStyle}>
+          <select value={tipo} onChange={(e) => setTipo(e.target.value)} style={selectStyle}>
             <option value="vendas">Vendas</option>
             <option value="estoque">Estoque</option>
           </select>
 
-          <select value={categoria} onChange={(e) => { setCategoria(e.target.value); setProdutoId(""); }} style={inputStyle}>
+          <select value={categoria} onChange={(e) => { setCategoria(e.target.value); setProdutoId(""); }} style={selectStyle}>
             <option value="">Produto: todos</option>
             {categorias.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
 
-          <select value={produtoId} onChange={(e) => setProdutoId(e.target.value)} style={{ ...inputStyle, minWidth: 220 }}>
+          <select value={produtoId} onChange={(e) => setProdutoId(e.target.value)} style={{ ...selectStyle, minWidth: 220 }}>
             <option value="">Tipo de produto</option>
             {produtosFiltrados.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>

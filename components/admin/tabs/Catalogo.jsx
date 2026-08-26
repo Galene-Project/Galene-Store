@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import JsBarcode from "jsbarcode";
-import { SectionTitle, Card, inputStyle } from "../shared";
+import { SectionTitle, Card, inputStyle, selectStyle } from "../shared";
 import { supabase } from "../../../lib/supabaseClient";
 import { getSession } from "../../../lib/adminAuth";
 
@@ -174,11 +174,11 @@ function NovoProdutoForm({ cores, tamanhos, onCancel, onCreated }) {
       <div style={{ fontSize: 11, color: "var(--text-4)", marginBottom: 8 }}>Variantes (cor / tamanho / quantidade em estoque)</div>
       {variantes.map((v, i) => (
         <div key={i} style={{ display: "flex", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
-          <select value={v.color_id} onChange={(e) => setVariante(i, "color_id", e.target.value)} style={inputStyle}>
+          <select value={v.color_id} onChange={(e) => setVariante(i, "color_id", e.target.value)} style={selectStyle}>
             <option value="">Cor</option>
             {cores.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
-          <select value={v.size_id} onChange={(e) => setVariante(i, "size_id", e.target.value)} style={inputStyle}>
+          <select value={v.size_id} onChange={(e) => setVariante(i, "size_id", e.target.value)} style={selectStyle}>
             <option value="">Tamanho</option>
             {tamanhos.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
           </select>

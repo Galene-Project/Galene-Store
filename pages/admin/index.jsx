@@ -97,6 +97,11 @@ export default function AdminPage() {
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500;600&display=swap');
         @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
         * { box-sizing:border-box; }
+        /* globals.css força input{font-size:16px!important} pra evitar zoom automático no iOS
+           na loja — no admin isso batia por cima do fontSize:12 do inputStyle e deixava input
+           maior que select (que a regra global não toca). .admin-root input tem mais
+           especificidade que o seletor global, então vence mesmo com !important dos dois lados. */
+        .admin-root input { font-size: 12px !important; }
         ::-webkit-scrollbar { width:6px; }
         ::-webkit-scrollbar-thumb { background:rgba(192,132,252,0.3); border-radius:3px; }
 

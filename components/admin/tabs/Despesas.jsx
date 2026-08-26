@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Card, SectionTitle, inputStyle, labelStyle } from "../shared";
+import { Card, SectionTitle, inputStyle, selectStyle, labelStyle } from "../shared";
 import { supabase } from "../../../lib/supabaseClient";
 import { getSession } from "../../../lib/adminAuth";
 import { CATEGORIAS, CATEGORIA_LABEL, SUBCATEGORIA_SUGESTOES } from "../../../lib/expenses";
@@ -57,7 +57,7 @@ function NovaDespesaForm({ onSaved }) {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(6,1fr)", gap: 10, alignItems: "end" }}>
         <div>
           <div style={labelStyle}>Categoria</div>
-          <select value={categoria} onChange={(e) => setCategoria(e.target.value)} style={{ ...inputStyle, width: "100%" }}>
+          <select value={categoria} onChange={(e) => setCategoria(e.target.value)} style={{ ...selectStyle, width: "100%" }}>
             {CATEGORIAS.map((c) => <option key={c} value={c}>{CATEGORIA_LABEL[c]}</option>)}
           </select>
         </div>
@@ -195,7 +195,7 @@ function DespesasFixasForm({ recurring, onChanged }) {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 10, alignItems: "end" }}>
         <div>
           <div style={labelStyle}>Categoria</div>
-          <select value={categoria} onChange={(e) => setCategoria(e.target.value)} style={{ ...inputStyle, width: "100%" }}>
+          <select value={categoria} onChange={(e) => setCategoria(e.target.value)} style={{ ...selectStyle, width: "100%" }}>
             {CATEGORIAS.map((c) => <option key={c} value={c}>{CATEGORIA_LABEL[c]}</option>)}
           </select>
         </div>
@@ -302,7 +302,7 @@ function LoteProducaoForm({ produtos, lotes, onSaved }) {
       {!novoProdutoAberto ? (
         <div style={{ marginBottom: 12 }}>
           <div style={labelStyle}>Produto</div>
-          <select value={productId} onChange={(e) => setProductId(e.target.value)} style={{ ...inputStyle, width: "100%" }}>
+          <select value={productId} onChange={(e) => setProductId(e.target.value)} style={{ ...selectStyle, width: "100%" }}>
             <option value="">Selecione...</option>
             {produtos.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
@@ -400,11 +400,11 @@ function DistribuicaoLote({ lote, cores, tamanhos, onDistribuido }) {
       </div>
       {linhas.map((l, i) => (
         <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 6 }}>
-          <select value={l.color_id} onChange={(e) => setLinha(i, "color_id", e.target.value)} style={{ ...inputStyle, width: "100%" }}>
+          <select value={l.color_id} onChange={(e) => setLinha(i, "color_id", e.target.value)} style={{ ...selectStyle, width: "100%" }}>
             <option value="">Cor...</option>
             {cores.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
-          <select value={l.size_id} onChange={(e) => setLinha(i, "size_id", e.target.value)} style={{ ...inputStyle, width: "100%" }}>
+          <select value={l.size_id} onChange={(e) => setLinha(i, "size_id", e.target.value)} style={{ ...selectStyle, width: "100%" }}>
             <option value="">Tamanho...</option>
             {tamanhos.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
           </select>

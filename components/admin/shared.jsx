@@ -3,7 +3,19 @@ import React from "react";
 export const inputStyle = {
   padding: "11px 14px", borderRadius: 10, border: "1.5px solid var(--surface-7)",
   background: "var(--surface-3)", color: "var(--text-2)", fontSize: 12,
+  fontFamily: "'DM Sans','Segoe UI',sans-serif", lineHeight: 1.4,
   boxSizing: "border-box",
+};
+
+// <select> ignora appearance nativo do SO (Windows/Mac/Linux renderizam
+// tamanho e fonte diferentes) — appearance:none + seta própria deixa
+// select do mesmo tamanho/fonte que input/textarea em qualquer SO.
+export const selectStyle = {
+  ...inputStyle,
+  appearance: "none", WebkitAppearance: "none", MozAppearance: "none",
+  paddingRight: 34, cursor: "pointer",
+  backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2364748b'/%3E%3C/svg%3E\")",
+  backgroundRepeat: "no-repeat", backgroundPosition: "right 14px center",
 };
 
 export const labelStyle = {
