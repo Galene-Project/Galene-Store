@@ -1,14 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Card, SectionTitle } from "../shared";
+import { Card, SectionTitle, inputStyle, labelStyle } from "../shared";
 import { supabase } from "../../../lib/supabaseClient";
 import { getSession } from "../../../lib/adminAuth";
 import { CATEGORIAS, CATEGORIA_LABEL, SUBCATEGORIA_SUGESTOES } from "../../../lib/expenses";
 import { chipsDeLotes } from "../../../lib/productionRun";
-
-const inputStyle = {
-  padding: "6px 10px", borderRadius: 8, border: "1px solid var(--surface-7)",
-  background: "var(--surface-3)", color: "var(--text-2)", fontSize: 12,
-};
 
 function formatBRL(v) {
   return `R$${Number(v).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
@@ -61,28 +56,28 @@ function NovaDespesaForm({ onSaved }) {
       <SectionTitle>Nova despesa variável</SectionTitle>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(6,1fr)", gap: 10, alignItems: "end" }}>
         <div>
-          <div style={{ fontSize: 10, color: "var(--text-4)", marginBottom: 4 }}>Categoria</div>
+          <div style={labelStyle}>Categoria</div>
           <select value={categoria} onChange={(e) => setCategoria(e.target.value)} style={{ ...inputStyle, width: "100%" }}>
             {CATEGORIAS.map((c) => <option key={c} value={c}>{CATEGORIA_LABEL[c]}</option>)}
           </select>
         </div>
         <div>
-          <div style={{ fontSize: 10, color: "var(--text-4)", marginBottom: 4 }}>Subcategoria</div>
+          <div style={labelStyle}>Subcategoria</div>
           <input list="subcategoria-sugestoes" value={subcategoria} onChange={(e) => setSubcategoria(e.target.value)} style={{ ...inputStyle, width: "100%" }} placeholder="ex: Aluguel" />
           <datalist id="subcategoria-sugestoes">
             {(SUBCATEGORIA_SUGESTOES[categoria] || []).map((s) => <option key={s} value={s} />)}
           </datalist>
         </div>
         <div>
-          <div style={{ fontSize: 10, color: "var(--text-4)", marginBottom: 4 }}>Valor (R$)</div>
+          <div style={labelStyle}>Valor (R$)</div>
           <input type="number" min="0.01" step="0.01" value={valor} onChange={(e) => setValor(e.target.value)} style={{ ...inputStyle, width: "100%" }} />
         </div>
         <div>
-          <div style={{ fontSize: 10, color: "var(--text-4)", marginBottom: 4 }}>Competência</div>
+          <div style={labelStyle}>Competência</div>
           <input type="date" value={dataCompetencia} onChange={(e) => setDataCompetencia(e.target.value)} style={{ ...inputStyle, width: "100%" }} />
         </div>
         <div>
-          <div style={{ fontSize: 10, color: "var(--text-4)", marginBottom: 4 }}>Pagamento (opcional)</div>
+          <div style={labelStyle}>Pagamento (opcional)</div>
           <input type="date" value={dataPagamento} onChange={(e) => setDataPagamento(e.target.value)} style={{ ...inputStyle, width: "100%" }} />
         </div>
         <button onClick={salvar} disabled={saving || !valor} style={{
@@ -199,21 +194,21 @@ function DespesasFixasForm({ recurring, onChanged }) {
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 10, alignItems: "end" }}>
         <div>
-          <div style={{ fontSize: 10, color: "var(--text-4)", marginBottom: 4 }}>Categoria</div>
+          <div style={labelStyle}>Categoria</div>
           <select value={categoria} onChange={(e) => setCategoria(e.target.value)} style={{ ...inputStyle, width: "100%" }}>
             {CATEGORIAS.map((c) => <option key={c} value={c}>{CATEGORIA_LABEL[c]}</option>)}
           </select>
         </div>
         <div>
-          <div style={{ fontSize: 10, color: "var(--text-4)", marginBottom: 4 }}>Subcategoria</div>
+          <div style={labelStyle}>Subcategoria</div>
           <input value={subcategoria} onChange={(e) => setSubcategoria(e.target.value)} style={{ ...inputStyle, width: "100%" }} placeholder="ex: Aluguel" />
         </div>
         <div>
-          <div style={{ fontSize: 10, color: "var(--text-4)", marginBottom: 4 }}>Valor (R$)</div>
+          <div style={labelStyle}>Valor (R$)</div>
           <input type="number" min="0.01" step="0.01" value={valor} onChange={(e) => setValor(e.target.value)} style={{ ...inputStyle, width: "100%" }} />
         </div>
         <div>
-          <div style={{ fontSize: 10, color: "var(--text-4)", marginBottom: 4 }}>Dia do mês (1-31)</div>
+          <div style={labelStyle}>Dia do mês (1-31)</div>
           <input type="number" min="1" max="31" value={diaGeracao} onChange={(e) => setDiaGeracao(e.target.value)} style={{ ...inputStyle, width: "100%" }} />
           <div style={{ fontSize: 9, color: "var(--text-5)", marginTop: 2 }}>Mês sem esse dia (ex: 30 em fevereiro) não gera naquele mês.</div>
         </div>
@@ -306,7 +301,7 @@ function LoteProducaoForm({ produtos, lotes, onSaved }) {
       </div>
       {!novoProdutoAberto ? (
         <div style={{ marginBottom: 12 }}>
-          <div style={{ fontSize: 10, color: "var(--text-4)", marginBottom: 4 }}>Produto</div>
+          <div style={labelStyle}>Produto</div>
           <select value={productId} onChange={(e) => setProductId(e.target.value)} style={{ ...inputStyle, width: "100%" }}>
             <option value="">Selecione...</option>
             {produtos.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
@@ -320,7 +315,7 @@ function LoteProducaoForm({ produtos, lotes, onSaved }) {
         </div>
       )}
 
-      <div style={{ fontSize: 10, color: "var(--text-4)", marginBottom: 4 }}>Itens de custo</div>
+      <div style={labelStyle}>Itens de custo</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 8 }}>
         {itens.map((item, i) => (
           <div key={i} style={{ display: "flex", gap: 8, alignItems: "center" }}>
@@ -343,15 +338,15 @@ function LoteProducaoForm({ produtos, lotes, onSaved }) {
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10, alignItems: "end" }}>
         <div>
-          <div style={{ fontSize: 10, color: "var(--text-4)", marginBottom: 4 }}>Custo total</div>
+          <div style={labelStyle}>Custo total</div>
           <div style={{ ...inputStyle, width: "100%", boxSizing: "border-box", color: "var(--text-2)", fontWeight: 700 }}>{formatBRL(total)}</div>
         </div>
         <div>
-          <div style={{ fontSize: 10, color: "var(--text-4)", marginBottom: 4 }}>Quantidade produzida</div>
+          <div style={labelStyle}>Quantidade produzida</div>
           <input type="number" step="1" value={quantidade} onChange={(e) => setQuantidade(e.target.value)} style={{ ...inputStyle, width: "100%" }} />
         </div>
         <div>
-          <div style={{ fontSize: 10, color: "var(--text-4)", marginBottom: 4 }}>Data</div>
+          <div style={labelStyle}>Data</div>
           <input type="date" value={data} onChange={(e) => setData(e.target.value)} style={{ ...inputStyle, width: "100%" }} />
         </div>
         <button onClick={salvar} disabled={saving || total <= 0 || !quantidade || (!novoProdutoAberto && !productId)} style={{

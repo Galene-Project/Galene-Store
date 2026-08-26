@@ -1,5 +1,16 @@
 import React from "react";
 
+export const inputStyle = {
+  padding: "11px 14px", borderRadius: 10, border: "1.5px solid var(--surface-7)",
+  background: "var(--surface-3)", color: "var(--text-2)", fontSize: 12,
+  boxSizing: "border-box",
+};
+
+export const labelStyle = {
+  fontSize: 11, fontWeight: 600, color: "var(--text-3)",
+  marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.05em",
+};
+
 export function SectionTitle({ children, accent = "#c084fc" }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>

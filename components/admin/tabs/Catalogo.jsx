@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import JsBarcode from "jsbarcode";
-import { SectionTitle, Card } from "../shared";
+import { SectionTitle, Card, inputStyle } from "../shared";
 import { supabase } from "../../../lib/supabaseClient";
 import { getSession } from "../../../lib/adminAuth";
 
@@ -41,11 +41,6 @@ function imprimirEtiquetas(etiquetas) {
   win.focus();
   win.print();
 }
-
-const inputStyle = {
-  padding: "6px 10px", borderRadius: 8, border: "1px solid var(--surface-7)",
-  background: "var(--surface-3)", color: "var(--text-2)", fontSize: 12,
-};
 
 function formatBRL(v) {
   return `R$${Number(v).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;

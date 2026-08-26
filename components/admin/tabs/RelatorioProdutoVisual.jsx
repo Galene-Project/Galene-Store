@@ -1,13 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { productReport } from "../../../lib/reportMetrics";
-import { SectionTitle, Card, CustomTooltip, CORES } from "../shared";
+import { SectionTitle, Card, CustomTooltip, CORES, inputStyle } from "../shared";
 import { supabase } from "../../../lib/supabaseClient";
-
-const selectStyle = {
-  padding: "8px 12px", borderRadius: 8, border: "1px solid var(--surface-7)",
-  background: "var(--surface-3)", color: "var(--text-2)", fontSize: 12,
-};
 
 export default function RelatorioProdutoVisual({ items, orders, periodo }) {
   const [produtos, setProdutos] = useState([]);
@@ -59,15 +54,15 @@ export default function RelatorioProdutoVisual({ items, orders, periodo }) {
     <Card>
       <SectionTitle accent="#38bdf8">Relatório por produto</SectionTitle>
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 16 }}>
-        <select value={tipo} onChange={(e) => setTipo(e.target.value)} style={selectStyle}>
+        <select value={tipo} onChange={(e) => setTipo(e.target.value)} style={inputStyle}>
           <option value="vendas">Vendas</option>
           <option value="estoque">Estoque</option>
         </select>
-        <select value={categoria} onChange={(e) => { setCategoria(e.target.value); setProdutoId(""); }} style={selectStyle}>
+        <select value={categoria} onChange={(e) => { setCategoria(e.target.value); setProdutoId(""); }} style={inputStyle}>
           <option value="">Categoria: todas</option>
           {categorias.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
-        <select value={produtoId} onChange={(e) => setProdutoId(e.target.value)} style={{ ...selectStyle, minWidth: 220 }}>
+        <select value={produtoId} onChange={(e) => setProdutoId(e.target.value)} style={{ ...inputStyle, minWidth: 220 }}>
           <option value="">Selecione um produto</option>
           {produtosFiltrados.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
         </select>

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import CONFIG from "../../lib/adminConfig";
 import { supabase } from "../../lib/supabaseClient";
 import { getSession } from "../../lib/adminAuth";
+import { inputStyle, labelStyle } from "./shared";
 
 const Section = ({ title, icon, children, status }) => {
   const [open, setOpen] = useState(true);
@@ -185,38 +186,38 @@ export default function SettingsPage() {
           <>
             <div className="admin-chart-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom: 16 }}>
               <div>
-                <div style={{ fontSize:11, fontWeight:600, color:"var(--text-3)", marginBottom:6, textTransform:"uppercase", letterSpacing:"0.05em" }}>Nome da loja</div>
+                <div style={labelStyle}>Nome da loja</div>
                 <input value={loja.name} onChange={(e) => setLoja((p) => ({ ...p, name: e.target.value }))}
-                  style={{ width:"100%", padding:"11px 14px", borderRadius:10, background:"var(--surface-3)", border:"1.5px solid var(--surface-7)", color:"var(--text-2)", fontSize:12, boxSizing:"border-box" }} />
+                  style={{ ...inputStyle, width:"100%" }} />
               </div>
               <div>
-                <div style={{ fontSize:11, fontWeight:600, color:"var(--text-3)", marginBottom:6, textTransform:"uppercase", letterSpacing:"0.05em" }}>Nome do agente</div>
+                <div style={labelStyle}>Nome do agente</div>
                 <input value={loja.agent_name} onChange={(e) => setLoja((p) => ({ ...p, agent_name: e.target.value }))}
-                  style={{ width:"100%", padding:"11px 14px", borderRadius:10, background:"var(--surface-3)", border:"1.5px solid var(--surface-7)", color:"var(--text-2)", fontSize:12, boxSizing:"border-box" }} />
+                  style={{ ...inputStyle, width:"100%" }} />
               </div>
               <div>
-                <div style={{ fontSize:11, fontWeight:600, color:"var(--text-3)", marginBottom:6, textTransform:"uppercase", letterSpacing:"0.05em" }}>WhatsApp</div>
+                <div style={labelStyle}>WhatsApp</div>
                 <input value={loja.whatsapp} onChange={(e) => setLoja((p) => ({ ...p, whatsapp: e.target.value }))} placeholder="55XXXXXXXXXXX"
-                  style={{ width:"100%", padding:"11px 14px", borderRadius:10, background:"var(--surface-3)", border:"1.5px solid var(--surface-7)", color:"var(--text-2)", fontSize:12, fontFamily:"'DM Mono',monospace", boxSizing:"border-box" }} />
+                  style={{ ...inputStyle, width:"100%", fontFamily:"'DM Mono',monospace" }} />
               </div>
               <div>
-                <div style={{ fontSize:11, fontWeight:600, color:"var(--text-3)", marginBottom:6, textTransform:"uppercase", letterSpacing:"0.05em" }}>Instagram</div>
+                <div style={labelStyle}>Instagram</div>
                 <input value={loja.instagram} onChange={(e) => setLoja((p) => ({ ...p, instagram: e.target.value }))} placeholder="@galene ou link completo"
-                  style={{ width:"100%", padding:"11px 14px", borderRadius:10, background:"var(--surface-3)", border:"1.5px solid var(--surface-7)", color:"var(--text-2)", fontSize:12, boxSizing:"border-box" }} />
+                  style={{ ...inputStyle, width:"100%" }} />
               </div>
               <div>
-                <div style={{ fontSize:11, fontWeight:600, color:"var(--text-3)", marginBottom:6, textTransform:"uppercase", letterSpacing:"0.05em" }}>Facebook</div>
+                <div style={labelStyle}>Facebook</div>
                 <input value={loja.facebook} onChange={(e) => setLoja((p) => ({ ...p, facebook: e.target.value }))} placeholder="galene ou link completo"
-                  style={{ width:"100%", padding:"11px 14px", borderRadius:10, background:"var(--surface-3)", border:"1.5px solid var(--surface-7)", color:"var(--text-2)", fontSize:12, boxSizing:"border-box" }} />
+                  style={{ ...inputStyle, width:"100%" }} />
               </div>
               <div>
-                <div style={{ fontSize:11, fontWeight:600, color:"var(--text-3)", marginBottom:6, textTransform:"uppercase", letterSpacing:"0.05em" }}>Pedido mínimo</div>
+                <div style={labelStyle}>Pedido mínimo</div>
                 <input type="number" min="1" step="1" value={loja.min_order} onChange={(e) => setLoja((p) => ({ ...p, min_order: e.target.value }))}
-                  style={{ width:"100%", padding:"11px 14px", borderRadius:10, background:"var(--surface-3)", border:"1.5px solid var(--surface-7)", color:"var(--text-2)", fontSize:12, boxSizing:"border-box" }} />
+                  style={{ ...inputStyle, width:"100%" }} />
               </div>
               <div>
-                <div style={{ fontSize:11, fontWeight:600, color:"var(--text-3)", marginBottom:6, textTransform:"uppercase", letterSpacing:"0.05em" }}>Pagamento</div>
-                <div style={{ padding:"11px 14px", borderRadius:10, background:"var(--surface-3)", border:"1.5px solid var(--surface-7)", color:"var(--text-4)", fontSize:12 }}>
+                <div style={labelStyle}>Pagamento</div>
+                <div style={{ ...inputStyle, color:"var(--text-4)" }}>
                   Pix (automático) — site público só oferece Pix. Cartão fica fora do site, só pra cliente selecionado ou compra na loja física.
                 </div>
               </div>

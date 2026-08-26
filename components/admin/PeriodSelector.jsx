@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { presetParaIntervalo } from "../../lib/dashboardMetrics";
+import { inputStyle } from "./shared";
 
 const PRESETS = [
   { id: "7d", label: "7 dias" },
@@ -13,11 +14,6 @@ const buttonStyle = (ativo) => ({
   background: ativo ? "linear-gradient(135deg,#c084fc,#818cf8)" : "var(--surface-3)",
   color: ativo ? "white" : "var(--text-3)", fontSize: 12, fontWeight: 600, cursor: "pointer",
 });
-
-const inputStyle = {
-  padding: "6px 10px", borderRadius: 8, border: "1px solid var(--surface-7)",
-  background: "var(--surface-3)", color: "var(--text-2)", fontSize: 12,
-};
 
 export default function PeriodSelector({ value, onChange }) {
   const [customOpen, setCustomOpen] = useState(value.preset === "custom");

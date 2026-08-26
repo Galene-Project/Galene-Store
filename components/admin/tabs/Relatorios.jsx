@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { productReport } from "../../../lib/reportMetrics";
-import { SectionTitle, Card } from "../shared";
+import { SectionTitle, Card, inputStyle } from "../shared";
 import { supabase } from "../../../lib/supabaseClient";
 import { getSession } from "../../../lib/adminAuth";
 
@@ -15,11 +15,6 @@ async function callApi(path, body) {
   if (!res.ok) throw new Error(json?.error?.message || "Falha na requisição.");
   return json;
 }
-
-const selectStyle = {
-  padding: "8px 12px", borderRadius: 8, border: "1px solid var(--surface-7)",
-  background: "var(--surface-3)", color: "var(--text-2)", fontSize: 12,
-};
 
 // Agrupa linhas cor×tamanho por cor (bloco visual) — dentro de cada
 // cor, mantém a ordenação que já veio (mais vendido/maior estoque
@@ -161,17 +156,17 @@ export default function Relatorios({ data }) {
       <Card style={{ marginBottom: 16 }}>
         <SectionTitle>Relatório por Produto</SectionTitle>
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
-          <select value={tipo} onChange={(e) => setTipo(e.target.value)} style={selectStyle}>
+          <select value={tipo} onChange={(e) => setTipo(e.target.value)} style={inputStyle}>
             <option value="vendas">Vendas</option>
             <option value="estoque">Estoque</option>
           </select>
 
-          <select value={categoria} onChange={(e) => { setCategoria(e.target.value); setProdutoId(""); }} style={selectStyle}>
+          <select value={categoria} onChange={(e) => { setCategoria(e.target.value); setProdutoId(""); }} style={inputStyle}>
             <option value="">Produto: todos</option>
             {categorias.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
 
-          <select value={produtoId} onChange={(e) => setProdutoId(e.target.value)} style={{ ...selectStyle, minWidth: 220 }}>
+          <select value={produtoId} onChange={(e) => setProdutoId(e.target.value)} style={{ ...inputStyle, minWidth: 220 }}>
             <option value="">Tipo de produto</option>
             {produtosFiltrados.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
@@ -179,8 +174,8 @@ export default function Relatorios({ data }) {
 
         {tipo === "vendas" && (
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
-            <input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} style={selectStyle} />
-            <input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} style={selectStyle} />
+            <input type="date" value={dataInicio} onChange={(e) => setDataInicio(e.target.value)} style={inputStyle} />
+            <input type="date" value={dataFim} onChange={(e) => setDataFim(e.target.value)} style={inputStyle} />
           </div>
         )}
       </Card>
@@ -301,13 +296,13 @@ export default function Relatorios({ data }) {
                                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
                                     <input type="number" placeholder={`Qtd (máx ${row.quantity})`} value={moverForm.quantity}
                                       onChange={(e) => setMoverForm((f) => ({ ...f, quantity: e.target.value }))}
-                                      style={{ ...selectStyle, width: 130 }} />
+                                      style={{ ...inputStyle, width: 130 }} />
                                     <input type="number" step="0.01" placeholder="Preço defeito" value={moverForm.defectPrice}
                                       onChange={(e) => setMoverForm((f) => ({ ...f, defectPrice: e.target.value }))}
-                                      style={{ ...selectStyle, width: 130 }} />
+                                      style={{ ...inputStyle, width: 130 }} />
                                     <input placeholder="Motivo (opcional)" value={moverForm.reason}
                                       onChange={(e) => setMoverForm((f) => ({ ...f, reason: e.target.value }))}
-                                      style={{ ...selectStyle, flex: 1, minWidth: 140 }} />
+                                      style={{ ...inputStyle, flex: 1, minWidth: 140 }} />
                                     <button onClick={() => handleMover(row)} disabled={defeitoSaving}
                                       style={{ padding: "6px 12px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#c084fc,#818cf8)", color: "white", fontSize: 11, fontWeight: 700, cursor: defeitoSaving ? "wait" : "pointer" }}>
                                       {defeitoSaving ? "Movendo..." : "Confirmar"}
