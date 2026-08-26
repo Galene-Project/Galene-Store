@@ -137,7 +137,7 @@ function DespesasFixasForm({ recurring, onChanged }) {
   const [categoria, setCategoria] = useState(CATEGORIAS[1]);
   const [subcategoria, setSubcategoria] = useState("");
   const [valor, setValor] = useState("");
-  const [diaGeracao, setDiaGeracao] = useState("1");
+  const [dataGeracao, setDataGeracao] = useState(() => new Date().toISOString().slice(0, 10));
   const [saving, setSaving] = useState(false);
   const [erro, setErro] = useState("");
 
@@ -145,6 +145,7 @@ function DespesasFixasForm({ recurring, onChanged }) {
     setSaving(true);
     setErro("");
     try {
+      const diaGeracao = String(new Date(`${dataGeracao}T00:00:00`).getDate());
       await callApi("/api/admin/despesas", { action: "criar_recorrente", categoria, subcategoria, valor, dia_geracao: diaGeracao });
       setSubcategoria(""); setValor("");
       onChanged();
@@ -208,9 +209,9 @@ function DespesasFixasForm({ recurring, onChanged }) {
           <input type="number" min="0.01" step="0.01" value={valor} onChange={(e) => setValor(e.target.value)} style={{ ...inputStyle, width: "100%" }} />
         </div>
         <div>
-          <div style={labelStyle}>Dia do mês (1-31)</div>
-          <input type="number" min="1" max="31" value={diaGeracao} onChange={(e) => setDiaGeracao(e.target.value)} style={{ ...inputStyle, width: "100%" }} />
-          <div style={{ fontSize: 9, color: "var(--text-5)", marginTop: 2 }}>Mês sem esse dia (ex: 30 em fevereiro) não gera naquele mês.</div>
+          <div style={labelStyle}>Dia do mês</div>
+          <input type="date" value={dataGeracao} onChange={(e) => setDataGeracao(e.target.value)} style={{ ...inputStyle, width: "100%" }} />
+          <div style={{ fontSize: 9, color: "var(--text-5)", marginTop: 2 }}>Só o dia importa. Mês sem esse dia (ex: 30 em fevereiro) não gera naquele mês.</div>
         </div>
         <button onClick={salvar} disabled={saving || !valor} style={{
           padding: "8px 16px", borderRadius: 8, border: "none", cursor: saving ? "default" : "pointer",
