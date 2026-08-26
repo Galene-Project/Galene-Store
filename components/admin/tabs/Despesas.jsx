@@ -309,9 +309,9 @@ function LoteProducaoForm({ produtos, lotes, onSaved }) {
         </div>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 12 }}>
-          <input value={novoNome} onChange={(e) => setNovoNome(e.target.value)} placeholder="Nome do produto" style={inputStyle} />
-          <input value={novaCategoria} onChange={(e) => setNovaCategoria(e.target.value)} placeholder="Categoria" style={inputStyle} />
-          <input type="number" step="0.01" value={novoPreco} onChange={(e) => setNovoPreco(e.target.value)} placeholder="Preço de venda" style={inputStyle} />
+          <input value={novoNome} onChange={(e) => setNovoNome(e.target.value)} placeholder="Nome do produto" style={{ ...inputStyle, width: "100%" }} />
+          <input value={novaCategoria} onChange={(e) => setNovaCategoria(e.target.value)} placeholder="Categoria" style={{ ...inputStyle, width: "100%" }} />
+          <input type="number" step="0.01" value={novoPreco} onChange={(e) => setNovoPreco(e.target.value)} placeholder="Preço de venda" style={{ ...inputStyle, width: "100%" }} />
         </div>
       )}
 
@@ -400,15 +400,15 @@ function DistribuicaoLote({ lote, cores, tamanhos, onDistribuido }) {
       </div>
       {linhas.map((l, i) => (
         <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 6 }}>
-          <select value={l.color_id} onChange={(e) => setLinha(i, "color_id", e.target.value)} style={inputStyle}>
+          <select value={l.color_id} onChange={(e) => setLinha(i, "color_id", e.target.value)} style={{ ...inputStyle, width: "100%" }}>
             <option value="">Cor...</option>
             {cores.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
-          <select value={l.size_id} onChange={(e) => setLinha(i, "size_id", e.target.value)} style={inputStyle}>
+          <select value={l.size_id} onChange={(e) => setLinha(i, "size_id", e.target.value)} style={{ ...inputStyle, width: "100%" }}>
             <option value="">Tamanho...</option>
             {tamanhos.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
           </select>
-          <input type="number" min="1" value={l.quantity} onChange={(e) => setLinha(i, "quantity", e.target.value)} placeholder="Qtd" style={inputStyle} />
+          <input type="number" min="1" value={l.quantity} onChange={(e) => setLinha(i, "quantity", e.target.value)} placeholder="Qtd" style={{ ...inputStyle, width: "100%" }} />
         </div>
       ))}
       <div style={{ display: "flex", gap: 10, marginTop: 8 }}>

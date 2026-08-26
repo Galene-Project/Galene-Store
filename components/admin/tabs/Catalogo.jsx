@@ -162,12 +162,12 @@ function NovoProdutoForm({ cores, tamanhos, onCancel, onCreated }) {
         </div>
       )}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
-        <input placeholder="Nome" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} style={inputStyle} />
-        <input placeholder="Categoria" value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))} style={inputStyle} />
-        <input placeholder="Material" value={form.material} onChange={(e) => setForm((f) => ({ ...f, material: e.target.value }))} style={inputStyle} />
-        <input placeholder="SKU (opcional)" value={form.sku} onChange={(e) => setForm((f) => ({ ...f, sku: e.target.value }))} style={inputStyle} />
-        <input type="number" step="0.01" placeholder="Preço" value={form.price} onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))} style={inputStyle} />
-        <input placeholder="URL da foto (opcional)" value={form.photo_url} onChange={(e) => setForm((f) => ({ ...f, photo_url: e.target.value }))} style={inputStyle} />
+        <input placeholder="Nome" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} style={{ ...inputStyle, width: "100%" }} />
+        <input placeholder="Categoria" value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))} style={{ ...inputStyle, width: "100%" }} />
+        <input placeholder="Material" value={form.material} onChange={(e) => setForm((f) => ({ ...f, material: e.target.value }))} style={{ ...inputStyle, width: "100%" }} />
+        <input placeholder="SKU (opcional)" value={form.sku} onChange={(e) => setForm((f) => ({ ...f, sku: e.target.value }))} style={{ ...inputStyle, width: "100%" }} />
+        <input type="number" step="0.01" placeholder="Preço" value={form.price} onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))} style={{ ...inputStyle, width: "100%" }} />
+        <input placeholder="URL da foto (opcional)" value={form.photo_url} onChange={(e) => setForm((f) => ({ ...f, photo_url: e.target.value }))} style={{ ...inputStyle, width: "100%" }} />
       </div>
       <textarea placeholder="Descrição (opcional)" value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} style={{ ...inputStyle, width: "100%", minHeight: 60, marginBottom: 12 }} />
 

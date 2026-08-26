@@ -206,7 +206,7 @@ export default function VendaPresencial() {
               <select
                 value={cat}
                 onChange={(e) => setCat(e.target.value)}
-                style={{ width: "100%", background: T.panel, border: `1.5px solid ${T.border}`, borderRadius: 8, padding: "10px 12px", fontFamily: "'Lato',sans-serif", fontSize: 13, color: T.ink }}
+                style={{ width: "100%", background: T.panel, border: `1.5px solid ${T.border}`, borderRadius: 8, padding: "11px 14px", fontFamily: "'Lato',sans-serif", fontSize: 13, color: T.ink, boxSizing: "border-box" }}
               >
                 {CATS.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
               </select>
