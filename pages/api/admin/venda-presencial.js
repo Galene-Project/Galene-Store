@@ -31,6 +31,18 @@ export default async function handler(req, res) {
   }
 
   try {
+    const paymentId = idempotencyKey ? `presencial-${idempotencyKey}` : null;
+    if (paymentId) {
+      const { data: existing } = await supabaseAdmin
+        .from('orders')
+        .select('order_number, status')
+        .eq('payment_id', paymentId)
+        .maybeSingle();
+      if (existing) {
+        return res.status(200).json({ order_number: existing.order_number, status: existing.status === 'pago' ? 'ok' : existing.status });
+      }
+    }
+
     const productIds = [...new Set(cart.map((i) => i.id))];
     const { data: products, error: prodErr } = await supabaseAdmin
       .from('products')
@@ -84,18 +96,6 @@ export default async function handler(req, res) {
       return res.status(409).json({
         error: { code: 'INSUFFICIENT_STOCK', message: `Estoque insuficiente: ${formatShortages(faltas)}`, details: faltas },
       });
-    }
-
-    const paymentId = idempotencyKey ? `presencial-${idempotencyKey}` : null;
-    if (paymentId) {
-      const { data: existing } = await supabaseAdmin
-        .from('orders')
-        .select('order_number, status')
-        .eq('payment_id', paymentId)
-        .maybeSingle();
-      if (existing) {
-        return res.status(200).json({ order_number: existing.order_number, status: existing.status === 'pago' ? 'ok' : existing.status });
-      }
     }
 
     let customer;
