@@ -423,7 +423,7 @@ function DistribuicaoLote({ lote, cores, tamanhos, onDistribuido }) {
   );
 }
 
-export default function Despesas() {
+export default function Despesas({ onRefresh }) {
   const [expenses, setExpenses] = useState([]);
   const [recurring, setRecurring] = useState([]);
   const [lotes, setLotes] = useState([]);
@@ -445,6 +445,19 @@ export default function Despesas() {
     setLotes(r.rows);
   }
 
+  // Depois de uma mutação (não no load inicial), também atualiza o `data`
+  // central que Fluxo de Caixa lê via data.raw — senão despesa/lote novo
+  // só aparece lá depois de recarregar a página inteira.
+  async function recarregarDespesas() {
+    await carregarDespesas();
+    onRefresh?.();
+  }
+
+  async function recarregarLotes() {
+    await carregarLotes();
+    onRefresh?.();
+  }
+
   useEffect(() => {
     Promise.all([
       carregarDespesas(),
@@ -461,7 +474,7 @@ export default function Despesas() {
     setErrorMsg("");
     try {
       await callApi("/api/admin/despesas", { action: "apagar", id });
-      await carregarDespesas();
+      await recarregarDespesas();
     } catch (e) {
       setErrorMsg(e.message);
     }
@@ -479,15 +492,15 @@ export default function Despesas() {
           ⚠️ {errorMsg}
         </div>
       )}
-      <NovaDespesaForm onSaved={carregarDespesas} />
+      <NovaDespesaForm onSaved={recarregarDespesas} />
       <TabelaDespesas expenses={expenses} onApagar={apagarDespesa} />
-      <DespesasFixasForm recurring={recurring} onChanged={carregarDespesas} />
-      <LoteProducaoForm produtos={produtos} lotes={lotes} onSaved={carregarLotes} />
+      <DespesasFixasForm recurring={recurring} onChanged={recarregarDespesas} />
+      <LoteProducaoForm produtos={produtos} lotes={lotes} onSaved={recarregarLotes} />
       {lotesPendentes.length > 0 && (
         <Card delay={0.2}>
           <SectionTitle accent="#38bdf8">Lotes aguardando distribuição de estoque ({lotesPendentes.length})</SectionTitle>
           {lotesPendentes.map((l) => (
-            <DistribuicaoLote key={l.id} lote={l} cores={cores} tamanhos={tamanhos} onDistribuido={carregarLotes} />
+            <DistribuicaoLote key={l.id} lote={l} cores={cores} tamanhos={tamanhos} onDistribuido={recarregarLotes} />
           ))}
         </Card>
       )}

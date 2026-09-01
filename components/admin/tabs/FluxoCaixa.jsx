@@ -6,7 +6,9 @@ import { presetParaIntervalo } from "../../../lib/dashboardMetrics";
 import { fluxoCaixa } from "../../../lib/cashFlow";
 
 function formatBRL(v) {
-  return `R$${Number(v).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
+  const n = Number(v);
+  const sign = n < 0 ? "-" : "";
+  return `${sign}R$${Math.abs(n).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
 }
 
 export default function FluxoCaixa({ data }) {
@@ -47,7 +49,7 @@ export default function FluxoCaixa({ data }) {
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {resumo.saidaPorCategoria.map((c, i) => {
-              const pct = Math.round((c.valor / resumo.saidaPorCategoria[0].valor) * 100);
+              const pct = resumo.saidaPorCategoria[0].valor ? Math.round((c.valor / resumo.saidaPorCategoria[0].valor) * 100) : 0;
               return (
                 <div key={i}>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
@@ -78,7 +80,7 @@ export default function FluxoCaixa({ data }) {
             <tbody>
               {resumo.movimentos.map((m, i) => (
                 <tr key={i} style={{ borderBottom: "1px solid var(--surface-3)" }}>
-                  <td style={{ padding: "8px 10px", color: "var(--text-3)" }}>{new Date(m.data).toLocaleDateString("pt-BR")}</td>
+                  <td style={{ padding: "8px 10px", color: "var(--text-3)" }}>{m.data.split('-').reverse().join('/')}</td>
                   <td style={{ padding: "8px 10px" }}>
                     <span style={{
                       padding: "2px 8px", borderRadius: 6, fontSize: 10, fontWeight: 700,

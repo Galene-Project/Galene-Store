@@ -267,7 +267,7 @@ export default function AdminPage() {
         )}
         {activeTab==="settings" && <SettingsPage />}
         {activeTab==="catalogo" && <Catalogo />}
-        {activeTab==="despesas" && <Despesas />}
+        {activeTab==="despesas" && <Despesas onRefresh={loadData} />}
       </div>
 
       {showLogout && (
