@@ -5,10 +5,8 @@ import KPICard from "../KPICard";
 import { SectionTitle, CustomTooltip, Card, CORES } from "../shared";
 import { presetParaIntervalo, resumoVendas, serieFaturamento } from "../../../lib/dashboardMetrics";
 import RelatorioProdutoVisual from "./RelatorioProdutoVisual";
+import { formatBRL, formatBRLk } from "../../../lib/format";
 
-function formatBRL(v) {
-  return `R$${Number(v).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
-}
 
 const grupoLabelStyle = {
   fontSize: 10, color: "var(--text-4)", textTransform: "uppercase",
@@ -72,7 +70,7 @@ export default function Visao360({ data }) {
       <div>
         <div style={grupoLabelStyle}>Estoque (agora)</div>
         <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14 }}>
-          <KPICard icon="📦" label="SKUs Ativos" value={kpis.totalSkus} sub={`${kpis.disponiveis} c/ estoque`} accent="#34d399" />
+          <KPICard icon="📦" label="Produtos Ativos" value={kpis.totalSkus} sub={`${kpis.disponiveis} variantes c/ estoque`} accent="#34d399" />
           <KPICard icon="⚠️" label="Estoque Baixo" value={kpis.estoqueBaixo} sub="atenção" accent="#fb923c" />
           <KPICard icon="❌" label="Esgotados" value={kpis.esgotados} sub="repor urgente" accent="#ef4444" />
         </div>
@@ -93,7 +91,7 @@ export default function Visao360({ data }) {
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-4)" />
               <XAxis dataKey="label" tick={{ fill: "var(--text-4)", fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: "var(--text-4)", fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `R$${(v / 1000).toFixed(1)}k`} />
+              <YAxis tick={{ fill: "var(--text-4)", fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={formatBRLk} />
               <Tooltip content={<CustomTooltip prefix="R$" />} />
               <Area type="monotone" dataKey="valor" name="Faturamento" stroke="#c084fc" strokeWidth={2.5} fill="url(#gVisao360)" dot={{ r: 3, fill: "#c084fc" }} />
             </AreaChart>

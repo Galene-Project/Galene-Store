@@ -4,12 +4,8 @@ import KPICard from "../KPICard";
 import { SectionTitle, Card } from "../shared";
 import { presetParaIntervalo } from "../../../lib/dashboardMetrics";
 import { fluxoCaixa } from "../../../lib/cashFlow";
+import { formatBRL } from "../../../lib/format";
 
-function formatBRL(v) {
-  const n = Number(v);
-  const sign = n < 0 ? "-" : "";
-  return `${sign}R$${Math.abs(n).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
-}
 
 export default function FluxoCaixa({ data }) {
   const [periodo, setPeriodo] = useState({ preset: "30d", ...presetParaIntervalo("30d") });

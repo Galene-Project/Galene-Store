@@ -9,6 +9,11 @@ import { SectionTitle, CustomTooltip, Card, CORES_TAM } from "../shared";
 
 export default function Estoque({ data }) {
   const { vendasPorCategoria, estoqueAlertas, distribuicaoTamanho, kpis, estoquePorCategoria } = data;
+  // totalSkus conta produtos; disponiveis/esgotados contam variantes (cor × tamanho)
+  // — porcentagem só faz sentido entre as duas últimas.
+  // Antes o texto era fixo ("M representa 35%") e discordava do gráfico acima.
+  const tamanhoLider = [...distribuicaoTamanho].sort((a, b) => b.value - a.value)[0];
+  const totalVariantes = kpis.disponiveis + kpis.esgotados;
   const vendidoPorCategoria = new Map(vendasPorCategoria.map((v) => [v.nome, v.vendas]));
   const estoqueReal = estoquePorCategoria.map((e) => ({
     nome: e.nome, estoque: e.estoque, vendido: vendidoPorCategoria.get(e.nome) || 0,
@@ -17,8 +22,8 @@ export default function Estoque({ data }) {
   return (
     <>
       <div className="admin-kpi-grid" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:14, marginBottom:22 }}>
-        <KPICard icon="📦" label="Total de SKUs"   value={kpis.totalSkus}   accent="#c084fc"  delay={0}    />
-        <KPICard icon="✅" label="Disponíveis"     value={kpis.disponiveis} sub={`${Math.round(kpis.disponiveis/kpis.totalSkus*100)}%`} accent="#34d399" delay={0.05} />
+        <KPICard icon="📦" label="Produtos Ativos" value={kpis.totalSkus}   sub={`${totalVariantes} variantes`} accent="#c084fc"  delay={0}    />
+        <KPICard icon="✅" label="Variantes Disponíveis" value={kpis.disponiveis} sub={`${totalVariantes ? Math.round(kpis.disponiveis/totalVariantes*100) : 0}%`} accent="#34d399" delay={0.05} />
         <KPICard icon="⚠️" label="Estoque Baixo"  value={kpis.estoqueBaixo} sub="atenção"     accent="#fb923c" delay={0.1}  />
         <KPICard icon="❌" label="Esgotados"       value={kpis.esgotados}   sub="repor urgente" accent="#ef4444" delay={0.15} />
       </div>
@@ -52,9 +57,11 @@ export default function Estoque({ data }) {
               </Bar>
             </BarChart>
           </ResponsiveContainer>
-          <div style={{ marginTop:14, padding:12, background:"var(--surface-2)", borderRadius:10 }}>
-            <div style={{ fontSize:11, color:"var(--text-4)" }}>💡 Tamanho M representa 35% das vendas — priorize no reabastecimento</div>
-          </div>
+          {tamanhoLider && (
+            <div style={{ marginTop:14, padding:12, background:"var(--surface-2)", borderRadius:10 }}>
+              <div style={{ fontSize:11, color:"var(--text-4)" }}>💡 Tamanho {tamanhoLider.name} representa {tamanhoLider.value}% das vendas — priorize no reabastecimento</div>
+            </div>
+          )}
         </Card>
       </div>
 

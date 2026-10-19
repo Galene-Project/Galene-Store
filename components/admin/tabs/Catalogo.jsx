@@ -3,6 +3,7 @@ import JsBarcode from "jsbarcode";
 import { SectionTitle, Card, inputStyle, selectStyle } from "../shared";
 import { supabase } from "../../../lib/supabaseClient";
 import { getSession } from "../../../lib/adminAuth";
+import { formatBRL } from "../../../lib/format";
 
 // Etiqueta genérica 60x40mm — ajustar quando a impressora/rolo real for confirmado.
 function svgStringFor(code) {
@@ -42,9 +43,6 @@ function imprimirEtiquetas(etiquetas) {
   win.print();
 }
 
-function formatBRL(v) {
-  return `R$${Number(v).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
-}
 
 function Toggle({ checked, onChange, disabled, label }) {
   return (

@@ -4,10 +4,8 @@ import { supabase } from "../../../lib/supabaseClient";
 import { getSession } from "../../../lib/adminAuth";
 import { CATEGORIAS, CATEGORIA_LABEL, SUBCATEGORIA_SUGESTOES } from "../../../lib/expenses";
 import { chipsDeLotes } from "../../../lib/productionRun";
+import { formatBRL } from "../../../lib/format";
 
-function formatBRL(v) {
-  return `R$${Number(v).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
-}
 
 async function callApi(path, body) {
   const session = await getSession();

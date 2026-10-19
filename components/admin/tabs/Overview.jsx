@@ -7,6 +7,7 @@ import {
 } from "recharts";
 import KPICard from "../KPICard";
 import { SectionTitle, CustomTooltip, Card, CORES, CORES_TAM } from "../shared";
+import { formatBRLk } from "../../../lib/format";
 
 export default function Overview({ data }) {
   const { faturamentoMensal, vendasPorCategoria, topProdutos, estoqueAlertas, distribuicaoTamanho, kpis, comparativo, topClientes, produtosParados, produtosParadosTotal } = data;
@@ -17,13 +18,13 @@ export default function Overview({ data }) {
   return (
     <>
       <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(8,1fr)", gap: 14, marginBottom: 22 }}>
-        <KPICard icon="💰" label="Faturamento (6 meses)"  value={`R$${(totalFat/1000).toFixed(1)}k`} sub="6 meses"          trend={comparativo.faturamentoPct !== null ? { pct: comparativo.faturamentoPct, up: comparativo.faturamentoPct >= 0 } : null} accent="#c084fc" delay={0}    />
+        <KPICard icon="💰" label="Faturamento (6 meses)"  value={formatBRLk(totalFat)} sub="6 meses"          trend={comparativo.faturamentoPct !== null ? { pct: comparativo.faturamentoPct, up: comparativo.faturamentoPct >= 0 } : null} accent="#c084fc" delay={0}    />
         <KPICard icon="🛒" label="Total de Pedidos"       value={totalPedidos}                        sub="6 meses"          trend={comparativo.pedidosPct !== null ? { pct: comparativo.pedidosPct, up: comparativo.pedidosPct >= 0 } : null} accent="#818cf8" delay={0.05}  />
         <KPICard icon="🎯" label="Ticket Médio"           value={`R$${ticketMedio}`}                  sub="por pedido"       accent="#38bdf8" delay={0.1}   />
-        <KPICard icon="📦" label="SKUs Ativos"            value={kpis.totalSkus}                      sub={`${kpis.disponiveis} c/ estoque`} accent="#34d399" delay={0.15}  />
-        <KPICard icon="⚠️" label="Alertas de Estoque"    value={estoqueAlertas.length}               sub={`${kpis.esgotados} esgotados`} accent="#fb923c" delay={0.2} />
+        <KPICard icon="📦" label="Produtos Ativos"         value={kpis.totalSkus}                      sub={`${kpis.disponiveis} variantes c/ estoque`} accent="#34d399" delay={0.15}  />
+        <KPICard icon="⚠️" label="Alertas de Estoque"    value={kpis.estoqueBaixo + kpis.esgotados} sub={`${kpis.esgotados} esgotados`} accent="#fb923c" delay={0.2} />
         <KPICard icon="📅" label="Pedidos Hoje"           value={kpis.pedidosHoje}                    sub={`R$${kpis.faturamentoHoje.toFixed(2)}`}    accent="#f472b6" delay={0.25} />
-        <KPICard icon="📈" label="Lucro Líquido"          value={`R$${(kpis.lucroLiquido/1000).toFixed(1)}k`} sub="6 meses, aproximado" accent={kpis.lucroLiquido >= 0 ? "#34d399" : "#ef4444"} delay={0.3} />
+        <KPICard icon="📈" label="Lucro Líquido"          value={formatBRLk(kpis.lucroLiquido)} sub="6 meses, aproximado" accent={kpis.lucroLiquido >= 0 ? "#34d399" : "#ef4444"} delay={0.3} />
         <KPICard icon="⚖️" label="Ponto de Equilíbrio"   value={kpis.equilibrio.coberto ? "Coberto ✓" : `Faltam R$${kpis.equilibrio.falta.toFixed(0)}`} sub="fixo do mês corrente" accent={kpis.equilibrio.coberto ? "#34d399" : "#fb923c"} delay={0.35} />
       </div>
 
@@ -44,7 +45,7 @@ export default function Overview({ data }) {
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-4)" />
               <XAxis dataKey="mes" tick={{ fill:"var(--text-4)", fontSize:11 }} axisLine={false} tickLine={false} />
-              <YAxis yAxisId="l" tick={{ fill:"var(--text-4)", fontSize:11 }} axisLine={false} tickLine={false} tickFormatter={v=>`R$${(v/1000).toFixed(1)}k`} />
+              <YAxis yAxisId="l" tick={{ fill:"var(--text-4)", fontSize:11 }} axisLine={false} tickLine={false} tickFormatter={formatBRLk} />
               <YAxis yAxisId="r" orientation="right" tick={{ fill:"var(--text-4)", fontSize:11 }} axisLine={false} tickLine={false} />
               <Tooltip content={<CustomTooltip />} />
               <Legend wrapperStyle={{ fontSize:11, color:"var(--text-3)" }} />

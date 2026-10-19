@@ -7,6 +7,7 @@ import {
 } from "recharts";
 import KPICard from "../KPICard";
 import { SectionTitle, CustomTooltip, Card, CORES } from "../shared";
+import { formatBRLk } from "../../../lib/format";
 
 export default function Vendas({ data }) {
   const { faturamentoMensal, vendasPorCategoria, topProdutos } = data;
@@ -23,7 +24,7 @@ export default function Vendas({ data }) {
   return (
     <>
       <div className="admin-kpi-grid" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:14, marginBottom:22 }}>
-        <KPICard icon="💰" label="Faturamento (6 meses)" value={`R$${(totalFat/1000).toFixed(1)}k`} accent="#c084fc" delay={0} />
+        <KPICard icon="💰" label="Faturamento (6 meses)" value={formatBRLk(totalFat)} accent="#c084fc" delay={0} />
         <KPICard icon="📈" label="Crescimento"           value={crescimento === null ? "—" : `${crescimento > 0 ? "+" : ""}${crescimento}%`} sub="vs mês anterior" accent="#34d399" delay={0.05} />
         <KPICard icon="🎯" label="Ticket Médio"          value={`R$${ticketMedio}`}                  sub="por pedido"      accent="#38bdf8" delay={0.1}  />
         <KPICard icon="🏆" label="Melhor Categoria"      value={melhorCat ? melhorCat.nome.split(" ")[0] : "—"} sub={melhorCat ? `R$${melhorCat.receita}` : "sem vendas"} accent="#f472b6" delay={0.15} />
