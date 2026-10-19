@@ -6,13 +6,13 @@ import Sidebar from "../../components/store/Sidebar";
 import { CardDest, Card } from "../../components/store/Cards";
 import ModalProd from "../../components/store/ModalProd";
 import Carrinho from "../../components/store/Carrinho";
-import { T, CATS, sortSizes } from "../../lib/galeneTheme";
-import { mapProdutos } from "../../lib/catalogo";
+import { T, CATS } from "../../lib/galeneTheme";
+import { filtrarPorCategoria } from "../../lib/catalogo";
+import { mergeIntoCart } from "../../lib/cart";
+import { useCatalogo } from "../../hooks/useCatalogo";
 import { useWindowWidth } from "../../hooks/useWindowWidth";
-import { supabase } from "../../lib/supabaseClient";
 import { getSession } from "../../lib/adminAuth";
 
-const TAMANHOS_VISIVEIS = new Set(["M", "G", "Unico"]);
 const REDES_VAZIAS = { whatsapp: null, instagram: null, facebook: null };
 
 export default function VendaPresencial() {
@@ -25,92 +25,18 @@ export default function VendaPresencial() {
   const [cart, setCart] = useState([]);
   const [view, setView] = useState("loja");
   const [toast, setToast] = useState(null);
-  const [produtos, setProdutos] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [minOrder, setMinOrder] = useState(6);
 
   useEffect(() => {
     getSession().then((s) => { setSession(s); setCheckingSession(false); });
   }, []);
 
-  const fetchProdutos = useCallback(async () => {
-    if (!session) return;
-    const [{ data, error }, { data: statusRows, error: statusErr }, { data: settingsRow }] = await Promise.all([
-      supabase
-        .from("products")
-        .select(`
-          id, name, category, material, price, price_original, discount_percentage, description, featured, tag, instagram_urls, is_launch,
-          product_colors ( colors ( name ), photo_url ),
-          stock ( color_id, size_id, colors ( name ), sizes ( name ) ),
-          product_media ( type, url )
-        `)
-        .eq("is_active", true),
-      supabase.from("estoque_status_publico").select("product_id, color_id, size_id, status").limit(5000),
-      supabase.from("store_settings").select("min_order").limit(1).single(),
-    ]);
-    if (error) { console.error("Erro ao buscar produtos:", error); setLoading(false); return; }
-    if (statusErr) { console.error("Erro ao buscar status de estoque:", statusErr); }
-    if (settingsRow?.min_order) setMinOrder(settingsRow.min_order);
-
-    const baseProdutos = (data || []).map((p) => ({
-      id: p.id,
-      nome: p.name,
-      cat: p.category,
-      sub: p.material,
-      preco: Number(p.price),
-      precoOriginal: p.price_original ? Number(p.price_original) : null,
-      descontoPct: p.discount_percentage ? Number(p.discount_percentage) : null,
-      destaque: p.featured,
-      tag: p.tag,
-      instagramUrls: p.instagram_urls || [],
-      isLaunch: p.is_launch,
-      media: p.product_media || [],
-      desc: p.description,
-      cores: [...new Set(p.product_colors.map((pc) => pc.colors.name))],
-      coresFotos: Object.fromEntries(
-        p.product_colors.filter((pc) => pc.photo_url).map((pc) => [pc.colors.name, pc.photo_url])
-      ),
-      tamanhos: sortSizes([...new Set(
-        p.stock.filter((s) => s.sizes?.name && TAMANHOS_VISIVEIS.has(s.sizes.name)).map((s) => s.sizes.name)
-      )]),
-      product_colors: p.product_colors,
-      stock: p.stock,
-    }));
-
-    const mapped = mapProdutos(baseProdutos, statusRows || [], TAMANHOS_VISIVEIS)
-      .map(({ product_colors, stock, product_media, ...p }) => p)
-      .filter((p) => p.cores.length && p.tamanhos.length);
-    setProdutos(mapped);
-    setLoading(false);
-  }, [session]);
-
-  useEffect(() => { fetchProdutos(); }, [fetchProdutos]);
+  const { produtos, loading, minOrder, refetch: fetchProdutos } = useCatalogo({ enabled: !!session });
 
   const totPcs = cart.reduce((s, i) => s + i.sel.reduce((a, x) => a + x.qtd, 0), 0);
-  const prods = cat === "destaques"
-    ? produtos.filter((p) => p.destaque)
-    : cat === "promocoes"
-    ? produtos.filter((p) => p.precoOriginal != null)
-    : cat === "lancamentos"
-    ? produtos.filter((p) => p.isLaunch)
-    : produtos.filter((p) => p.cat === cat);
+  const prods = filtrarPorCategoria(produtos, cat);
 
   const addToCart = useCallback((prod, sel) => {
-    setCart((prev) => {
-      const idx = prev.findIndex((i) => i.id === prod.id);
-      if (idx >= 0) {
-        const up = [...prev];
-        const mg = [...up[idx].sel];
-        sel.forEach((s) => {
-          const mi = mg.findIndex((m) => m.key === s.key);
-          if (mi >= 0) mg[mi] = { ...mg[mi], qtd: mg[mi].qtd + s.qtd };
-          else mg.push(s);
-        });
-        up[idx] = { ...up[idx], sel: mg };
-        return up;
-      }
-      return [...prev, { ...prod, sel }];
-    });
+    setCart((prev) => mergeIntoCart(prev, prod, sel));
     const n = sel.reduce((a, s) => a + s.qtd, 0);
     setToast(`${n} peça${n > 1 ? "s" : ""} de "${prod.nome}" adicionada${n > 1 ? "s" : ""}!`);
     setTimeout(() => setToast(null), 3500);

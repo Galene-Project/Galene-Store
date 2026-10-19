@@ -1,17 +1,14 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import Link from "next/link";
 import Sidebar from "./Sidebar";
 import ModalProd from "./ModalProd";
 import Carrinho from "./Carrinho";
 import { CardDest, Card } from "./Cards";
-import { T, CATS, sortSizes } from "../../lib/galeneTheme";
-import { mapProdutos } from "../../lib/catalogo";
+import { T, CATS } from "../../lib/galeneTheme";
+import { filtrarPorCategoria } from "../../lib/catalogo";
+import { mergeIntoCart } from "../../lib/cart";
+import { useCatalogo } from "../../hooks/useCatalogo";
 import { useWindowWidth } from "../../hooks/useWindowWidth";
-import { supabase } from "../../lib/supabaseClient";
-
-// ponytail: só M/G/Unico aparecem na loja por decisão do negócio (2026-08-14);
-// os outros tamanhos continuam no banco (stock intacto) pra reativar sem migração.
-const TAMANHOS_VISIVEIS = new Set(["M", "G", "Unico"]);
 
 export default function GaleneStore() {
   const w = useWindowWidth();
@@ -22,90 +19,12 @@ export default function GaleneStore() {
   const [currentView, setCurrentView] = useState("loja");
   const [drawer, setDrawer] = useState(false);
   const [toast, setToast] = useState(null);
-  const [produtos, setProdutos] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [minOrder, setMinOrder] = useState(6);
-  const [redes, setRedes] = useState({ whatsapp: null, instagram: null, facebook: null });
-
-  useEffect(() => {
-    async function fetchProdutos() {
-      const [{ data, error }, { data: statusRows, error: statusErr }, { data: settingsRow }] = await Promise.all([
-        supabase
-          .from("products")
-          .select(`
-            id, name, category, material, price, price_original, discount_percentage, description, featured, tag, instagram_urls, is_launch,
-            product_colors ( colors ( name ), photo_url ),
-            stock ( color_id, size_id, colors ( name ), sizes ( name ) ),
-            product_media ( type, url )
-          `)
-          .eq("is_active", true),
-        supabase.from("estoque_status_publico").select("product_id, color_id, size_id, status").limit(5000),
-        supabase.from("store_settings").select("min_order, whatsapp, instagram, facebook").limit(1).single(),
-      ]);
-      if (error) { console.error("Erro ao buscar produtos:", error); setLoading(false); return; }
-      if (statusErr) { console.error("Erro ao buscar status de estoque:", statusErr); }
-      if (settingsRow?.min_order) setMinOrder(settingsRow.min_order);
-      if (settingsRow) setRedes({ whatsapp: settingsRow.whatsapp, instagram: settingsRow.instagram, facebook: settingsRow.facebook });
-
-      const baseProdutos = (data || []).map((p) => ({
-        id: p.id,
-        nome: p.name,
-        cat: p.category,
-        sub: p.material,
-        preco: Number(p.price),
-        precoOriginal: p.price_original ? Number(p.price_original) : null,
-        descontoPct: p.discount_percentage ? Number(p.discount_percentage) : null,
-        destaque: p.featured,
-        tag: p.tag,
-        instagramUrls: p.instagram_urls || [],
-        isLaunch: p.is_launch,
-        media: p.product_media || [],
-        desc: p.description,
-        cores: [...new Set(p.product_colors.map((pc) => pc.colors.name))],
-        coresFotos: Object.fromEntries(
-          p.product_colors.filter((pc) => pc.photo_url).map((pc) => [pc.colors.name, pc.photo_url])
-        ),
-        tamanhos: sortSizes([...new Set(
-          p.stock.filter((s) => s.sizes?.name && TAMANHOS_VISIVEIS.has(s.sizes.name)).map((s) => s.sizes.name)
-        )]),
-        product_colors: p.product_colors,
-        stock: p.stock,
-      }));
-
-      const mapped = mapProdutos(baseProdutos, statusRows || [], TAMANHOS_VISIVEIS)
-        .map(({ product_colors, stock, product_media, ...p }) => p)
-        .filter((p) => p.cores.length && p.tamanhos.length);
-      setProdutos(mapped);
-      setLoading(false);
-    }
-    fetchProdutos();
-  }, []);
-
+  const { produtos, loading, minOrder, redes } = useCatalogo();
   const totPcs = cart.reduce((s, i) => s + i.sel.reduce((a, x) => a + x.qtd, 0), 0);
-  const prods = cat === "destaques"
-    ? produtos.filter((p) => p.destaque)
-    : cat === "promocoes"
-    ? produtos.filter((p) => p.precoOriginal != null)
-    : cat === "lancamentos"
-    ? produtos.filter((p) => p.isLaunch)
-    : produtos.filter((p) => p.cat === cat);
+  const prods = filtrarPorCategoria(produtos, cat);
 
   const addToCart = useCallback((prod, sel) => {
-    setCart((prev) => {
-      const idx = prev.findIndex((i) => i.id === prod.id);
-      if (idx >= 0) {
-        const up = [...prev];
-        const mg = [...up[idx].sel];
-        sel.forEach((s) => {
-          const mi = mg.findIndex((m) => m.key === s.key);
-          if (mi >= 0) mg[mi] = { ...mg[mi], qtd: mg[mi].qtd + s.qtd };
-          else mg.push(s);
-        });
-        up[idx] = { ...up[idx], sel: mg };
-        return up;
-      }
-      return [...prev, { ...prod, sel }];
-    });
+    setCart((prev) => mergeIntoCart(prev, prod, sel));
     const n = sel.reduce((a, s) => a + s.qtd, 0);
     setToast(`${n} peça${n > 1 ? "s" : ""} de "${prod.nome}" adicionada${n > 1 ? "s" : ""}!`);
     setTimeout(() => setToast(null), 3500);

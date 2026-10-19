@@ -86,7 +86,7 @@ async function callApi(path, body) {
   return json;
 }
 
-const emptyNovoProduto = { name: "", category: "", material: "", sku: "", price: "", description: "", photo_url: "" };
+const emptyNovoProduto = { name: "", category: "", material: "", sku: "", price: "", description: "" };
 
 function NovoProdutoForm({ cores, tamanhos, onCancel, onCreated }) {
   const [form, setForm] = useState(emptyNovoProduto);
@@ -167,7 +167,6 @@ function NovoProdutoForm({ cores, tamanhos, onCancel, onCreated }) {
         <input placeholder="Material" value={form.material} onChange={(e) => setForm((f) => ({ ...f, material: e.target.value }))} style={{ ...inputStyle, width: "100%" }} />
         <input placeholder="SKU (opcional)" value={form.sku} onChange={(e) => setForm((f) => ({ ...f, sku: e.target.value }))} style={{ ...inputStyle, width: "100%" }} />
         <input type="number" step="0.01" placeholder="Preço" value={form.price} onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))} style={{ ...inputStyle, width: "100%" }} />
-        <input placeholder="URL da foto (opcional)" value={form.photo_url} onChange={(e) => setForm((f) => ({ ...f, photo_url: e.target.value }))} style={{ ...inputStyle, width: "100%" }} />
       </div>
       <textarea placeholder="Descrição (opcional)" value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} style={{ ...inputStyle, width: "100%", minHeight: 60, marginBottom: 12 }} />
 

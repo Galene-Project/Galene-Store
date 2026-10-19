@@ -26,7 +26,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: { code: 'VALIDATION_FAILED', message: e.message, details: [] } });
   }
 
-  const { material, sku, description, photo_url, colorPhotos, instagramUrls } = req.body || {};
+  const { material, sku, description, colorPhotos, instagramUrls } = req.body || {};
   const { name, category, price, variants } = parsed;
   const finalSku = sku || `AUTO-${Date.now().toString(36).toUpperCase()}`;
 
@@ -39,7 +39,7 @@ export default async function handler(req, res) {
 
   const { data: product, error: prodErr } = await supabaseAdmin
     .from('products')
-    .insert({ name, category, price, material: material || null, sku: finalSku, description: description || null, photo_url: photo_url || null, instagram_urls: finalInstagramUrls })
+    .insert({ name, category, price, material: material || null, sku: finalSku, description: description || null, instagram_urls: finalInstagramUrls })
     .select('id')
     .single();
 

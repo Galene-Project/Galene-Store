@@ -2,6 +2,7 @@ import { supabaseAdmin } from '../../lib/supabaseAdmin';
 import { computeOrderItems } from '../../lib/pricing';
 import { findShortages, formatShortages } from '../../lib/stock';
 import { createOrderPreference } from '../../lib/mercadopagoPreference';
+import { findCustomerIdByPhone, normalizePhone } from '../../lib/customers';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: { code: 'METHOD_NOT_ALLOWED', message: 'Use POST', details: [] } });
@@ -14,6 +15,17 @@ export default async function handler(req, res) {
   if (!form.razao?.trim() || !form.end?.trim() || !form.tel?.trim() || !form.email?.trim() || !form.email.includes('@')) {
     return res.status(400).json({ error: { code: 'VALIDATION_FAILED', message: 'Nome, endereço, telefone e email são obrigatórios.', details: [] } });
   }
+
+  // Falha depois de gravar desfaz o que já foi criado (pedido apaga os itens
+  // em cascata; cliente só se foi criado agora) — senão cada tentativa que
+  // falha deixa pedido/cliente fantasma no banco.
+  let customerId = null;
+  let novoClienteId = null;
+  let orderId = null;
+  const desfazer = async () => {
+    if (orderId) await supabaseAdmin.from('orders').delete().eq('id', orderId);
+    if (novoClienteId) await supabaseAdmin.from('customers').delete().eq('id', novoClienteId);
+  };
 
   try {
     // Preço vem sempre do banco, nunca do corpo do POST — ver lib/pricing.js.
@@ -82,25 +94,36 @@ export default async function handler(req, res) {
       });
     }
 
-    const { data: customer, error: custErr } = await supabaseAdmin
-      .from('customers')
-      .insert([{
-        name: form.razao?.trim(),
-        company_name: form.razao?.trim(),
-        cnpj: form.cnpj?.trim() || null,
-        phone: form.tel?.trim(),
-        email: form.email?.trim(),
-      }])
-      .select()
-      .single();
-    if (custErr) throw custErr;
+    // Cliente é o telefone: quem já comprou volta no mesmo cadastro (histórico
+    // e ranking de clientes ficam certos). Cadastro existente não é
+    // sobrescrito aqui — rota pública, qualquer um que souber o telefone
+    // poderia reescrever nome/email de outro cliente. Atualizar cadastro é
+    // coisa do painel (venda presencial).
+    customerId = await findCustomerIdByPhone(supabaseAdmin, form.tel);
+    if (!customerId) {
+      const { data: customer, error: custErr } = await supabaseAdmin
+        .from('customers')
+        .insert([{
+          name: form.razao?.trim(),
+          company_name: form.razao?.trim(),
+          cnpj: form.cnpj?.trim() || null,
+          phone: normalizePhone(form.tel),
+          email: form.email?.trim(),
+        }])
+        .select()
+        .single();
+      if (custErr) throw custErr;
+      customerId = customer.id;
+      novoClienteId = customer.id;
+    }
 
-    const orderNumber = `PED-${Date.now()}`;
+    const { data: orderNumber, error: numErr } = await supabaseAdmin.rpc('next_order_number');
+    if (numErr) throw numErr;
     const { data: order, error: orderErr } = await supabaseAdmin
       .from('orders')
       .insert([{
         order_number: orderNumber,
-        customer_id: customer.id,
+        customer_id: customerId,
         payment_provider: 'mercado_pago',
         shipping_address: { endereco: form.end || '', cidade: form.cidade || '' },
         total: priced.total,
@@ -108,6 +131,7 @@ export default async function handler(req, res) {
       .select()
       .single();
     if (orderErr) throw orderErr;
+    orderId = order.id;
 
     const items = itensComVariante.map((i) => ({
       order_id: order.id,
@@ -138,6 +162,7 @@ export default async function handler(req, res) {
     return res.status(200).json({ order_number: orderNumber, checkout_url: pref.init_point });
   } catch (err) {
     console.error('Erro ao criar pedido:', err);
+    await desfazer().catch((e) => console.error('Erro ao desfazer pedido parcial:', e));
     return res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Não foi possível criar o pedido.', details: [] } });
   }
 }

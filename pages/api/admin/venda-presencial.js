@@ -1,7 +1,7 @@
 import { supabaseAdmin } from '../../../lib/supabaseAdmin';
 import { computeOrderItems } from '../../../lib/pricing';
 import { findShortages, formatShortages } from '../../../lib/stock';
-import { normalizePhone } from '../../../lib/customers';
+import { normalizePhone, findCustomerIdByPhone } from '../../../lib/customers';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -98,8 +98,11 @@ export default async function handler(req, res) {
       });
     }
 
+    // Operador autenticado: cadastro existente (escolhido na busca ou achado
+    // pelo mesmo telefone) é atualizado; senão cria. Telefone = identidade.
+    const existenteId = clienteId || await findCustomerIdByPhone(supabaseAdmin, form.tel);
     let customer;
-    if (clienteId) {
+    if (existenteId) {
       const { data: updated, error: updErr } = await supabaseAdmin
         .from('customers')
         .update({
@@ -109,7 +112,7 @@ export default async function handler(req, res) {
           phone: normalizePhone(form.tel),
           email: form.email.trim(),
         })
-        .eq('id', clienteId)
+        .eq('id', existenteId)
         .select()
         .single();
       if (updErr) throw updErr;
@@ -130,7 +133,8 @@ export default async function handler(req, res) {
       customer = inserted;
     }
 
-    const orderNumber = `PED-${Date.now()}`;
+    const { data: orderNumber, error: numErr } = await supabaseAdmin.rpc('next_order_number');
+    if (numErr) throw numErr;
     const { data: order, error: orderErr } = await supabaseAdmin
       .from('orders')
       .insert([{

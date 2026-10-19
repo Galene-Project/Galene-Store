@@ -25,7 +25,7 @@ const TABS = [
   { id:"despesas",  label:"Despesas",     icon:"🧾" },
   { id:"fluxocaixa", label:"Fluxo de Caixa", icon:"💵" },
   { id:"relatorios", label:"Relatórios",  icon:"📈" },
-  { id:"settings",  label:"Integrações",  icon:"⚙️" },
+  { id:"settings",  label:"Loja",         icon:"🏪" },
 ];
 
 export default function AdminPage() {
@@ -235,7 +235,7 @@ export default function AdminPage() {
                 <button
                   onClick={() => { setActiveTab("settings"); setShowLogout(false); }}
                   style={{ width:"100%", padding:"10px 16px", background:"none", border:"none", color:"var(--text-3)", fontSize:12, cursor:"pointer", textAlign:"left", display:"flex", alignItems:"center", gap:8 }}>
-                  ⚙️ Integrações
+                  🏪 Loja
                 </button>
                 <div style={{ height:1, background:"var(--surface-6)" }} />
                 <button
