@@ -51,12 +51,12 @@ export default function VendaPresencial() {
     fetchProdutos();
   }, [fetchProdutos]);
 
-  async function buscarClientePorTelefone(telefone) {
+  async function buscarCliente(busca) {
     const s = await getSession();
     const res = await fetch("/api/admin/clientes/buscar", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${s?.access_token}` },
-      body: JSON.stringify({ telefone }),
+      body: JSON.stringify({ busca }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data?.error?.message || "Erro ao buscar cliente.");
@@ -117,7 +117,7 @@ export default function VendaPresencial() {
           onBack={() => setView("loja")}
           minOrder={minOrder}
           presencial
-          onBuscarCliente={buscarClientePorTelefone}
+          onBuscarCliente={buscarCliente}
           onConfirmarPresencial={confirmarVendaPresencial}
         />
       ) : (

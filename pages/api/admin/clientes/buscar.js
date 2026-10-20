@@ -1,5 +1,5 @@
 import { supabaseAdmin } from '../../../../lib/supabaseAdmin';
-import { escapeIlikePattern, normalizePhone } from '../../../../lib/customers';
+import { escapeIlikePattern, parseBusca } from '../../../../lib/customers';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -17,18 +17,21 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Sessão inválida ou expirada.', details: [] } });
   }
 
-  const { telefone } = req.body || {};
-  const telefoneNormalizado = normalizePhone(telefone);
-  if (!telefoneNormalizado) {
-    return res.status(400).json({ error: { code: 'VALIDATION_FAILED', message: 'telefone obrigatório.', details: [] } });
+  // `busca` aceita telefone ou e-mail; `telefone` segue valendo (compatibilidade).
+  const { busca, telefone } = req.body || {};
+  const alvo = parseBusca(busca ?? telefone);
+  if (!alvo) {
+    return res.status(400).json({ error: { code: 'VALIDATION_FAILED', message: 'telefone ou e-mail obrigatório.', details: [] } });
   }
 
-  const { data, error } = await supabaseAdmin
+  const query = supabaseAdmin
     .from('customers')
     .select('id, name, company_name, cnpj, phone, email')
-    .ilike('phone', `%${escapeIlikePattern(telefoneNormalizado)}%`)
+    // e-mail: igualdade sem diferenciar maiúscula (ilike sem curinga); telefone: trecho
+    .ilike(alvo.tipo === 'email' ? 'email' : 'phone', alvo.tipo === 'email' ? escapeIlikePattern(alvo.valor) : `%${escapeIlikePattern(alvo.valor)}%`)
     .order('created_at', { ascending: false })
     .limit(1);
+  const { data, error } = await query;
   if (error) {
     console.error('Erro ao buscar cliente:', error);
     return res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Não foi possível buscar o cliente.', details: [] } });

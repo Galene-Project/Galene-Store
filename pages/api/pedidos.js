@@ -2,7 +2,7 @@ import { supabaseAdmin } from '../../lib/supabaseAdmin';
 import { computeOrderItems } from '../../lib/pricing';
 import { findShortages, formatShortages } from '../../lib/stock';
 import { createOrderPreference } from '../../lib/mercadopagoPreference';
-import { findCustomerIdByPhone, normalizePhone } from '../../lib/customers';
+import { findCustomerByPhone, camposEmBranco, normalizePhone } from '../../lib/customers';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: { code: 'METHOD_NOT_ALLOWED', message: 'Use POST', details: [] } });
@@ -95,12 +95,21 @@ export default async function handler(req, res) {
     }
 
     // Cliente é o telefone: quem já comprou volta no mesmo cadastro (histórico
-    // e ranking de clientes ficam certos). Cadastro existente não é
-    // sobrescrito aqui — rota pública, qualquer um que souber o telefone
-    // poderia reescrever nome/email de outro cliente. Atualizar cadastro é
-    // coisa do painel (venda presencial).
-    customerId = await findCustomerIdByPhone(supabaseAdmin, form.tel);
-    if (!customerId) {
+    // e ranking de clientes ficam certos). Valor existente nunca é trocado
+    // aqui — rota pública, qualquer um que souber o telefone poderia
+    // reescrever nome/e-mail de outro cliente. Só preenche o que está vazio;
+    // trocar cadastro é coisa do painel (venda presencial).
+    const existente = await findCustomerByPhone(supabaseAdmin, form.tel);
+    if (existente) {
+      customerId = existente.id;
+      // Volta com e-mail/CNPJ que o cadastro ainda não tinha: preenche só o vazio.
+      const preencher = camposEmBranco(existente, {
+        name: form.razao, company_name: form.razao, email: form.email?.trim().toLowerCase(), cnpj: form.cnpj,
+      });
+      if (Object.keys(preencher).length) {
+        await supabaseAdmin.from('customers').update(preencher).eq('id', existente.id);
+      }
+    } else {
       const { data: customer, error: custErr } = await supabaseAdmin
         .from('customers')
         .insert([{
@@ -108,7 +117,7 @@ export default async function handler(req, res) {
           company_name: form.razao?.trim(),
           cnpj: form.cnpj?.trim() || null,
           phone: normalizePhone(form.tel),
-          email: form.email?.trim(),
+          email: form.email?.trim().toLowerCase(),
         }])
         .select()
         .single();

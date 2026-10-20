@@ -70,7 +70,7 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder, p
           razao: cliente.name || cliente.company_name || "",
           cnpj: cliente.cnpj || "",
           email: cliente.email || "",
-          tel: cliente.phone || telefoneBusca.trim(),
+          tel: cliente.phone || (telefoneBusca.includes("@") ? "" : telefoneBusca.trim()),
           end: "",
           cidade: "",
         });
@@ -186,12 +186,12 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder, p
                 <div style={{ gridColumn: `span ${mob ? "1" : "2"}`, display: "flex", gap: 10, alignItems: "flex-end", marginBottom: 4 }}>
                   <div style={{ flex: 1 }}>
                     <label style={{ display: "block", fontFamily: "'Lato',sans-serif", fontSize: 10, letterSpacing: 1.5, color: T.ink4, textTransform: "uppercase", marginBottom: 6 }}>
-                      Buscar cliente por telefone
+                      Buscar cliente por telefone ou e-mail
                     </label>
                     <input
                       value={telefoneBusca}
                       onChange={(e) => setTelefoneBusca(e.target.value)}
-                      placeholder="(00) 00000-0000"
+                      placeholder="(00) 00000-0000 ou nome@email.com"
                       style={{ width: "100%", background: T.panel, border: `1.5px solid ${T.border}`, borderRadius: 8, padding: "11px 14px", fontFamily: "'Lato',sans-serif", fontSize: 13, color: T.ink, outline: "none", boxSizing: "border-box" }}
                     />
                   </div>

@@ -7,6 +7,7 @@ import Catalogo     from "../../components/admin/tabs/Catalogo";
 import Pedidos      from "../../components/admin/tabs/Pedidos";
 import Relatorios   from "../../components/admin/tabs/Relatorios";
 import Despesas     from "../../components/admin/tabs/Despesas";
+import Clientes     from "../../components/admin/tabs/Clientes";
 import FluxoCaixa    from "../../components/admin/tabs/FluxoCaixa";
 import Visao360      from "../../components/admin/tabs/Visao360";
 import LoginPage    from "../../components/admin/LoginPage";
@@ -22,6 +23,7 @@ const TABS = [
   { id:"estoque",   label:"Estoque",      icon:"📦" },
   { id:"catalogo",  label:"Catálogo",     icon:"👗" },
   { id:"pedidos",   label:"Pedidos",      icon:"🛒" },
+  { id:"clientes",  label:"Clientes",     icon:"👥" },
   { id:"despesas",  label:"Despesas",     icon:"🧾" },
   { id:"fluxocaixa", label:"Fluxo de Caixa", icon:"💵" },
   { id:"relatorios", label:"Relatórios",  icon:"📈" },
@@ -261,6 +263,7 @@ export default function AdminPage() {
             {activeTab==="vendas"   && <Vendas   data={data} />}
             {activeTab==="estoque"  && <Estoque  data={data} />}
             {activeTab==="pedidos"  && <Pedidos data={data} onRefresh={loadData} justUpdated={justUpdated} />}
+            {activeTab==="clientes" && <Clientes data={data} />}
             {activeTab==="relatorios" && <Relatorios data={data} />}
             {activeTab==="fluxocaixa" && <FluxoCaixa data={data} />}
           </>
