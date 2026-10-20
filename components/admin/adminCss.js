@@ -82,6 +82,13 @@ export const ADMIN_CSS = `
 /* grid filho pode encolher: sem isso um gráfico largo empurra a página pro lado */
 .admin-kpi-grid > *, .admin-chart-grid > * { min-width:0; }
 
+/* ---- janela estreita: menos colunas, sem texto espremido ---- */
+@media (max-width: 1180px) {
+  .admin-kpi-grid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+  .admin-kpi-grid:has(> :nth-child(5)) { grid-template-columns:repeat(3,minmax(0,1fr)) !important; }
+  .admin-chart-grid { grid-template-columns:1fr !important; }
+}
+
 /* ---- celular ---- */
 @media (max-width: 860px) {
   .a-shell { display:block; }
@@ -91,7 +98,7 @@ export const ADMIN_CSS = `
   .a-main { padding:20px 16px 56px; }
   .a-title { font-size:22px; }
   .a-nav { min-height:44px; font-size:15px; }
-  .admin-kpi-grid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+  .admin-kpi-grid, .admin-kpi-grid:has(> :nth-child(5)) { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
   .admin-chart-grid { grid-template-columns:1fr !important; }
 }
 `;
