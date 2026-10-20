@@ -189,7 +189,7 @@ export default function Relatorios({ data }) {
       {produtoId && produtoSelecionado && (
         <>
           <Card style={{ marginBottom: 16 }}>
-            <SectionTitle accent="#818cf8">Dados do produto</SectionTitle>
+            <SectionTitle>Dados do produto</SectionTitle>
             <div className="admin-chart-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, fontSize: 12 }}>
               <div><span style={{ color: "var(--text-4)" }}>SKU: </span><span style={{ color: "var(--text-2)" }}>{produtoSelecionado.sku || "—"}</span></div>
               <div><span style={{ color: "var(--text-4)" }}>Material: </span><span style={{ color: "var(--text-2)" }}>{produtoSelecionado.material || "—"}</span></div>
@@ -201,19 +201,19 @@ export default function Relatorios({ data }) {
             <>
               <div className="admin-chart-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
                 <Card>
-                  <div style={{ fontSize: 11, color: "var(--text-4)", marginBottom: 6 }}>Peças vendidas</div>
-                  <div style={{ fontSize: 28, fontWeight: 800, color: "var(--text-1)" }}>{report.totalPecas}</div>
+                  <div style={{ fontSize: 12, color: "var(--text-4)", marginBottom: 6 }}>Peças vendidas</div>
+                  <div style={{ fontSize: 28, fontWeight: 600, color: "var(--text-1)" }}>{report.totalPecas}</div>
                 </Card>
                 <Card>
-                  <div style={{ fontSize: 11, color: "var(--text-4)", marginBottom: 6 }}>Receita</div>
-                  <div style={{ fontSize: 28, fontWeight: 800, color: "var(--text-1)" }}>
+                  <div style={{ fontSize: 12, color: "var(--text-4)", marginBottom: 6 }}>Receita</div>
+                  <div style={{ fontSize: 28, fontWeight: 600, color: "var(--text-1)" }}>
                     R${report.totalReceita.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                   </div>
                 </Card>
               </div>
 
               <Card>
-                <SectionTitle accent="#38bdf8">Detalhamento por cor/tamanho</SectionTitle>
+                <SectionTitle>Detalhamento por cor/tamanho</SectionTitle>
                 {report.breakdown.length === 0 ? (
                   <div style={{ fontSize: 12, color: "var(--text-4)", padding: "12px 0" }}>
                     Nenhuma venda desse produto no período selecionado.
@@ -251,10 +251,10 @@ export default function Relatorios({ data }) {
           {tipo === "estoque" && (
             <>
               <Card style={{ marginBottom: 16 }}>
-                <SectionTitle accent="#34d399">Estoque atual por cor/tamanho</SectionTitle>
+                <SectionTitle>Estoque atual por cor/tamanho</SectionTitle>
                 {defeitoErro && (
-                  <div style={{ marginBottom: 10, padding: "8px 12px", borderRadius: 8, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)", color: "#fca5a5", fontSize: 12 }}>
-                    ⚠️ {defeitoErro}
+                  <div style={{ marginBottom: 10, padding: "8px 12px", borderRadius: 8, background: "var(--pill-negative-bg)", border: "1px solid var(--pill-negative-bg)", color: "var(--negative)", fontSize: 12 }}>
+                    {defeitoErro}
                   </div>
                 )}
                 {estoqueCarregando ? (
@@ -285,7 +285,7 @@ export default function Relatorios({ data }) {
                                 <button
                                   onClick={() => { setMoverAbertoId(moverAbertoId === row.id ? null : row.id); setDefeitoErro(""); }}
                                   disabled={row.quantity === 0}
-                                  style={{ padding: "4px 10px", borderRadius: 6, border: "1px solid var(--surface-7)", background: "transparent", color: "var(--text-3)", fontSize: 11, cursor: row.quantity === 0 ? "default" : "pointer", opacity: row.quantity === 0 ? 0.4 : 1 }}>
+                                  style={{ padding: "4px 10px", borderRadius: 6, border: "1px solid var(--surface-7)", background: "transparent", color: "var(--text-3)", fontSize: 12, cursor: row.quantity === 0 ? "default" : "pointer", opacity: row.quantity === 0 ? 0.4 : 1 }}>
                                   Mover p/ defeito
                                 </button>
                               </td>
@@ -304,7 +304,7 @@ export default function Relatorios({ data }) {
                                       onChange={(e) => setMoverForm((f) => ({ ...f, reason: e.target.value }))}
                                       style={{ ...inputStyle, flex: 1, minWidth: 140 }} />
                                     <button onClick={() => handleMover(row)} disabled={defeitoSaving}
-                                      style={{ padding: "6px 12px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#c084fc,#818cf8)", color: "white", fontSize: 11, fontWeight: 700, cursor: defeitoSaving ? "wait" : "pointer" }}>
+                                      style={{ padding: "6px 12px", borderRadius: 8, border: "none", background: "var(--primary)", color: "var(--primary-ink)", fontSize: 12, fontWeight: 600, cursor: defeitoSaving ? "wait" : "pointer" }}>
                                       {defeitoSaving ? "Movendo..." : "Confirmar"}
                                     </button>
                                   </div>
@@ -320,7 +320,7 @@ export default function Relatorios({ data }) {
               </Card>
 
               <Card>
-                <SectionTitle accent="#fb923c">Peças com defeito (venda separada)</SectionTitle>
+                <SectionTitle>Peças com defeito (venda separada)</SectionTitle>
                 {defeitoRows.length === 0 ? (
                   <div style={{ fontSize: 12, color: "var(--text-4)", padding: "12px 0" }}>
                     Nenhuma peça com defeito registrada pra esse produto.
@@ -350,7 +350,7 @@ export default function Relatorios({ data }) {
                             <td style={{ padding: "8px 10px", color: "var(--text-4)" }}>{row.reason || "-"}</td>
                             <td style={{ padding: "8px 10px" }}>
                               <button onClick={() => handleBaixar(row)} disabled={defeitoSaving}
-                                style={{ padding: "4px 10px", borderRadius: 6, border: "1px solid var(--surface-7)", background: "transparent", color: "var(--text-3)", fontSize: 11, cursor: defeitoSaving ? "wait" : "pointer" }}>
+                                style={{ padding: "4px 10px", borderRadius: 6, border: "1px solid var(--surface-7)", background: "transparent", color: "var(--text-3)", fontSize: 12, cursor: defeitoSaving ? "wait" : "pointer" }}>
                                 Dar baixa (vendido)
                               </button>
                             </td>

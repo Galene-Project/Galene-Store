@@ -1,8 +1,8 @@
 import React from "react";
 
 export const inputStyle = {
-  padding: "11px 14px", borderRadius: 10, border: "1.5px solid var(--surface-7)",
-  background: "var(--surface-3)", color: "var(--text-2)", fontSize: 12,
+  padding: "9px 12px", borderRadius: 6, border: "1px solid var(--control)",
+  background: "var(--surface)", color: "var(--text-1)", fontSize: 13,
   fontFamily: "'DM Sans','Segoe UI',sans-serif", lineHeight: 1.4,
   boxSizing: "border-box",
 };
@@ -19,19 +19,12 @@ export const selectStyle = {
 };
 
 export const labelStyle = {
-  fontSize: 11, fontWeight: 600, color: "var(--text-3)",
-  marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.05em",
+  fontSize: 12, fontWeight: 500, color: "var(--text-4)", marginBottom: 6,
 };
 
-export function SectionTitle({ children, accent = "#c084fc" }) {
+export function SectionTitle({ children }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-      <div style={{ width: 3, height: 18, borderRadius: 2, background: accent }} />
-      <span style={{
-        fontSize: 12, fontWeight: 700, color: "var(--text-2)",
-        letterSpacing: "0.06em", textTransform: "uppercase",
-      }}>{children}</span>
-    </div>
+    <h2 style={{ margin: "0 0 14px", fontSize: 15, fontWeight: 600, color: "var(--text-1)" }}>{children}</h2>
   );
 }
 
@@ -40,12 +33,12 @@ export function CustomTooltip({ active, payload, label, prefix = "", suffix = ""
   return (
     <div style={{
       background: "var(--panel-solid)",
-      border: "1px solid rgba(192,132,252,0.3)",
-      borderRadius: 10, padding: "10px 14px", fontSize: 12,
+      border: "1px solid var(--border)",
+      borderRadius: 6, padding: "8px 12px", fontSize: 12,
     }}>
       <div style={{ color: "var(--text-3)", marginBottom: 4 }}>{label}</div>
       {payload.map((p, i) => (
-        <div key={i} style={{ color: p.color || "#c084fc", fontWeight: 700 }}>
+        <div key={i} style={{ color: "var(--text-1)", fontWeight: 500 }}>
           {p.name}: {prefix}{p.value?.toLocaleString("pt-BR")}{suffix}
         </div>
       ))}
@@ -53,13 +46,12 @@ export function CustomTooltip({ active, payload, label, prefix = "", suffix = ""
   );
 }
 
-export function Card({ children, style = {}, delay = 0 }) {
+export function Card({ children, style = {} }) {
   return (
     <div style={{
-      background: "var(--surface-2)",
-      border: "1px solid var(--surface-6)",
-      borderRadius: 16, padding: 24,
-      animation: `fadeUp 0.5s ease ${delay}s both`,
+      background: "var(--surface)",
+      border: "1px solid var(--border)",
+      borderRadius: 8, padding: 20,
       ...style,
     }}>
       {children}
@@ -67,21 +59,24 @@ export function Card({ children, style = {}, delay = 0 }) {
   );
 }
 
-export const CORES = ["#c084fc","#818cf8","#38bdf8","#34d399","#fb923c","#f472b6","#a78bfa","#60a5fa","#4ade80"];
-export const CORES_TAM = ["#c084fc","#818cf8","#38bdf8","#34d399"];
+// Uma matiz só: o ouro da marca no dado principal e tons neutros nos demais.
+export const CORES = ["var(--accent)","var(--chart-2)","var(--chart-3)","var(--text-3)","var(--text-5)","var(--control)","var(--border)","var(--surface-8)","var(--surface-7)"];
+export const CORES_TAM = ["var(--accent)","var(--chart-2)","var(--chart-3)","var(--text-3)"];
 
 export function statusStyle(s) {
+  // Fila do pedido: neutro enquanto anda, aviso quando espera alguém, verde só no fim, vermelho no cancelado.
+  const pill = (t) => ({ tone: t, bg: `var(--pill-${t}-bg)`, color: `var(--pill-${t}-ink)` });
   const map = {
-    'Em Análise': { bg: '#ede9fe', color: '#5b21b6' },
-    Entregue:   { bg: "#d1fae5", color: "#065f46" },
-    Enviado:    { bg: "#dbeafe", color: "#1e40af" },
-    Separado:   { bg: "#fef9c3", color: "#854d0e" },
-    Pago:       { bg: "#cffafe", color: "#155e75" },
-    Confirmado: { bg: "#f3e8ff", color: "#6b21a8" },
-    Pendente:   { bg: "#ffedd5", color: "#9a3412" },
-    Cancelado:  { bg: "#fee2e2", color: "#991b1b" },
+    'Em Análise': pill('warning'),
+    Pendente: pill('warning'),
+    Pago: pill('neutral'),
+    Confirmado: pill('neutral'),
+    Separado: pill('neutral'),
+    Enviado: pill('neutral'),
+    Entregue: pill('positive'),
+    Cancelado: pill('negative'),
   };
-  return map[s] || { bg: "#f3f4f6", color: "#374151" };
+  return map[s] || pill('neutral');
 }
 
 // Gráfico sem dado: texto no lugar do quadro em branco.
@@ -89,6 +84,52 @@ export function SemDados({ height = 160, texto = "Sem dados no período." }) {
   return (
     <div style={{ height, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "var(--text-4)" }}>
       {texto}
+    </div>
+  );
+}
+
+// Marca de estado ao lado de um valor: tinta pálida com texto escuro da mesma família.
+export function Pill({ tone = "neutral", children }) {
+  return (
+    <span style={{
+      display: "inline-flex", alignItems: "center", height: 20, padding: "0 8px", borderRadius: 4,
+      fontSize: 12, fontWeight: 500, whiteSpace: "nowrap", flex: "none",
+      background: `var(--pill-${tone}-bg)`, color: `var(--pill-${tone}-ink)`,
+    }}>{children}</span>
+  );
+}
+
+// Lista de ranking: nome, detalhe cinza, valor à direita (tabular) e uma barra fina
+// proporcional — a primeira em tinta, as outras em cinza.
+export function RankList({ rows, vazio = "Sem dados no período." }) {
+  if (!rows.length) return <div style={{ fontSize: 13, color: "var(--text-4)" }}>{vazio}</div>;
+  const max = Math.max(...rows.map((r) => r.pct ?? 0), 1);
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      {rows.map((r, i) => (
+        <div key={i}>
+          <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "baseline" }}>
+            <span style={{ fontSize: 14, color: "var(--text-1)", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.label}</span>
+            <span style={{ fontSize: 13, color: "var(--text-1)", fontFamily: "var(--font)", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>{r.value}</span>
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", gap: 12, marginTop: 2 }}>
+            <span style={{ fontSize: 12, color: "var(--text-5)" }}>{r.detail}</span>
+          </div>
+          <div style={{ height: 2, background: "var(--rule)", marginTop: 6 }}>
+            <div style={{ height: "100%", width: `${Math.round(((r.pct ?? 0) / max) * 100)}%`, background: i === 0 ? "var(--text-1)" : "var(--control)" }} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Cabeçalho de card com uma ação à direita ("Ver todos").
+export function CardHead({ title, action, onAction }) {
+  return (
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 14, gap: 12 }}>
+      <h2 style={{ margin: 0, fontSize: 15, fontWeight: 600, color: "var(--text-1)" }}>{title}</h2>
+      {action && <button onClick={onAction} style={{ background: "none", border: 0, padding: 0, color: "var(--text-3)", fontSize: 13, cursor: "pointer", textDecoration: "underline", textUnderlineOffset: 3 }}>{action}</button>}
     </div>
   );
 }

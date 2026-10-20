@@ -6,9 +6,9 @@ import { inputStyle, labelStyle } from "./shared";
 const Section = ({ title, icon, children, status }) => {
   const [open, setOpen] = useState(true);
   const colors = {
-    ok:      { bg:"rgba(52,211,153,0.1)",  border:"rgba(52,211,153,0.3)",  dot:"#34d399", label:"Conectado"    },
-    pending: { bg:"rgba(251,146,60,0.08)", border:"rgba(251,146,60,0.25)", dot:"#fb923c", label:"Configurar"   },
-    error:   { bg:"rgba(239,68,68,0.08)",  border:"rgba(239,68,68,0.25)",  dot:"#ef4444", label:"Erro"         },
+    ok:      { bg:"var(--pill-positive-bg)",  border:"var(--pill-positive-bg)",  dot:"var(--positive)", label:"Conectado"    },
+    pending: { bg:"var(--pill-warning-bg)", border:"var(--pill-warning-bg)", dot:"var(--warning)", label:"Configurar"   },
+    error:   { bg:"var(--pill-negative-bg)",  border:"var(--pill-negative-bg)",  dot:"var(--negative)", label:"Erro"         },
   };
   const c = colors[status] || colors.pending;
   return (
@@ -24,11 +24,11 @@ const Section = ({ title, icon, children, status }) => {
       >
         <div style={{ display:"flex", alignItems:"center", gap:12 }}>
           <span style={{ fontSize:18 }}>{icon}</span>
-          <span style={{ fontSize:14, fontWeight:700, color:"var(--text-2)" }}>{title}</span>
+          <span style={{ fontSize:14, fontWeight: 600, color:"var(--text-2)" }}>{title}</span>
         </div>
         <div style={{ display:"flex", alignItems:"center", gap:10 }}>
           <span style={{
-            fontSize:10, fontWeight:700, padding:"3px 10px", borderRadius:20,
+            fontSize: 12, fontWeight: 600, padding:"3px 10px", borderRadius:20,
             background:c.bg, border:`1px solid ${c.border}`, color:c.dot,
           }}>{c.label}</span>
           <span style={{ color:"var(--text-5)", fontSize:12, transition:"transform 0.2s", display:"inline-block", transform:open?"rotate(90deg)":"" }}>▶</span>
@@ -93,7 +93,7 @@ export default function SettingsPage() {
 
   return (
     <div style={{ maxWidth:860, margin:"0 auto" }}>
-      <Section title="Dados da Loja" icon="🏪" status="ok">
+      <Section title="Dados da Loja" icon="" status="ok">
         {!loja ? (
           <div style={{ fontSize: 12, color: "var(--text-4)" }}>Carregando...</div>
         ) : (
@@ -112,7 +112,7 @@ export default function SettingsPage() {
               <div>
                 <div style={labelStyle}>WhatsApp</div>
                 <input value={loja.whatsapp} onChange={(e) => setLoja((p) => ({ ...p, whatsapp: e.target.value }))} placeholder="55XXXXXXXXXXX"
-                  style={{ ...inputStyle, width:"100%", fontFamily:"'DM Mono',monospace" }} />
+                  style={{ ...inputStyle, width:"100%", fontFamily:"var(--font)" }} />
               </div>
               <div>
                 <div style={labelStyle}>Instagram</div>
@@ -138,13 +138,13 @@ export default function SettingsPage() {
             </div>
 
             {erroLoja && (
-              <div style={{ marginBottom:12, padding:"10px 14px", borderRadius:10, background:"rgba(239,68,68,0.1)", border:"1px solid rgba(239,68,68,0.25)", color:"#fca5a5", fontSize:12 }}>
-                ⚠️ {erroLoja}
+              <div style={{ marginBottom:12, padding:"10px 14px", borderRadius:10, background:"var(--pill-negative-bg)", border:"1px solid var(--pill-negative-bg)", color:"var(--negative)", fontSize:12 }}>
+                {erroLoja}
               </div>
             )}
             {sucessoLoja && (
-              <div style={{ marginBottom:12, padding:"10px 14px", borderRadius:10, background:"rgba(52,211,153,0.1)", border:"1px solid rgba(52,211,153,0.3)", color:"#34d399", fontSize:12 }}>
-                ✅ Salvo — já reflete no site.
+              <div style={{ marginBottom:12, padding:"10px 14px", borderRadius:10, background:"var(--pill-positive-bg)", border:"1px solid var(--pill-positive-bg)", color:"var(--positive)", fontSize:12 }}>
+                Salvo — já reflete no site.
               </div>
             )}
 
@@ -153,8 +153,8 @@ export default function SettingsPage() {
               disabled={salvandoLoja}
               style={{
                 padding:"10px 20px", borderRadius:10, border:"none",
-                background:"linear-gradient(135deg,#c084fc,#818cf8)", color:"white",
-                fontSize:12, fontWeight:700, cursor: salvandoLoja ? "wait" : "pointer",
+                background:"var(--primary)", color: "var(--primary-ink)",
+                fontSize:12, fontWeight: 600, cursor: salvandoLoja ? "wait" : "pointer",
               }}>
               {salvandoLoja ? "Salvando..." : "Salvar"}
             </button>

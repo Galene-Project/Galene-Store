@@ -1,57 +1,32 @@
 import React from "react";
 
-export default function KPICard({ icon, label, value, sub, trend, accent = "#c084fc", delay = 0 }) {
-  const [hovered, setHovered] = React.useState(false);
+// Célula de um indicador: rótulo, valor, uma linha de contexto. Sem ícone,
+// sem tile e sem animação — o container (.admin-kpi-grid) divide as células
+// com linhas finas. A cor do valor só muda quando o número é ruim; o resto é
+// tinta (a cor vai nos gráficos, não nos números).
+const NEGATIVOS = new Set(["#ef4444", "#f87171", "var(--negative)"]);
+
+export default function KPICard({ label, value, sub, trend, accent }) {
+  const zero = Number(String(value).replace(/[^0-9,.-]/g, "").replace(",", ".")) === 0;
+  const ruim = NEGATIVOS.has(accent) && !zero; // zero é zero, não alerta
   return (
-    <div
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        background: "var(--surface-3)",
-        border: "1px solid var(--surface-7)",
-        borderRadius: 16,
-        padding: "20px 22px",
-        display: "flex",
-        flexDirection: "column",
-        gap: 6,
-        cursor: "default",
-        transform: hovered ? "translateY(-3px)" : "none",
-        boxShadow: hovered ? `0 8px 32px rgba(192,132,252,0.12)` : "none",
-        transition: "transform 0.2s, box-shadow 0.2s",
-        animation: `fadeUp 0.5s ease ${delay}s both`,
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <span style={{ fontSize: 20 }}>{icon}</span>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+    <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
+      <div style={{ fontSize: 13, color: "var(--text-4)" }}>{label}</div>
+      <div style={{
+        fontSize: String(value).length > 9 ? 22 : 26, fontWeight: 500, lineHeight: 1.15,
+        color: ruim ? "var(--negative)" : "var(--text-1)",
+        fontFamily: "var(--font)", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap",
+      }}>{value}</div>
+      {(sub || trend) && (
+        <div style={{ fontSize: 12, color: "var(--text-5)", display: "flex", gap: 8, flexWrap: "wrap" }}>
           {trend && (
-            <span
-              title="Comparado ao mês anterior (mês atual pode estar em andamento)"
-              style={{
-                fontSize: 10, fontWeight: 700,
-                color: trend.up ? "#34d399" : "#ef4444",
-                display: "flex", alignItems: "center", gap: 2,
-              }}
-            >
-              {trend.up ? "▲" : "▼"} {Math.abs(trend.pct)}% mês
+            <span style={{ color: trend.up ? "var(--text-4)" : "var(--negative)" }}>
+              {trend.up ? "▲" : "▼"} {Math.abs(trend.pct)}% vs mês anterior
             </span>
           )}
-          {sub && (
-            <span style={{
-              fontSize: 10, color: "var(--text-4)",
-              background: "var(--surface-5)",
-              padding: "2px 8px", borderRadius: 20,
-            }}>{sub}</span>
-          )}
+          {sub && <span>{sub}</span>}
         </div>
-      </div>
-      <div style={{
-        // nowrap: o sinal de "-R$15.9k" não pode cair numa linha sozinho; valor
-        // longo encolhe em vez de quebrar.
-        fontSize: String(value).length > 7 ? 20 : 26, fontWeight: 800, color: accent,
-        fontFamily: "'DM Mono', monospace", letterSpacing: -1, whiteSpace: "nowrap",
-      }}>{value}</div>
-      <div style={{ fontSize: 11, color: "var(--text-3)", fontWeight: 500 }}>{label}</div>
+      )}
     </div>
   );
 }

@@ -51,7 +51,7 @@ export default function Clientes({ data }) {
     [rows, busca, segmento]
   );
 
-  if (erro) return <div style={{ textAlign: "center", padding: "80px 0", color: "#f87171", fontSize: 13 }}>Erro ao carregar clientes: {erro}</div>;
+  if (erro) return <div style={{ textAlign: "center", padding: "80px 0", color: "var(--negative)", fontSize: 13 }}>Erro ao carregar clientes: {erro}</div>;
   if (!customers) return <div style={{ textAlign: "center", padding: "80px 0", color: "var(--text-4)", fontSize: 13 }}>Carregando clientes...</div>;
 
   const recorrentes = rows.filter((r) => r.compras >= 2).length;
@@ -61,14 +61,14 @@ export default function Clientes({ data }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14 }}>
-        <KPICard icon="👥" label="Clientes cadastrados" value={rows.length} accent="#c084fc" />
-        <KPICard icon="🔁" label="Recorrentes" value={recorrentes} sub="2+ compras" accent="#34d399" />
-        <KPICard icon="💤" label={`Sem comprar há ${DIAS_INATIVO}+ dias`} value={inativos} sub="remarketing" accent="#fb923c" />
-        <KPICard icon="✉️" label="Com e-mail" value={comEmail} sub={`${rows.length ? Math.round((comEmail / rows.length) * 100) : 0}%`} accent="#38bdf8" />
+        <KPICard icon="" label="Clientes cadastrados" value={rows.length} accent="var(--accent)" />
+        <KPICard icon="" label="Recorrentes" value={recorrentes} sub="2+ compras" accent="var(--positive)" />
+        <KPICard icon="" label={`Sem comprar há ${DIAS_INATIVO}+ dias`} value={inativos} sub="remarketing" accent="var(--warning)" />
+        <KPICard icon="" label="Com e-mail" value={comEmail} sub={`${rows.length ? Math.round((comEmail / rows.length) * 100) : 0}%`} accent="var(--chart-2)" />
       </div>
 
       <Card>
-        <SectionTitle accent="#818cf8">Clientes</SectionTitle>
+        <SectionTitle>Clientes</SectionTitle>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: 14 }}>
           <input
             placeholder="Buscar por nome, telefone ou e-mail..."
@@ -82,8 +82,8 @@ export default function Clientes({ data }) {
           <button
             onClick={() => baixarCsv(filtrados)}
             disabled={filtrados.length === 0}
-            style={{ padding: "8px 14px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#c084fc,#818cf8)", color: "white", fontSize: 12, fontWeight: 700, cursor: "pointer", opacity: filtrados.length ? 1 : 0.5 }}>
-            ⬇ Exportar CSV ({filtrados.length})
+            style={{ padding: "8px 14px", borderRadius: 8, border: "none", background: "var(--primary)", color: "var(--primary-ink)", fontSize: 12, fontWeight: 600, cursor: "pointer", opacity: filtrados.length ? 1 : 0.5 }}>
+            Exportar CSV ({filtrados.length})
           </button>
         </div>
 
@@ -92,7 +92,7 @@ export default function Clientes({ data }) {
             <thead>
               <tr>
                 {["Cliente", "Telefone", "E-mail", "Compras", "Total gasto", "Última compra"].map((h) => (
-                  <th key={h} style={{ padding: "8px 10px", textAlign: "left", color: "var(--text-4)", fontWeight: 600, borderBottom: "1px solid var(--surface-6)", whiteSpace: "nowrap" }}>{h}</th>
+                  <th key={h} style={{ padding: "8px 10px", textAlign: "left", color: "var(--text-4)", fontWeight: 400, borderBottom: "1px solid var(--surface-6)", whiteSpace: "nowrap" }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -102,12 +102,12 @@ export default function Clientes({ data }) {
                 return (
                   <tr key={r.id} style={{ borderBottom: "1px solid var(--surface-3)" }}>
                     <td style={{ padding: "8px 10px", color: "var(--text-2)", fontWeight: 600 }}>{r.nome}</td>
-                    <td style={{ padding: "8px 10px", fontFamily: "'DM Mono',monospace" }}>
-                      {wa ? <a href={wa} target="_blank" rel="noopener noreferrer" style={{ color: "#34d399", textDecoration: "none" }}>{r.telefone} ↗</a> : <span style={{ color: "var(--text-4)" }}>{r.telefone || "—"}</span>}
+                    <td style={{ padding: "8px 10px", fontFamily: "var(--font)" }}>
+                      {wa ? <a href={wa} target="_blank" rel="noopener noreferrer" style={{ color: "var(--positive)", textDecoration: "none" }}>{r.telefone} ↗</a> : <span style={{ color: "var(--text-4)" }}>{r.telefone || "—"}</span>}
                     </td>
                     <td style={{ padding: "8px 10px", color: r.email ? "var(--text-3)" : "var(--text-5)" }}>{r.email || "—"}</td>
                     <td style={{ padding: "8px 10px", color: "var(--text-3)", textAlign: "center" }}>{r.compras}</td>
-                    <td style={{ padding: "8px 10px", color: "#c084fc", fontWeight: 700, fontFamily: "'DM Mono',monospace" }}>{formatBRL(r.gasto)}</td>
+                    <td style={{ padding: "8px 10px", color: "var(--accent)", fontWeight: 600, fontFamily: "var(--font)" }}>{formatBRL(r.gasto)}</td>
                     <td style={{ padding: "8px 10px", color: "var(--text-3)" }}>
                       {r.ultimaCompra ? `${r.ultimaCompra.split("-").reverse().join("/")} (${r.diasSemComprar}d)` : "—"}
                     </td>

@@ -1,190 +1,77 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { login } from "../../lib/adminAuth";
+import { ADMIN_CSS } from "./adminCss";
 
+// Mesmo vocabulário do painel: fundo liso (pedra), uma folha branca com borda
+// de 1px, botão preto. Nenhum efeito — é a porta de um painel de trabalho.
 export default function LoginPage({ onLogin }) {
   const [email,    setEmail]    = useState("");
   const [password, setPassword] = useState("");
   const [error,    setError]    = useState("");
   const [loading,  setLoading]  = useState(false);
   const [showPass, setShowPass] = useState(false);
-  const [mounted,  setMounted]  = useState(false);
-
-  useEffect(() => { setTimeout(() => setMounted(true), 50); }, []);
 
   async function handleSubmit() {
-    if (!email || !password) { setError("Preencha email e senha."); return; }
+    if (!email || !password) { setError("Preencha e-mail e senha."); return; }
     setLoading(true);
     setError("");
     const result = await login(email, password);
     if (result.ok) {
       onLogin();
     } else {
-      setError(result.error === 'Invalid login credentials' ? 'Email ou senha incorretos.' : result.error);
+      setError(result.error === 'Invalid login credentials' ? 'E-mail ou senha incorretos.' : result.error);
       setLoading(false);
     }
   }
 
   function handleKey(e) { if (e.key === "Enter") handleSubmit(); }
 
+  const campo = { width: "100%", height: 40, padding: "0 12px", borderRadius: 6, border: "1px solid var(--control)", background: "var(--surface)", color: "var(--text-1)", fontSize: 14, outline: "none" };
+  const rotulo = { display: "block", marginBottom: 6, fontSize: 13, fontWeight: 500, color: "var(--text-3)" };
+
   return (
-    <div style={{
-      minHeight: "100vh",
-      background: "#080612",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      fontFamily: "'Outfit', sans-serif",
-      overflow: "hidden",
-      position: "relative",
-    }}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
-        @keyframes fadeIn   { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
-        @keyframes float    { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
-        @keyframes spin     { to{transform:rotate(360deg)} }
-        @keyframes blob1    { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(40px,-20px) scale(1.1)} 66%{transform:translate(-20px,30px) scale(0.95)} }
-        @keyframes blob2    { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(-30px,25px) scale(1.05)} 66%{transform:translate(35px,-15px) scale(0.9)} }
-        .login-input {
-          width:100%; padding:14px 18px; border-radius:12px;
-          background:rgba(255,255,255,0.05);
-          border:1.5px solid rgba(255,255,255,0.1);
-          color:#f1f5f9; font-size:14px; font-family:'Outfit',sans-serif;
-          outline:none; transition:border-color 0.2s, background 0.2s;
-        }
-        .login-input:focus { border-color:rgba(192,132,252,0.7); background:rgba(192,132,252,0.06); }
-        .login-input::placeholder { color:#475569; }
-        .login-btn {
-          width:100%; padding:15px; border-radius:12px; border:none;
-          font-size:15px; font-weight:700; font-family:'Outfit',sans-serif;
-          cursor:pointer; transition:all 0.25s; letter-spacing:0.03em;
-        }
-        .login-btn:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 12px 40px rgba(192,132,252,0.4); }
-        .login-btn:active:not(:disabled) { transform:translateY(0); }
-      `}</style>
-
-      <div style={{ position:"absolute", inset:0, overflow:"hidden", pointerEvents:"none" }}>
-        <div style={{
-          position:"absolute", top:"15%", left:"10%",
-          width:500, height:500, borderRadius:"50%",
-          background:"radial-gradient(circle,rgba(139,58,139,0.18) 0%,transparent 70%)",
-          animation:"blob1 14s ease-in-out infinite",
-        }} />
-        <div style={{
-          position:"absolute", bottom:"20%", right:"8%",
-          width:420, height:420, borderRadius:"50%",
-          background:"radial-gradient(circle,rgba(99,102,241,0.15) 0%,transparent 70%)",
-          animation:"blob2 18s ease-in-out infinite",
-        }} />
-        <div style={{
-          position:"absolute", inset:0,
-          backgroundImage:"radial-gradient(circle,rgba(255,255,255,0.03) 1px,transparent 1px)",
-          backgroundSize:"40px 40px",
-        }} />
-      </div>
-
-      <div style={{
-        position:"relative", zIndex:10,
-        width:"100%", maxWidth:420,
-        padding:"0 24px",
-        opacity: mounted ? 1 : 0,
-        transform: mounted ? "none" : "translateY(24px)",
-        transition:"opacity 0.6s ease, transform 0.6s ease",
-      }}>
-        <div style={{ textAlign:"center", marginBottom:36, animation:"float 4s ease-in-out infinite" }}>
-          <div style={{
-            display:"inline-flex", alignItems:"center", justifyContent:"center",
-            width:64, height:64, borderRadius:20,
-            background:"linear-gradient(135deg,#c084fc 0%,#818cf8 100%)",
-            boxShadow:"0 0 40px rgba(192,132,252,0.4), 0 0 80px rgba(192,132,252,0.15)",
-            fontSize:28, fontWeight:900, color:"white",
-            marginBottom:16,
-          }}>G</div>
-          <div style={{ fontSize:26, fontWeight:800, color:"#f1f5f9", letterSpacing:-0.5 }}>Galene</div>
-          <div style={{ fontSize:13, color:"#64748b", marginTop:4, fontWeight:400 }}>
-            Painel de Vendas & Estoque
+    <div className="admin-root" data-theme="light" style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+      <style>{ADMIN_CSS}</style>
+      <div style={{ width: "100%", maxWidth: 400 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
+          <div className="a-mark" style={{ width: 40, height: 40, fontSize: 26 }} aria-hidden="true">G</div>
+          <div>
+            <div className="a-brand-name" style={{ fontSize: 28 }}>Galene</div>
+            <div style={{ fontSize: 13, color: "var(--text-4)", marginTop: 2 }}>Painel de vendas e estoque</div>
           </div>
         </div>
 
-        <div style={{
-          background:"rgba(255,255,255,0.03)",
-          border:"1px solid rgba(255,255,255,0.08)",
-          borderRadius:24,
-          padding:"36px 32px",
-          backdropFilter:"blur(20px)",
-          boxShadow:"0 32px 80px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)",
-        }}>
-          <div style={{ marginBottom:28 }}>
-            <div style={{ fontSize:18, fontWeight:700, color:"#f1f5f9", marginBottom:4 }}>Bem-vinda de volta 👋</div>
-            <div style={{ fontSize:13, color:"#64748b" }}>Entre para acessar o painel</div>
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 8, padding: 24 }}>
+          <h1 style={{ margin: "0 0 4px", fontSize: 20, fontWeight: 600 }}>Entrar</h1>
+          <p style={{ margin: "0 0 20px", fontSize: 14, color: "var(--text-4)" }}>Acesso restrito à equipe da loja.</p>
+
+          <div style={{ marginBottom: 16 }}>
+            <label htmlFor="login-email" style={rotulo}>E-mail</label>
+            <input id="login-email" type="email" placeholder="voce@galene.com" value={email} style={campo}
+              onChange={e => { setEmail(e.target.value); setError(""); }} onKeyDown={handleKey} autoComplete="username" />
           </div>
 
-          <div style={{ marginBottom:16 }}>
-            <label style={{ fontSize:12, fontWeight:600, color:"#94a3b8", display:"block", marginBottom:8, letterSpacing:"0.04em", textTransform:"uppercase" }}>
-              Email
-            </label>
-            <input
-              className="login-input"
-              type="email"
-              placeholder="voce@galene.com"
-              value={email}
-              onChange={e => { setEmail(e.target.value); setError(""); }}
-              onKeyDown={handleKey}
-              autoComplete="username"
-            />
-          </div>
-
-          <div style={{ marginBottom:24 }}>
-            <label style={{ fontSize:12, fontWeight:600, color:"#94a3b8", display:"block", marginBottom:8, letterSpacing:"0.04em", textTransform:"uppercase" }}>
-              Senha
-            </label>
-            <div style={{ position:"relative" }}>
-              <input
-                className="login-input"
-                type={showPass ? "text" : "password"}
-                placeholder="••••••••"
-                value={password}
-                onChange={e => { setPassword(e.target.value); setError(""); }}
-                onKeyDown={handleKey}
-                autoComplete="current-password"
-                style={{ paddingRight:48 }}
-              />
-              <button onClick={() => setShowPass(s => !s)} style={{
-                position:"absolute", right:14, top:"50%", transform:"translateY(-50%)",
-                background:"none", border:"none", cursor:"pointer",
-                color:"#64748b", fontSize:16, padding:4,
-              }}>
-                {showPass ? "🙈" : "👁️"}
+          <div style={{ marginBottom: 20 }}>
+            <label htmlFor="login-senha" style={rotulo}>Senha</label>
+            <div style={{ position: "relative" }}>
+              <input id="login-senha" type={showPass ? "text" : "password"} value={password} style={{ ...campo, paddingRight: 64 }}
+                onChange={e => { setPassword(e.target.value); setError(""); }} onKeyDown={handleKey} autoComplete="current-password" />
+              <button type="button" onClick={() => setShowPass(s => !s)} style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", background: "none", border: 0, cursor: "pointer", color: "var(--text-4)", fontSize: 13, padding: 6 }}>
+                {showPass ? "Ocultar" : "Mostrar"}
               </button>
             </div>
           </div>
 
           {error && (
-            <div style={{
-              marginBottom:16, padding:"10px 14px", borderRadius:10,
-              background:"rgba(239,68,68,0.1)", border:"1px solid rgba(239,68,68,0.25)",
-              color:"#fca5a5", fontSize:13, display:"flex", alignItems:"center", gap:8,
-            }}>
-              ⚠️ {error}
+            <div role="alert" style={{ marginBottom: 16, padding: "10px 12px", borderRadius: 6, background: "var(--pill-negative-bg)", color: "var(--pill-negative-ink)", fontSize: 13 }}>
+              {error}
             </div>
           )}
 
-          <button className="login-btn" onClick={handleSubmit} disabled={loading} style={{
-            background: loading
-              ? "rgba(255,255,255,0.1)"
-              : "linear-gradient(135deg,#c084fc 0%,#818cf8 100%)",
-            color: loading ? "#64748b" : "white",
-          }}>
-            {loading ? (
-              <span style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
-                <span style={{ width:16, height:16, border:"2px solid #64748b", borderTopColor:"transparent", borderRadius:"50%", display:"inline-block", animation:"spin 0.7s linear infinite" }} />
-                Entrando...
-              </span>
-            ) : "Entrar →"}
+          <button className="a-btn a-btn-primary" onClick={handleSubmit} disabled={loading}
+            style={{ width: "100%", height: 42, justifyContent: "center", fontSize: 14, opacity: loading ? 0.6 : 1, cursor: loading ? "wait" : "pointer" }}>
+            {loading ? "Entrando..." : "Entrar"}
           </button>
-        </div>
-
-        <div style={{ textAlign:"center", marginTop:20, fontSize:11, color:"#334155" }}>
-          Galene © 2026 · Acesso restrito
         </div>
       </div>
     </div>

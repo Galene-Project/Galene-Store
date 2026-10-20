@@ -8,8 +8,7 @@ import { formatBRL, formatBRLk } from "../../../lib/format";
 
 
 const grupoLabelStyle = {
-  fontSize: 10, color: "var(--text-4)", textTransform: "uppercase",
-  letterSpacing: "0.06em", marginBottom: 8,
+  fontSize: 13, color: "var(--text-4)", marginBottom: 8,
 };
 
 export default function Visao360({ data }) {
@@ -44,9 +43,9 @@ export default function Visao360({ data }) {
       <div>
         <div style={grupoLabelStyle}>Vendas</div>
         <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14 }}>
-          <KPICard icon="💰" label="Faturamento" value={formatBRL(resumo.faturamento)} sub="período" accent="#c084fc" />
-          <KPICard icon="🛒" label="Pedidos" value={resumo.pedidos} sub="período" accent="#818cf8" />
-          <KPICard icon="🎯" label="Ticket Médio" value={formatBRL(resumo.ticketMedio)} sub="período" accent="#38bdf8" />
+          <KPICard icon="" label="Faturamento" value={formatBRL(resumo.faturamento)} sub="período" accent="var(--accent)" />
+          <KPICard icon="" label="Pedidos" value={resumo.pedidos} sub="período" accent="var(--chart-2)" />
+          <KPICard icon="" label="Ticket Médio" value={formatBRL(resumo.ticketMedio)} sub="período" accent="var(--chart-2)" />
         </div>
       </div>
 
@@ -54,24 +53,24 @@ export default function Visao360({ data }) {
         <div style={grupoLabelStyle}>Financeiro</div>
         <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14 }}>
           <KPICard
-            icon="📈" label="Lucro Líquido" value={formatBRL(resumo.lucroLiquido)} sub="período, aproximado"
-            accent={resumo.lucroLiquido >= 0 ? "#34d399" : "#ef4444"}
+            icon="" label="Lucro Líquido" value={formatBRL(resumo.lucroLiquido)} sub="período, aproximado"
+            accent={resumo.lucroLiquido >= 0 ? "var(--positive)" : "var(--negative)"}
           />
           <KPICard
-            icon="⚖️" label="Ponto de Equilíbrio"
-            value={kpis.equilibrio.coberto ? "Coberto ✓" : `Faltam ${formatBRL(kpis.equilibrio.falta)}`}
-            sub="mês corrente" accent={kpis.equilibrio.coberto ? "#34d399" : "#fb923c"}
+            icon="" label="Ponto de Equilíbrio"
+            value={kpis.equilibrio.coberto ? "Coberto " : `Faltam ${formatBRL(kpis.equilibrio.falta)}`}
+            sub="mês corrente" accent={kpis.equilibrio.coberto ? "var(--positive)" : "var(--warning)"}
           />
-          <KPICard icon="🧾" label="Despesas" value={formatBRL(resumo.despesas)} sub="período" accent="#f472b6" />
+          <KPICard icon="" label="Despesas" value={formatBRL(resumo.despesas)} sub="período" accent="var(--chart-2)" />
         </div>
       </div>
 
       <div>
         <div style={grupoLabelStyle}>Estoque (agora)</div>
         <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14 }}>
-          <KPICard icon="📦" label="Produtos Ativos" value={kpis.totalSkus} sub={`${kpis.disponiveis} variantes`} accent="#34d399" />
-          <KPICard icon="⚠️" label="Estoque Baixo" value={kpis.estoqueBaixo} sub="atenção" accent="#fb923c" />
-          <KPICard icon="❌" label="Esgotados" value={kpis.esgotados} sub="repor urgente" accent="#ef4444" />
+          <KPICard icon="" label="Produtos Ativos" value={kpis.totalSkus} sub={`${kpis.disponiveis} variantes`} accent="var(--positive)" />
+          <KPICard icon="" label="Estoque Baixo" value={kpis.estoqueBaixo} sub="atenção" accent="var(--warning)" />
+          <KPICard icon="" label="Esgotados" value={kpis.esgotados} sub="repor urgente" accent="var(--negative)" />
         </div>
       </div>
 
@@ -84,15 +83,15 @@ export default function Visao360({ data }) {
             <AreaChart data={serie}>
               <defs>
                 <linearGradient id="gVisao360" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#c084fc" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#c084fc" stopOpacity={0} />
+                  <stop offset="5%" stopColor="var(--accent)" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="var(--accent)" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-4)" />
-              <XAxis dataKey="label" tick={{ fill: "var(--text-4)", fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: "var(--text-4)", fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={formatBRLk} />
+              <CartesianGrid stroke="var(--grid)" vertical={false} />
+              <XAxis dataKey="label" tick={{ fill: "var(--text-4)", fontSize: 12 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: "var(--text-4)", fontSize: 12 }} axisLine={false} tickLine={false} tickFormatter={formatBRLk} />
               <Tooltip content={<CustomTooltip prefix="R$" />} />
-              <Area type="monotone" dataKey="valor" name="Faturamento" stroke="#c084fc" strokeWidth={2.5} fill="url(#gVisao360)" dot={{ r: 3, fill: "#c084fc" }} />
+              <Area type="linear" dataKey="valor" name="Faturamento" stroke="var(--accent)" strokeWidth={2.5} fill="url(#gVisao360)" dot={{ r: 3, fill: "var(--accent)" }} />
             </AreaChart>
           </ResponsiveContainer>
         )}
@@ -100,7 +99,7 @@ export default function Visao360({ data }) {
 
       <div className="admin-chart-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
         <Card>
-          <SectionTitle accent="#818cf8">Top Produtos (período)</SectionTitle>
+          <SectionTitle>Top Produtos (período)</SectionTitle>
           {resumo.topProdutos.length === 0 ? (
             <div style={{ fontSize: 12, color: "var(--text-4)" }}>Sem vendas no período.</div>
           ) : (
@@ -111,7 +110,7 @@ export default function Visao360({ data }) {
                   <div key={i}>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
                       <span style={{ fontSize: 12, color: "var(--text-2)", fontWeight: 500 }}>{p.nome}</span>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: "#c084fc", fontFamily: "'DM Mono',monospace" }}>{formatBRL(p.receita)}</span>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: "var(--accent)", fontFamily: "var(--font)" }}>{formatBRL(p.receita)}</span>
                     </div>
                     <div style={{ height: 4, background: "var(--surface-5)", borderRadius: 2, overflow: "hidden" }}>
                       <div style={{ height: "100%", width: `${pct}%`, background: CORES[i % CORES.length], borderRadius: 2 }} />
@@ -124,7 +123,7 @@ export default function Visao360({ data }) {
         </Card>
 
         <Card>
-          <SectionTitle accent="#f472b6">Clientes que Mais Compram (período)</SectionTitle>
+          <SectionTitle>Clientes que Mais Compram (período)</SectionTitle>
           {resumo.topClientes.length === 0 ? (
             <div style={{ fontSize: 12, color: "var(--text-4)" }}>Sem pedidos pagos no período.</div>
           ) : (
@@ -135,7 +134,7 @@ export default function Visao360({ data }) {
                   <div key={i}>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
                       <span style={{ fontSize: 12, color: "var(--text-2)", fontWeight: 500 }}>{c.nome}</span>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: "#c084fc", fontFamily: "'DM Mono',monospace" }}>{formatBRL(c.totalGasto)}</span>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: "var(--accent)", fontFamily: "var(--font)" }}>{formatBRL(c.totalGasto)}</span>
                     </div>
                     <div style={{ height: 4, background: "var(--surface-5)", borderRadius: 2, overflow: "hidden" }}>
                       <div style={{ height: "100%", width: `${pct}%`, background: CORES[i % CORES.length], borderRadius: 2 }} />
@@ -148,7 +147,7 @@ export default function Visao360({ data }) {
         </Card>
 
         <Card>
-          <SectionTitle accent="#60a5fa">Produtos Parados</SectionTitle>
+          <SectionTitle>Produtos Parados</SectionTitle>
           {produtosParados.length === 0 ? (
             <div style={{ fontSize: 12, color: "var(--text-4)" }}>Nenhum produto parado.</div>
           ) : (
@@ -156,13 +155,13 @@ export default function Visao360({ data }) {
               {produtosParados.slice(0, 7).map((p, i) => (
                 <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
                   <span style={{ color: "var(--text-2)" }}>{p.produto}</span>
-                  <span style={{ color: "#60a5fa", fontFamily: "'DM Mono',monospace" }}>
+                  <span style={{ color: "var(--chart-2)", fontFamily: "var(--font)" }}>
                     {p.diasSemVenda === null ? "sempre" : `${p.diasSemVenda}d`}
                   </span>
                 </div>
               ))}
               {produtosParadosTotal > 7 && (
-                <div style={{ fontSize: 10, color: "var(--text-4)" }}>+{produtosParadosTotal - 7} outros</div>
+                <div style={{ fontSize: 12, color: "var(--text-4)" }}>+{produtosParadosTotal - 7} outros</div>
               )}
             </div>
           )}

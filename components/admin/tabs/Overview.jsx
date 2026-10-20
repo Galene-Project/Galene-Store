@@ -1,213 +1,155 @@
 import React from "react";
-import {
-  AreaChart, Area, BarChart, Bar,
-  PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, Legend,
-} from "recharts";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import KPICard from "../KPICard";
-import { SectionTitle, CustomTooltip, Card, CORES, CORES_TAM, SemDados } from "../shared";
-import { formatBRLk } from "../../../lib/format";
+import { Card, CardHead, CustomTooltip, Pill, RankList, SemDados } from "../shared";
+import { formatBRL, formatBRLk } from "../../../lib/format";
 
-export default function Overview({ data }) {
-  const { faturamentoMensal, vendasPorCategoria, topProdutos, estoqueAlertas, distribuicaoTamanho, kpis, comparativo, topClientes, produtosParados, produtosParadosTotal } = data;
+// Visão geral = resumo das abas detalhadas. A pergunta dela: "o que pede
+// atenção hoje?" — por isso a fila de pedidos e o estoque vêm antes dos
+// rankings, e cada bloco leva à aba onde se resolve.
+const FILA = { aguardando_aprovacao: "Aprovar cartão", aguardando_pagamento: "Confirmar pagamento" };
+
+export default function Overview({ data, onNavigate = () => {} }) {
+  const { faturamentoMensal, topProdutos, estoqueAlertas, kpis, comparativo, topClientes, produtosParados, produtosParadosTotal } = data;
   const totalFat = faturamentoMensal.reduce((a, b) => a + b.valor, 0);
   const totalPedidos = faturamentoMensal.reduce((a, b) => a + b.pedidos, 0);
-  const ticketMedio = totalPedidos ? Math.round(totalFat / totalPedidos) : 0;
+  const ticketMedio = totalPedidos ? totalFat / totalPedidos : 0;
+
+  const fila = (data.raw?.orders || [])
+    .filter((o) => FILA[o.status])
+    .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+  const esgotadas = kpis.esgotados;
+  const baixas = kpis.estoqueBaixo;
+
+  const resumo = [
+    fila.length && `${fila.length} pedido${fila.length > 1 ? "s" : ""} esperando você`,
+    esgotadas && `${esgotadas} variante${esgotadas > 1 ? "s" : ""} esgotada${esgotadas > 1 ? "s" : ""}`,
+    baixas && `${baixas} com estoque baixo`,
+  ].filter(Boolean);
 
   return (
     <>
-      <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(8,1fr)", gap: 14, marginBottom: 22 }}>
-        <KPICard icon="💰" label="Faturamento (6 meses)"  value={formatBRLk(totalFat)} sub="6 meses"          trend={comparativo.faturamentoPct !== null ? { pct: comparativo.faturamentoPct, up: comparativo.faturamentoPct >= 0 } : null} accent="#c084fc" delay={0}    />
-        <KPICard icon="🛒" label="Total de Pedidos"       value={totalPedidos}                        sub="6 meses"          trend={comparativo.pedidosPct !== null ? { pct: comparativo.pedidosPct, up: comparativo.pedidosPct >= 0 } : null} accent="#818cf8" delay={0.05}  />
-        <KPICard icon="🎯" label="Ticket Médio"           value={`R$${ticketMedio}`}                  sub="por pedido"       accent="#38bdf8" delay={0.1}   />
-        <KPICard icon="📦" label="Produtos Ativos"         value={kpis.totalSkus}                      sub={`${kpis.disponiveis} variantes`} accent="#34d399" delay={0.15}  />
-        <KPICard icon="⚠️" label="Alertas de Estoque"    value={kpis.estoqueBaixo + kpis.esgotados} sub={`${kpis.esgotados} esgotados`} accent="#fb923c" delay={0.2} />
-        <KPICard icon="📅" label="Pedidos Hoje"           value={kpis.pedidosHoje}                    sub={`R$${kpis.faturamentoHoje.toFixed(2)}`}    accent="#f472b6" delay={0.25} />
-        <KPICard icon="📈" label="Lucro Líquido"          value={formatBRLk(kpis.lucroLiquido)} sub="6 meses, aproximado" accent={kpis.lucroLiquido >= 0 ? "#34d399" : "#ef4444"} delay={0.3} />
-        <KPICard icon="⚖️" label="Ponto de Equilíbrio"   value={kpis.equilibrio.coberto ? "Coberto ✓" : `Faltam R$${kpis.equilibrio.falta.toFixed(0)}`} sub="fixo do mês corrente" accent={kpis.equilibrio.coberto ? "#34d399" : "#fb923c"} delay={0.35} />
+      <p style={{ margin: "0 0 16px", fontSize: 15, color: "var(--text-2)" }}>
+        {resumo.length ? resumo.join(" · ") : "Nada pendente agora: sem pedido na fila e sem estoque em alerta."}
+      </p>
+
+      <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(6,1fr)" }}>
+        <KPICard label="Faturamento" value={formatBRLk(totalFat)} sub="últimos 6 meses"
+          trend={comparativo.faturamentoPct !== null ? { pct: comparativo.faturamentoPct, up: comparativo.faturamentoPct >= 0 } : null} />
+        <KPICard label="Pedidos" value={totalPedidos} sub="últimos 6 meses"
+          trend={comparativo.pedidosPct !== null ? { pct: comparativo.pedidosPct, up: comparativo.pedidosPct >= 0 } : null} />
+        <KPICard label="Ticket médio" value={formatBRL(ticketMedio)} sub="por pedido" />
+        <KPICard label="Produtos ativos" value={kpis.totalSkus} sub={`${kpis.disponiveis} variantes com estoque`} />
+        <KPICard label="Lucro líquido" value={formatBRLk(kpis.lucroLiquido)} sub="6 meses, aproximado"
+          accent={kpis.lucroLiquido < 0 ? "var(--negative)" : undefined} />
+        <KPICard label="Ponto de equilíbrio" value={kpis.equilibrio.coberto ? "Coberto" : formatBRLk(kpis.equilibrio.falta)}
+          sub={kpis.equilibrio.coberto ? "fixo do mês coberto" : "faltam para cobrir o fixo do mês"} />
       </div>
 
-      <div className="admin-chart-grid" style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16, marginBottom: 16 }}>
-        <Card delay={0.1}>
-          <SectionTitle>Faturamento Mensal</SectionTitle>
-          <ResponsiveContainer width="100%" height={220}>
-            <AreaChart data={faturamentoMensal}>
-              <defs>
-                <linearGradient id="gFat" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%"  stopColor="#c084fc" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#c084fc" stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="gPed" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%"  stopColor="#38bdf8" stopOpacity={0.2} />
-                  <stop offset="95%" stopColor="#38bdf8" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-4)" />
-              <XAxis dataKey="mes" tick={{ fill:"var(--text-4)", fontSize:11 }} axisLine={false} tickLine={false} />
-              <YAxis yAxisId="l" tick={{ fill:"var(--text-4)", fontSize:11 }} axisLine={false} tickLine={false} tickFormatter={formatBRLk} />
-              <YAxis yAxisId="r" orientation="right" tick={{ fill:"var(--text-4)", fontSize:11 }} axisLine={false} tickLine={false} />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend wrapperStyle={{ fontSize:11, color:"var(--text-3)" }} />
-              <Area yAxisId="l" type="monotone" dataKey="valor"   name="Faturamento" stroke="#c084fc" strokeWidth={2.5} fill="url(#gFat)" dot={{ r:4, fill:"#c084fc" }} />
-              <Area yAxisId="r" type="monotone" dataKey="pedidos" name="Pedidos"     stroke="#38bdf8" strokeWidth={2}   fill="url(#gPed)" dot={{ r:3, fill:"#38bdf8" }} />
-            </AreaChart>
-          </ResponsiveContainer>
+      <div className="admin-chart-grid" style={{ display: "grid", gridTemplateColumns: "3fr 2fr", gap: 16, marginBottom: 16, alignItems: "start" }}>
+        <Card>
+          <CardHead title="Faturamento mensal" action="Ver vendas" onAction={() => onNavigate("vendas")} />
+          {totalFat > 0 ? (
+            <ResponsiveContainer width="100%" height={230}>
+              <AreaChart data={faturamentoMensal}>
+                <defs>
+                  <linearGradient id="gFat" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--accent)" stopOpacity={0.16} />
+                    <stop offset="100%" stopColor="var(--accent)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid stroke="var(--grid)" vertical={false} />
+                <XAxis dataKey="mes" tick={{ fill: "var(--text-4)", fontSize: 12 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: "var(--text-4)", fontSize: 12 }} axisLine={false} tickLine={false} tickFormatter={formatBRLk} width={56} />
+                <Tooltip content={<CustomTooltip prefix="R$" />} />
+                <Area type="linear" dataKey="valor" name="Faturamento" stroke="var(--accent)" strokeWidth={2} fill="url(#gFat)" dot={false} />
+              </AreaChart>
+            </ResponsiveContainer>
+          ) : <SemDados height={230} texto="Nenhum pedido pago nos últimos 6 meses." />}
         </Card>
 
-        <Card delay={0.15}>
-          <SectionTitle accent="#f472b6">Vendas por Tamanho</SectionTitle>
-          {distribuicaoTamanho.length ? (
-          <ResponsiveContainer width="100%" height={175}>
-            <PieChart>
-              <Pie data={distribuicaoTamanho} cx="50%" cy="50%" innerRadius={50} outerRadius={78} paddingAngle={3} dataKey="value">
-                {distribuicaoTamanho.map((_, i) => <Cell key={i} fill={CORES_TAM[i]} />)}
-              </Pie>
-              <Tooltip contentStyle={{ background:"var(--panel-solid)", border:"1px solid rgba(192,132,252,0.3)", borderRadius:8, fontSize:11 }} />
-            </PieChart>
-          </ResponsiveContainer>
-          ) : <SemDados height={175} />}
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:6 }}>
-            {distribuicaoTamanho.map((d, i) => (
-              <div key={i} style={{ display:"flex", alignItems:"center", gap:6 }}>
-                <div style={{ width:8, height:8, borderRadius:2, background:CORES_TAM[i] }} />
-                <span style={{ fontSize:11, color:"var(--text-3)" }}>{d.name}: <b style={{ color:"var(--text-2)" }}>{d.value}%</b></span>
-              </div>
-            ))}
-          </div>
-        </Card>
-      </div>
-
-      <div className="admin-chart-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:16, marginBottom:16 }}>
-        <Card delay={0.2}>
-          <SectionTitle accent="#34d399">Receita por Categoria</SectionTitle>
-          {vendasPorCategoria.length ? (
-          <ResponsiveContainer width="100%" height={240}>
-            <BarChart data={vendasPorCategoria} layout="vertical" margin={{ left:0, right:16 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-4)" horizontal={false} />
-              <XAxis type="number" tick={{ fill:"var(--text-4)", fontSize:10 }} axisLine={false} tickLine={false} tickFormatter={v=>`R$${v}`} />
-              <YAxis type="category" dataKey="nome" tick={{ fill:"var(--text-3)", fontSize:10 }} axisLine={false} tickLine={false} width={130} />
-              <Tooltip content={<CustomTooltip prefix="R$" />} />
-              <Bar dataKey="receita" name="Receita" radius={[0,6,6,0]}>
-                {vendasPorCategoria.map((_, i) => <Cell key={i} fill={CORES[i % CORES.length]} />)}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-          ) : <SemDados height={240} />}
-        </Card>
-
-        <Card delay={0.25}>
-          <SectionTitle accent="#818cf8">Top 7 Produtos</SectionTitle>
-          <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-            {topProdutos.map((p, i) => {
-              const pct = Math.round((p.vendas / topProdutos[0].vendas) * 100);
-              return (
-                <div key={i}>
-                  <div style={{ display:"flex", justifyContent:"space-between", marginBottom:4 }}>
-                    <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                      <span style={{ fontSize:11, fontWeight:700, color:CORES[i], minWidth:18, fontFamily:"'DM Mono',monospace" }}>#{i+1}</span>
-                      <span style={{ fontSize:12, color:"var(--text-2)", fontWeight:500 }}>{p.nome}</span>
-                    </div>
-                    <div style={{ display:"flex", gap:12 }}>
-                      <span style={{ fontSize:11, color:"var(--text-4)" }}>{p.vendas} un.</span>
-                      <span style={{ fontSize:11, fontWeight:700, color:"#c084fc", fontFamily:"'DM Mono',monospace" }}>R${p.receita}</span>
-                    </div>
+        <Card>
+          <CardHead title="Pedidos esperando você" action="Ver pedidos" onAction={() => onNavigate("pedidos")} />
+          {fila.length === 0 ? (
+            <div style={{ fontSize: 13, color: "var(--text-4)" }}>Nenhum pedido esperando aprovação ou pagamento.</div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              {fila.slice(0, 5).map((o) => (
+                <div key={o.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, padding: "10px 0", borderTop: "1px solid var(--rule)" }}>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 14, color: "var(--text-1)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{o.customers?.company_name || o.customers?.name || "—"}</div>
+                    <div style={{ fontSize: 12, color: "var(--text-5)", fontFamily: "var(--font)" }}>{o.order_number} · {formatBRL(o.total)}</div>
                   </div>
-                  <div style={{ height:4, background:"var(--surface-5)", borderRadius:2, overflow:"hidden" }}>
-                    <div style={{ height:"100%", width:"100%", transform:`scaleX(${pct/100})`, transformOrigin:"left", background:`linear-gradient(90deg,${CORES[i]},${CORES[(i+1)%CORES.length]})`, borderRadius:2, transition:"transform 1s ease" }} />
-                  </div>
+                  <Pill tone="warning">{FILA[o.status]}</Pill>
                 </div>
-              );
-            })}
-          </div>
-        </Card>
-
-        <Card delay={0.28}>
-          <SectionTitle accent="#f472b6">Clientes que Mais Compram</SectionTitle>
-          <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-            {topClientes.length === 0 && (
-              <div style={{ fontSize:12, color:"var(--text-4)" }}>Sem pedidos pagos ainda.</div>
-            )}
-            {topClientes.map((c, i) => {
-              const pct = topClientes[0].totalGasto ? Math.round((c.totalGasto / topClientes[0].totalGasto) * 100) : 0;
-              return (
-                <div key={i}>
-                  <div style={{ display:"flex", justifyContent:"space-between", marginBottom:4 }}>
-                    <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                      <span style={{ fontSize:11, fontWeight:700, color:CORES[i % CORES.length], minWidth:18, fontFamily:"'DM Mono',monospace" }}>#{i+1}</span>
-                      <span style={{ fontSize:12, color:"var(--text-2)", fontWeight:500 }}>{c.nome}</span>
-                    </div>
-                    <div style={{ display:"flex", gap:12 }}>
-                      <span style={{ fontSize:11, color:"var(--text-4)" }}>{c.totalPedidos} pedido{c.totalPedidos !== 1 ? "s" : ""}</span>
-                      <span style={{ fontSize:11, fontWeight:700, color:"#c084fc", fontFamily:"'DM Mono',monospace" }}>R${c.totalGasto.toFixed(2)}</span>
-                    </div>
-                  </div>
-                  <div style={{ height:4, background:"var(--surface-5)", borderRadius:2, overflow:"hidden" }}>
-                    <div style={{ height:"100%", width:"100%", transform:`scaleX(${pct/100})`, transformOrigin:"left", background:`linear-gradient(90deg,${CORES[i % CORES.length]},${CORES[(i+1)%CORES.length]})`, borderRadius:2, transition:"transform 1s ease" }} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </Card>
-      </div>
-
-      <Card style={{ background:"rgba(251,146,60,0.05)", border:"1px solid rgba(251,146,60,0.2)" }} delay={0.3}>
-        <SectionTitle accent="#fb923c">🚨 Alertas de Estoque</SectionTitle>
-        <div className="admin-chart-grid" style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10 }}>
-          {estoqueAlertas.map((a, i) => (
-            <div key={i} style={{
-              background: a.status==="esgotado" ? "rgba(239,68,68,0.1)" : "rgba(251,146,60,0.08)",
-              border: `1px solid ${a.status==="esgotado" ? "rgba(239,68,68,0.3)" : "rgba(251,146,60,0.25)"}`,
-              borderRadius:10, padding:"12px 14px",
-              display:"flex", alignItems:"center", justifyContent:"space-between",
-            }}>
-              <div>
-                <div style={{ fontSize:12, fontWeight:700, color:"var(--text-2)" }}>{a.produto}</div>
-                <div style={{ fontSize:11, color:"var(--text-3)" }}>{a.cor} · Tam {a.tam} · {a.sku}</div>
-              </div>
-              <div style={{ textAlign:"right" }}>
-                <div style={{ fontSize:11, color:"var(--text-4)" }}>Estoque</div>
-                <div style={{ fontSize:20, fontWeight:800, color:a.status==="esgotado"?"#ef4444":"#fb923c", fontFamily:"'DM Mono',monospace" }}>{a.real}</div>
-                <span style={{ fontSize:10, padding:"1px 6px", borderRadius:4, fontWeight:700,
-                  background:a.status==="esgotado"?"#fee2e2":"#ffedd5",
-                  color:a.status==="esgotado"?"#991b1b":"#9a3412" }}>
-                  {a.status==="esgotado"?"ESGOTADO":"BAIXO"}
-                </span>
-              </div>
+              ))}
+              {fila.length > 5 && <div style={{ fontSize: 12, color: "var(--text-5)", paddingTop: 8 }}>+{fila.length - 5} na fila</div>}
             </div>
-          ))}
-        </div>
-      </Card>
+          )}
+        </Card>
+      </div>
 
-      <Card style={{ background:"rgba(96,165,250,0.05)", border:"1px solid rgba(96,165,250,0.2)", marginTop:16 }} delay={0.35}>
-        <SectionTitle accent="#60a5fa">📉 Produtos Parados (60+ dias sem venda) — {produtosParadosTotal} no total, top {produtosParados.length} por estoque parado</SectionTitle>
-        {produtosParados.length === 0 ? (
-          <div style={{ fontSize:12, color:"var(--text-4)" }}>Nenhum produto parado — tudo girando.</div>
-        ) : (
-          <div className="admin-chart-grid" style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10 }}>
-            {produtosParados.map((p, i) => (
-              <div key={i} style={{
-                background:"rgba(96,165,250,0.08)",
-                border:"1px solid rgba(96,165,250,0.25)",
-                borderRadius:10, padding:"12px 14px",
-                display:"flex", alignItems:"center", justifyContent:"space-between",
-              }}>
-                <div>
-                  <div style={{ fontSize:12, fontWeight:700, color:"var(--text-2)" }}>{p.produto}</div>
-                  <div style={{ fontSize:11, color:"var(--text-3)" }}>{p.estoqueTotal} un. em estoque</div>
-                </div>
-                <div style={{ textAlign:"right" }}>
-                  <div style={{ fontSize:11, color:"var(--text-4)" }}>Sem venda há</div>
-                  <div style={{ fontSize:16, fontWeight:800, color:"#60a5fa", fontFamily:"'DM Mono',monospace" }}>
-                    {p.diasSemVenda === null ? "sempre" : `${p.diasSemVenda}d`}
+      <div className="admin-chart-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16, alignItems: "start" }}>
+        <Card>
+          <CardHead title="Estoque pedindo reposição" action="Ver estoque" onAction={() => onNavigate("estoque")} />
+          {estoqueAlertas.length === 0 ? (
+            <div style={{ fontSize: 13, color: "var(--text-4)" }}>Nenhuma variante esgotada ou com estoque baixo.</div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              {estoqueAlertas.slice(0, 6).map((a, i) => (
+                <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, padding: "10px 0", borderTop: "1px solid var(--rule)" }}>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 14, color: "var(--text-1)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.produto}</div>
+                    <div style={{ fontSize: 12, color: "var(--text-5)" }}>{a.cor} · tam. {a.tam}</div>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ fontFamily: "var(--font)", fontSize: 14, color: "var(--text-1)", fontVariantNumeric: "tabular-nums", minWidth: 18, textAlign: "right" }}>{a.real}</span>
+                    <Pill tone={a.status === "esgotado" ? "negative" : "warning"}>{a.status === "esgotado" ? "Esgotado" : "Baixo"}</Pill>
                   </div>
                 </div>
+              ))}
+              {kpis.estoqueBaixo + kpis.esgotados > 6 && <div style={{ fontSize: 12, color: "var(--text-5)", paddingTop: 8 }}>+{kpis.estoqueBaixo + kpis.esgotados - 6} variantes em alerta</div>}
+            </div>
+          )}
+        </Card>
+
+        <Card>
+          <CardHead title="Produtos parados" action="Ver estoque" onAction={() => onNavigate("estoque")} />
+          {produtosParados.length === 0 ? (
+            <div style={{ fontSize: 13, color: "var(--text-4)" }}>Nenhum produto parado: tudo girando.</div>
+          ) : (
+            <>
+              <div style={{ fontSize: 12, color: "var(--text-5)", marginBottom: 6 }}>Sem venda há 60+ dias · {produtosParadosTotal} no total, os 6 com mais peças paradas</div>
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                {produtosParados.slice(0, 6).map((p, i) => (
+                  <div key={i} style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "10px 0", borderTop: "1px solid var(--rule)" }}>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 14, color: "var(--text-1)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.produto}</div>
+                      <div style={{ fontSize: 12, color: "var(--text-5)" }}>{p.estoqueTotal} un. em estoque</div>
+                    </div>
+                    <span style={{ fontFamily: "var(--font)", fontSize: 13, color: "var(--text-3)", whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}>
+                      {p.diasSemVenda === null ? "nunca vendeu" : `${p.diasSemVenda} dias`}
+                    </span>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        )}
-      </Card>
+            </>
+          )}
+        </Card>
+      </div>
+
+      <div className="admin-chart-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, alignItems: "start" }}>
+        <Card>
+          <CardHead title="Produtos que mais vendem" action="Ver vendas" onAction={() => onNavigate("vendas")} />
+          <RankList vazio="Nenhuma venda ainda."
+            rows={topProdutos.slice(0, 5).map((p) => ({ label: p.nome, detail: `${p.vendas} un.`, value: formatBRL(p.receita), pct: p.vendas }))} />
+        </Card>
+        <Card>
+          <CardHead title="Clientes que mais compram" action="Ver clientes" onAction={() => onNavigate("clientes")} />
+          <RankList vazio="Nenhum pedido pago ainda."
+            rows={topClientes.slice(0, 5).map((c) => ({ label: c.nome, detail: `${c.totalPedidos} pedido${c.totalPedidos !== 1 ? "s" : ""}`, value: formatBRL(c.totalGasto), pct: c.totalGasto }))} />
+        </Card>
+      </div>
     </>
   );
 }

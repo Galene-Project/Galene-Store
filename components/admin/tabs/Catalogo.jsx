@@ -46,7 +46,7 @@ function imprimirEtiquetas(etiquetas) {
 
 function Toggle({ checked, onChange, disabled, label }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 11, color: "var(--text-4)" }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "var(--text-4)" }}>
       <button
         type="button"
         role="switch"
@@ -56,7 +56,7 @@ function Toggle({ checked, onChange, disabled, label }) {
         onClick={() => onChange(!checked)}
         style={{
           position: "relative", width: 34, height: 20, borderRadius: 20, border: "none", padding: 0,
-          background: checked ? "linear-gradient(135deg,#c084fc,#818cf8)" : "var(--surface-5)",
+          background: checked ? "var(--primary)" : "var(--surface-5)",
           cursor: disabled ? "default" : "pointer", opacity: disabled ? 0.5 : 1,
           transition: "background 0.2s ease", flexShrink: 0,
         }}
@@ -129,7 +129,7 @@ function NovoProdutoForm({ cores, tamanhos, onCancel, onCreated }) {
   if (etiquetas) {
     return (
       <Card style={{ marginBottom: 16 }}>
-        <SectionTitle accent="#34d399">Produto criado — códigos de barras gerados</SectionTitle>
+        <SectionTitle>Produto criado — códigos de barras gerados</SectionTitle>
         <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 14 }}>
           {etiquetas.map((e) => (
             <div key={e.code} style={{ fontSize: 12, color: "var(--text-2)" }}>
@@ -139,8 +139,8 @@ function NovoProdutoForm({ cores, tamanhos, onCancel, onCreated }) {
         </div>
         <div style={{ display: "flex", gap: 10 }}>
           <button onClick={() => imprimirEtiquetas(etiquetas)}
-            style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#c084fc,#818cf8)", color: "white", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
-            🖨️ Imprimir etiquetas
+            style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: "var(--primary)", color: "var(--primary-ink)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+            Imprimir etiquetas
           </button>
           <button onClick={onCreated}
             style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid var(--surface-7)", background: "transparent", color: "var(--text-3)", fontSize: 12, cursor: "pointer" }}>
@@ -153,10 +153,10 @@ function NovoProdutoForm({ cores, tamanhos, onCancel, onCreated }) {
 
   return (
     <Card style={{ marginBottom: 16 }}>
-      <SectionTitle accent="#818cf8">Novo produto</SectionTitle>
+      <SectionTitle>Novo produto</SectionTitle>
       {erro && (
-        <div style={{ marginBottom: 12, padding: "8px 12px", borderRadius: 8, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)", color: "#fca5a5", fontSize: 12 }}>
-          ⚠️ {erro}
+        <div style={{ marginBottom: 12, padding: "8px 12px", borderRadius: 8, background: "var(--pill-negative-bg)", border: "1px solid var(--pill-negative-bg)", color: "var(--negative)", fontSize: 12 }}>
+          {erro}
         </div>
       )}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
@@ -168,7 +168,7 @@ function NovoProdutoForm({ cores, tamanhos, onCancel, onCreated }) {
       </div>
       <textarea placeholder="Descrição (opcional)" value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} style={{ ...inputStyle, width: "100%", minHeight: 60, marginBottom: 12 }} />
 
-      <div style={{ fontSize: 11, color: "var(--text-4)", marginBottom: 8 }}>Variantes (cor / tamanho / quantidade em estoque)</div>
+      <div style={{ fontSize: 12, color: "var(--text-4)", marginBottom: 8 }}>Variantes (cor / tamanho / quantidade em estoque)</div>
       {variantes.map((v, i) => (
         <div key={i} style={{ display: "flex", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
           <select value={v.color_id} onChange={(e) => setVariante(i, "color_id", e.target.value)} style={selectStyle}>
@@ -182,34 +182,34 @@ function NovoProdutoForm({ cores, tamanhos, onCancel, onCreated }) {
           <input type="number" placeholder="Qtd" value={v.quantity} onChange={(e) => setVariante(i, "quantity", e.target.value)} style={{ ...inputStyle, width: 80 }} />
           <input placeholder="URL da foto dessa cor (opcional)" value={v.photo_url || ""} onChange={(e) => setVariante(i, "photo_url", e.target.value)} style={{ ...inputStyle, width: 220 }} />
           {variantes.length > 1 && (
-            <button type="button" onClick={() => setVariantes((prev) => prev.filter((_, idx) => idx !== i))} style={{ padding: "6px 10px", borderRadius: 8, border: "none", background: "var(--surface-5)", color: "var(--text-3)", fontSize: 11, cursor: "pointer" }}>Remover</button>
+            <button type="button" onClick={() => setVariantes((prev) => prev.filter((_, idx) => idx !== i))} style={{ padding: "6px 10px", borderRadius: 8, border: "none", background: "var(--surface-5)", color: "var(--text-3)", fontSize: 12, cursor: "pointer" }}>Remover</button>
           )}
         </div>
       ))}
       <button type="button" onClick={() => setVariantes((prev) => [...prev, { color_id: "", size_id: "", quantity: "" }])}
-        style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid var(--surface-7)", background: "transparent", color: "var(--text-3)", fontSize: 11, cursor: "pointer", marginBottom: 14 }}>
+        style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid var(--surface-7)", background: "transparent", color: "var(--text-3)", fontSize: 12, cursor: "pointer", marginBottom: 14 }}>
         + Variante
       </button>
 
-      <div style={{ fontSize: 11, color: "var(--text-4)", marginBottom: 8 }}>Fotos/vídeos (links de post ou reel do Instagram, opcional)</div>
+      <div style={{ fontSize: 12, color: "var(--text-4)", marginBottom: 8 }}>Fotos/vídeos (links de post ou reel do Instagram, opcional)</div>
       {instagramLinks.map((link, i) => (
         <div key={i} style={{ display: "flex", gap: 8, marginBottom: 6 }}>
           <input placeholder="https://www.instagram.com/p/... ou /reel/..." value={link}
             onChange={(e) => setInstagramLinks((prev) => prev.map((l, idx) => (idx === i ? e.target.value : l)))}
             style={{ ...inputStyle, flex: 1 }} />
           {instagramLinks.length > 1 && (
-            <button type="button" onClick={() => setInstagramLinks((prev) => prev.filter((_, idx) => idx !== i))} style={{ padding: "6px 10px", borderRadius: 8, border: "none", background: "var(--surface-5)", color: "var(--text-3)", fontSize: 11, cursor: "pointer" }}>Remover</button>
+            <button type="button" onClick={() => setInstagramLinks((prev) => prev.filter((_, idx) => idx !== i))} style={{ padding: "6px 10px", borderRadius: 8, border: "none", background: "var(--surface-5)", color: "var(--text-3)", fontSize: 12, cursor: "pointer" }}>Remover</button>
           )}
         </div>
       ))}
       <button type="button" onClick={() => setInstagramLinks((prev) => [...prev, ""])}
-        style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid var(--surface-7)", background: "transparent", color: "var(--text-3)", fontSize: 11, cursor: "pointer", marginBottom: 14 }}>
+        style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid var(--surface-7)", background: "transparent", color: "var(--text-3)", fontSize: 12, cursor: "pointer", marginBottom: 14 }}>
         + Link
       </button>
 
       <div style={{ display: "flex", gap: 10 }}>
         <button onClick={handleCriar} disabled={saving}
-          style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#c084fc,#818cf8)", color: "white", fontSize: 12, fontWeight: 700, cursor: saving ? "wait" : "pointer" }}>
+          style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: "var(--primary)", color: "var(--primary-ink)", fontSize: 12, fontWeight: 600, cursor: saving ? "wait" : "pointer" }}>
           {saving ? "Criando..." : "Criar produto"}
         </button>
         <button onClick={onCancel} disabled={saving}
@@ -269,8 +269,8 @@ export default function Catalogo() {
     const promoProdutos = produtos.filter((p) => p.price_original != null);
     const videoProdutos = produtos.filter((p) => p.is_launch);
     const extras = [];
-    if (videoProdutos.length > 0) extras.push(["▶️ Lançamentos", videoProdutos]);
-    if (promoProdutos.length > 0) extras.push(["🏷️ Promoções", promoProdutos]);
+    if (videoProdutos.length > 0) extras.push(["Lançamentos", videoProdutos]);
+    if (promoProdutos.length > 0) extras.push(["Promoções", promoProdutos]);
     return [...extras, ...entries];
   }, [produtos]);
 
@@ -534,7 +534,7 @@ export default function Catalogo() {
             <button
               onClick={() => handleSalvarPromocao(p.id)}
               disabled={savingId === p.id || !precoInputs[p.id]}
-              style={{ padding: "6px 12px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#c084fc,#818cf8)", color: "white", fontSize: 11, fontWeight: 700, cursor: savingId === p.id ? "wait" : "pointer", flexShrink: 0 }}>
+              style={{ padding: "6px 12px", borderRadius: 8, border: "none", background: "var(--primary)", color: "var(--primary-ink)", fontSize: 12, fontWeight: 600, cursor: savingId === p.id ? "wait" : "pointer", flexShrink: 0 }}>
               {savingId === p.id ? "Salvando..." : "Salvar"}
             </button>
           </div>
@@ -572,7 +572,7 @@ export default function Catalogo() {
             <button
               onClick={() => handleSalvarVideo(p.id)}
               disabled={savingId === p.id}
-              style={{ padding: "6px 12px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#c084fc,#818cf8)", color: "white", fontSize: 11, fontWeight: 700, cursor: savingId === p.id ? "wait" : "pointer", flexShrink: 0 }}>
+              style={{ padding: "6px 12px", borderRadius: 8, border: "none", background: "var(--primary)", color: "var(--primary-ink)", fontSize: 12, fontWeight: 600, cursor: savingId === p.id ? "wait" : "pointer", flexShrink: 0 }}>
               {savingId === p.id ? "Salvando..." : "Salvar"}
             </button>
           </div>
@@ -599,7 +599,7 @@ export default function Catalogo() {
           }}>
             {(p.product_colors || []).map((pc) => (
               <div key={pc.color_id} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ fontSize: 11, color: "var(--text-4)", width: 70, flexShrink: 0 }}>
+                <span style={{ fontSize: 12, color: "var(--text-4)", width: 70, flexShrink: 0 }}>
                   {pc.colors?.name || "?"}
                 </span>
                 <input
@@ -611,7 +611,7 @@ export default function Catalogo() {
                   }))}
                   style={{ ...inputStyle, width: 220 }}
                 />
-                <label style={{ padding: "6px 10px", borderRadius: 8, border: "1px dashed var(--surface-7)", background: "transparent", color: "var(--text-3)", fontSize: 11, cursor: savingId === p.id ? "wait" : "pointer" }}>
+                <label style={{ padding: "6px 10px", borderRadius: 8, border: "1px dashed var(--surface-7)", background: "transparent", color: "var(--text-3)", fontSize: 12, cursor: savingId === p.id ? "wait" : "pointer" }}>
                   Upload
                   <input
                     type="file"
@@ -626,14 +626,14 @@ export default function Catalogo() {
             <button
               onClick={() => handleSalvarFotoCor(p.id)}
               disabled={savingId === p.id}
-              style={{ padding: "6px 12px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#c084fc,#818cf8)", color: "white", fontSize: 11, fontWeight: 700, cursor: savingId === p.id ? "wait" : "pointer", alignSelf: "flex-start" }}>
+              style={{ padding: "6px 12px", borderRadius: 8, border: "none", background: "var(--primary)", color: "var(--primary-ink)", fontSize: 12, fontWeight: 600, cursor: savingId === p.id ? "wait" : "pointer", alignSelf: "flex-start" }}>
               {savingId === p.id ? "Salvando..." : "Salvar fotos"}
             </button>
           </div>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 11, color: "var(--text-4)" }}>Mídia própria:</span>
+          <span style={{ fontSize: 12, color: "var(--text-4)" }}>Mídia própria:</span>
           {[...(p.product_media || [])].sort((a, b) => Number(b.type === "video") - Number(a.type === "video")).map((m) => (
             <div key={m.id} style={{ position: "relative", width: 40, height: 40, borderRadius: 6, overflow: "hidden", flexShrink: 0 }}>
               {m.type === "video" ? (
@@ -644,12 +644,12 @@ export default function Catalogo() {
               <button
                 onClick={() => handleDeleteMedia(p.id, m)}
                 disabled={savingId === p.id}
-                style={{ position: "absolute", top: 0, right: 0, width: 16, height: 16, border: "none", borderRadius: "0 0 0 6px", background: "rgba(0,0,0,0.6)", color: "white", fontSize: 10, cursor: "pointer", lineHeight: "16px", padding: 0 }}>
+                style={{ position: "absolute", top: 0, right: 0, width: 16, height: 16, border: "none", borderRadius: "0 0 0 6px", background: "rgba(0,0,0,0.6)", color: "white", fontSize: 12, cursor: "pointer", lineHeight: "16px", padding: 0 }}>
                 ×
               </button>
             </div>
           ))}
-          <label style={{ padding: "6px 10px", borderRadius: 8, border: "1px dashed var(--surface-7)", background: "transparent", color: "var(--text-3)", fontSize: 11, cursor: savingId === p.id ? "wait" : "pointer" }}>
+          <label style={{ padding: "6px 10px", borderRadius: 8, border: "1px dashed var(--surface-7)", background: "transparent", color: "var(--text-3)", fontSize: 12, cursor: savingId === p.id ? "wait" : "pointer" }}>
             + Upload
             <input
               type="file"
@@ -677,7 +677,7 @@ export default function Catalogo() {
             style={{ ...inputStyle, flex: 1, minWidth: 200, maxWidth: 320 }}
           />
           <button onClick={() => setNovoAberto((v) => !v)}
-            style={{ padding: "8px 14px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#c084fc,#818cf8)", color: "white", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+            style={{ padding: "8px 14px", borderRadius: 8, border: "none", background: "var(--primary)", color: "var(--primary-ink)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
             {novoAberto ? "Fechar" : "+ Novo produto"}
           </button>
         </div>
@@ -693,8 +693,8 @@ export default function Catalogo() {
       )}
 
       {errorMsg && (
-        <div style={{ marginBottom: 14, padding: "10px 14px", borderRadius: 10, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)", color: "#fca5a5", fontSize: 12 }}>
-          ⚠️ {errorMsg}
+        <div style={{ marginBottom: 14, padding: "10px 14px", borderRadius: 10, background: "var(--pill-negative-bg)", border: "1px solid var(--pill-negative-bg)", color: "var(--negative)", fontSize: 12 }}>
+          {errorMsg}
         </div>
       )}
 
@@ -714,8 +714,8 @@ export default function Catalogo() {
             <div
               onClick={() => setOpenCat((prev) => ({ ...prev, [cat]: !prev[cat] }))}
               style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", cursor: "pointer" }}>
-              <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-2)" }}>{cat}</span>
-              <span style={{ fontSize: 11, color: "var(--text-4)" }}>{prods.length} produtos {openCat[cat] ? "▲" : "▼"}</span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-2)" }}>{cat}</span>
+              <span style={{ fontSize: 12, color: "var(--text-4)" }}>{prods.length} {prods.length === 1 ? "produto" : "produtos"} {openCat[cat] ? "▲" : "▼"}</span>
             </div>
             {openCat[cat] && prods.map(renderProduto)}
           </Card>

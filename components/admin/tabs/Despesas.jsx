@@ -80,12 +80,12 @@ function NovaDespesaForm({ onSaved }) {
         </div>
         <button onClick={salvar} disabled={saving || !valor} style={{
           padding: "8px 16px", borderRadius: 8, border: "none", cursor: saving ? "default" : "pointer",
-          background: "linear-gradient(135deg,#c084fc,#818cf8)", color: "white", fontSize: 12, fontWeight: 700,
+          background: "var(--primary)", color: "var(--primary-ink)", fontSize: 12, fontWeight: 600,
           opacity: saving || !valor ? 0.6 : 1,
         }}>{saving ? "Salvando..." : "Adicionar"}</button>
       </div>
       <input value={observacao} onChange={(e) => setObservacao(e.target.value)} placeholder="Observação (opcional)" style={{ ...inputStyle, width: "100%", marginTop: 10 }} />
-      {erro && <div style={{ color: "#f87171", fontSize: 11, marginTop: 8 }}>{erro}</div>}
+      {erro && <div style={{ color: "var(--negative)", fontSize: 12, marginTop: 8 }}>{erro}</div>}
     </Card>
   );
 }
@@ -93,13 +93,13 @@ function NovaDespesaForm({ onSaved }) {
 function TabelaDespesas({ expenses, onApagar }) {
   return (
     <Card delay={0.05}>
-      <SectionTitle accent="#818cf8">Despesas lançadas</SectionTitle>
+      <SectionTitle>Despesas lançadas</SectionTitle>
       <div style={{ overflowX: "auto" }}>
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
           <thead>
             <tr>
               {["Categoria", "Subcategoria", "Valor", "Competência", "Status", "Origem", ""].map((h) => (
-                <th key={h} style={{ padding: "8px 10px", textAlign: "left", color: "var(--text-4)", fontWeight: 600, borderBottom: "1px solid var(--surface-6)" }}>{h}</th>
+                <th key={h} style={{ padding: "8px 10px", textAlign: h === "Valor" ? "right" : "left", color: "var(--text-4)", fontWeight: 400, borderBottom: "1px solid var(--surface-6)" }}>{h}</th>
               ))}
             </tr>
           </thead>
@@ -108,16 +108,16 @@ function TabelaDespesas({ expenses, onApagar }) {
               <tr key={e.id} style={{ borderBottom: "1px solid var(--surface-3)" }}>
                 <td style={{ padding: "8px 10px", color: "var(--text-2)", fontWeight: 600 }}>{CATEGORIA_LABEL[e.categoria] || e.categoria}</td>
                 <td style={{ padding: "8px 10px", color: "var(--text-3)" }}>{e.subcategoria || "-"}</td>
-                <td style={{ padding: "8px 10px", color: "#c084fc", fontWeight: 700, fontFamily: "'DM Mono',monospace" }}>{formatBRL(e.valor)}</td>
+                <td style={{ padding: "8px 10px", color: "var(--text-1)", fontWeight: 500, fontFamily: "var(--font)", fontVariantNumeric: "tabular-nums", textAlign: "right" }}>{formatBRL(e.valor)}</td>
                 <td style={{ padding: "8px 10px", color: "var(--text-3)" }}>{e.data_competencia}</td>
                 <td style={{ padding: "8px 10px" }}>
-                  <span style={{ padding: "2px 8px", borderRadius: 6, fontSize: 10, fontWeight: 700, background: e.data_pagamento ? "#d1fae5" : "#ffedd5", color: e.data_pagamento ? "#065f46" : "#9a3412" }}>
-                    {e.data_pagamento ? "PAGO" : "PENDENTE"}
+                  <span style={{ padding: "2px 8px", borderRadius: 6, fontSize: 12, fontWeight: 600, background: e.data_pagamento ? "var(--pill-positive-bg)" : "var(--pill-warning-bg)", color: e.data_pagamento ? "var(--pill-positive-ink)" : "var(--pill-warning-ink)" }}>
+                    {e.data_pagamento ? "Pago" : "Pendente"}
                   </span>
                 </td>
-                <td style={{ padding: "8px 10px", color: "var(--text-4)", fontSize: 11 }}>{e.recorrente ? "Fixa (auto)" : "Manual"}</td>
+                <td style={{ padding: "8px 10px", color: "var(--text-4)", fontSize: 12 }}>{e.recorrente ? "Fixa (auto)" : "Manual"}</td>
                 <td style={{ padding: "8px 10px" }}>
-                  <button onClick={() => onApagar(e.id)} style={{ background: "none", border: "none", color: "#f87171", cursor: "pointer", fontSize: 11 }}>Apagar</button>
+                  <button onClick={() => onApagar(e.id)} style={{ background: "none", border: "none", color: "var(--text-4)", cursor: "pointer", fontSize: 13 }}>Apagar</button>
                 </td>
               </tr>
             ))}
@@ -176,7 +176,7 @@ function DespesasFixasForm({ recurring, onChanged }) {
 
   return (
     <Card delay={0.1}>
-      <SectionTitle accent="#fb923c">Despesas fixas (geradas automaticamente todo mês)</SectionTitle>
+      <SectionTitle>Despesas fixas (geradas automaticamente todo mês)</SectionTitle>
       <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 }}>
         {recurring.map((r) => (
           <div key={r.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 12px", background: "var(--surface-2)", borderRadius: 8 }}>
@@ -184,8 +184,8 @@ function DespesasFixasForm({ recurring, onChanged }) {
               <b>{CATEGORIA_LABEL[r.categoria]}</b>{r.subcategoria ? ` · ${r.subcategoria}` : ""} — {formatBRL(r.valor)} (todo dia {r.dia_geracao})
             </div>
             <div style={{ display: "flex", gap: 10 }}>
-              <button onClick={() => toggleAtivo(r)} style={{ fontSize: 11, color: r.ativo ? "#34d399" : "var(--text-4)", background: "none", border: "none", cursor: "pointer" }}>{r.ativo ? "Ativo" : "Inativo"}</button>
-              <button onClick={() => apagar(r.id)} style={{ fontSize: 11, color: "#f87171", background: "none", border: "none", cursor: "pointer" }}>Apagar</button>
+              <button onClick={() => toggleAtivo(r)} style={{ fontSize: 12, color: r.ativo ? "var(--text-1)" : "var(--text-4)", background: "none", border: "none", cursor: "pointer" }}>{r.ativo ? "Ativo" : "Inativo"}</button>
+              <button onClick={() => apagar(r.id)} style={{ fontSize: 12, color: "var(--text-4)", background: "none", border: "none", cursor: "pointer" }}>Apagar</button>
             </div>
           </div>
         ))}
@@ -209,15 +209,15 @@ function DespesasFixasForm({ recurring, onChanged }) {
         <div>
           <div style={labelStyle}>Dia do mês</div>
           <input type="date" value={dataGeracao} onChange={(e) => setDataGeracao(e.target.value)} style={{ ...inputStyle, width: "100%" }} />
-          <div style={{ fontSize: 9, color: "var(--text-5)", marginTop: 2 }}>Só o dia importa. Mês sem esse dia (ex: 30 em fevereiro) não gera naquele mês.</div>
+          <div style={{ fontSize: 12, color: "var(--text-5)", marginTop: 2 }}>Só o dia importa. Mês sem esse dia (ex: 30 em fevereiro) não gera naquele mês.</div>
         </div>
         <button onClick={salvar} disabled={saving || !valor} style={{
           padding: "8px 16px", borderRadius: 8, border: "none", cursor: saving ? "default" : "pointer",
-          background: "linear-gradient(135deg,#fb923c,#f472b6)", color: "white", fontSize: 12, fontWeight: 700,
+          background: "var(--primary)", color: "var(--primary-ink)", fontSize: 12, fontWeight: 600,
           opacity: saving || !valor ? 0.6 : 1,
         }}>{saving ? "Salvando..." : "Cadastrar fixa"}</button>
       </div>
-      {erro && <div style={{ color: "#f87171", fontSize: 11, marginTop: 8 }}>{erro}</div>}
+      {erro && <div style={{ color: "var(--negative)", fontSize: 12, marginTop: 8 }}>{erro}</div>}
     </Card>
   );
 }
@@ -292,9 +292,9 @@ function LoteProducaoForm({ produtos, lotes, onSaved }) {
 
   return (
     <Card delay={0.15}>
-      <SectionTitle accent="#34d399">Registrar lote de produção</SectionTitle>
+      <SectionTitle>Registrar lote de produção</SectionTitle>
       <div style={{ marginBottom: 10 }}>
-        <button onClick={() => setNovoProdutoAberto((v) => !v)} style={{ fontSize: 11, color: "var(--text-3)", background: "none", border: "1px solid var(--surface-7)", borderRadius: 6, padding: "4px 10px", cursor: "pointer" }}>
+        <button onClick={() => setNovoProdutoAberto((v) => !v)} style={{ fontSize: 12, color: "var(--text-3)", background: "none", border: "1px solid var(--surface-7)", borderRadius: 6, padding: "4px 10px", cursor: "pointer" }}>
           {novoProdutoAberto ? "← Escolher produto existente" : "+ Produto novo"}
         </button>
       </div>
@@ -326,11 +326,11 @@ function LoteProducaoForm({ produtos, lotes, onSaved }) {
       </div>
       <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12 }}>
         {chips.map((label) => (
-          <button key={label} onClick={() => adicionarItem(label)} style={{ fontSize: 10, color: "var(--text-3)", background: "none", border: "1px solid var(--surface-7)", borderRadius: 20, padding: "3px 10px", cursor: "pointer" }}>
+          <button key={label} onClick={() => adicionarItem(label)} style={{ fontSize: 12, color: "var(--text-3)", background: "none", border: "1px solid var(--surface-7)", borderRadius: 20, padding: "3px 10px", cursor: "pointer" }}>
             + {label}
           </button>
         ))}
-        <button onClick={() => adicionarItem()} style={{ fontSize: 10, color: "var(--text-3)", background: "none", border: "1px dashed var(--surface-7)", borderRadius: 20, padding: "3px 10px", cursor: "pointer" }}>
+        <button onClick={() => adicionarItem()} style={{ fontSize: 12, color: "var(--text-3)", background: "none", border: "1px dashed var(--surface-7)", borderRadius: 20, padding: "3px 10px", cursor: "pointer" }}>
           + item
         </button>
       </div>
@@ -338,7 +338,7 @@ function LoteProducaoForm({ produtos, lotes, onSaved }) {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10, alignItems: "end" }}>
         <div>
           <div style={labelStyle}>Custo total</div>
-          <div style={{ ...inputStyle, width: "100%", boxSizing: "border-box", color: "var(--text-2)", fontWeight: 700 }}>{formatBRL(total)}</div>
+          <div style={{ ...inputStyle, width: "100%", boxSizing: "border-box", color: "var(--text-2)", fontWeight: 600 }}>{formatBRL(total)}</div>
         </div>
         <div>
           <div style={labelStyle}>Quantidade produzida</div>
@@ -350,13 +350,13 @@ function LoteProducaoForm({ produtos, lotes, onSaved }) {
         </div>
         <button onClick={salvar} disabled={saving || total <= 0 || !quantidade || (!novoProdutoAberto && !productId)} style={{
           padding: "8px 16px", borderRadius: 8, border: "none", cursor: saving ? "default" : "pointer",
-          background: "linear-gradient(135deg,#34d399,#38bdf8)", color: "white", fontSize: 12, fontWeight: 700,
+          background: "var(--primary)", color: "var(--primary-ink)", fontSize: 12, fontWeight: 600,
           opacity: saving ? 0.6 : 1,
         }}>{saving ? "Salvando..." : "Registrar lote"}</button>
       </div>
-      {erro && <div style={{ color: "#f87171", fontSize: 11, marginTop: 8 }}>{erro}</div>}
+      {erro && <div style={{ color: "var(--negative)", fontSize: 12, marginTop: 8 }}>{erro}</div>}
       {ultimoLote && (
-        <div style={{ marginTop: 10, fontSize: 12, color: "#34d399" }}>
+        <div style={{ marginTop: 10, fontSize: 12, color: "var(--positive)" }}>
           Lote registrado — custo por peça: {formatBRL(ultimoLote.custoUnitario)}. Distribua o estoque abaixo.
         </div>
       )}
@@ -394,7 +394,7 @@ function DistribuicaoLote({ lote, cores, tamanhos, onDistribuido }) {
 
   return (
     <div style={{ padding: 12, background: "var(--surface-2)", borderRadius: 8, marginBottom: 10 }}>
-      <div style={{ fontSize: 12, color: "var(--text-2)", fontWeight: 700, marginBottom: 8 }}>
+      <div style={{ fontSize: 12, color: "var(--text-2)", fontWeight: 600, marginBottom: 8 }}>
         {lote.products?.name} — {restante} peça{restante !== 1 ? "s" : ""} aguardando distribuição
       </div>
       {linhas.map((l, i) => (
@@ -411,12 +411,12 @@ function DistribuicaoLote({ lote, cores, tamanhos, onDistribuido }) {
         </div>
       ))}
       <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
-        <button onClick={addLinha} style={{ fontSize: 11, color: "var(--text-3)", background: "none", border: "1px solid var(--surface-7)", borderRadius: 6, padding: "4px 10px", cursor: "pointer" }}>+ variante</button>
-        <button onClick={distribuir} disabled={saving} style={{ fontSize: 11, color: "white", background: "linear-gradient(135deg,#34d399,#38bdf8)", border: "none", borderRadius: 6, padding: "4px 12px", cursor: "pointer", fontWeight: 700 }}>
+        <button onClick={addLinha} style={{ fontSize: 12, color: "var(--text-3)", background: "none", border: "1px solid var(--surface-7)", borderRadius: 6, padding: "4px 10px", cursor: "pointer" }}>+ variante</button>
+        <button onClick={distribuir} disabled={saving} style={{ fontSize: 12, color: "var(--primary-ink)", background: "var(--primary)", border: "none", borderRadius: 6, padding: "4px 12px", cursor: "pointer", fontWeight: 600 }}>
           {saving ? "Salvando..." : "Distribuir pro estoque"}
         </button>
       </div>
-      {erro && <div style={{ color: "#f87171", fontSize: 11, marginTop: 6 }}>{erro}</div>}
+      {erro && <div style={{ color: "var(--negative)", fontSize: 12, marginTop: 6 }}>{erro}</div>}
     </div>
   );
 }
@@ -481,13 +481,13 @@ export default function Despesas({ onRefresh }) {
   const lotesPendentes = lotes.filter((l) => l.quantidade_distribuida < l.quantidade_produzida);
 
   if (loading) return <div style={{ textAlign: "center", padding: "80px 0", color: "var(--text-4)", fontSize: 13 }}>Carregando despesas...</div>;
-  if (loadError) return <div style={{ textAlign: "center", padding: "80px 0", color: "#f87171", fontSize: 13 }}>Erro ao carregar despesas: {loadError}</div>;
+  if (loadError) return <div style={{ textAlign: "center", padding: "80px 0", color: "var(--negative)", fontSize: 13 }}>Erro ao carregar despesas: {loadError}</div>;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
       {errorMsg && (
-        <div style={{ padding: "10px 14px", borderRadius: 10, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)", color: "#fca5a5", fontSize: 12 }}>
-          ⚠️ {errorMsg}
+        <div style={{ padding: "10px 14px", borderRadius: 10, background: "var(--pill-negative-bg)", border: "1px solid var(--pill-negative-bg)", color: "var(--negative)", fontSize: 12 }}>
+          {errorMsg}
         </div>
       )}
       <NovaDespesaForm onSaved={recarregarDespesas} />
@@ -496,7 +496,7 @@ export default function Despesas({ onRefresh }) {
       <LoteProducaoForm produtos={produtos} lotes={lotes} onSaved={recarregarLotes} />
       {lotesPendentes.length > 0 && (
         <Card delay={0.2}>
-          <SectionTitle accent="#38bdf8">Lotes aguardando distribuição de estoque ({lotesPendentes.length})</SectionTitle>
+          <SectionTitle>Lotes aguardando distribuição de estoque ({lotesPendentes.length})</SectionTitle>
           {lotesPendentes.map((l) => (
             <DistribuicaoLote key={l.id} lote={l} cores={cores} tamanhos={tamanhos} onDistribuido={recarregarLotes} />
           ))}

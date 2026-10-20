@@ -4,7 +4,8 @@ import {
   ResponsiveContainer, Legend,
 } from "recharts";
 import KPICard from "../KPICard";
-import { SectionTitle, Card, statusStyle, SemDados } from "../shared";
+import { SectionTitle, Card, Pill, statusStyle, SemDados } from "../shared";
+import { formatBRL } from "../../../lib/format";
 import { STATUS_LABEL } from "../../../lib/adminData";
 import { VALID_STATUSES } from "../../../lib/orderStatus";
 import { getSession } from "../../../lib/adminAuth";
@@ -20,11 +21,11 @@ function TabelaPedidos({
     <Card delay={0.1} style={{ marginBottom:16 }}>
       <SectionTitle accent={accent}>{titulo}</SectionTitle>
       <div style={{ overflowX:"auto" }}>
-        <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12 }}>
+        <table style={{ width:"100%", borderCollapse:"collapse", fontSize:14 }}>
           <thead>
             <tr>
               {["Nº Pedido","Data","Cliente","Produto","Cor","Tam","Qtd","Total","Status"].map(h=>(
-                <th key={h} style={{ padding:"10px 14px", textAlign:"left", color:"var(--text-4)", fontWeight:600, borderBottom:"1px solid var(--surface-6)", whiteSpace:"nowrap" }}>{h}</th>
+                <th key={h} style={{ padding:"8px 14px", textAlign:(h==="Qtd"||h==="Total")?"right":"left", color:"var(--text-4)", fontWeight:400, fontSize:12, borderBottom:"1px solid var(--border)", whiteSpace:"nowrap" }}>{h}</th>
               ))}
             </tr>
           </thead>
@@ -36,30 +37,30 @@ function TabelaPedidos({
                 <React.Fragment key={p.id}>
                   <tr
                     onClick={() => setExpandedId(isExpanded ? null : p.id)}
-                    style={{ borderBottom:"1px solid var(--surface-3)", transition:"background 0.15s", cursor:"pointer" }}
+                    style={{ borderBottom:"1px solid var(--rule)", cursor:"pointer" }}
                     onMouseEnter={e=>e.currentTarget.style.background="var(--surface-2)"}
                     onMouseLeave={e=>e.currentTarget.style.background=""}>
-                    <td style={{ padding:"11px 14px", fontFamily:"'DM Mono',monospace", fontSize:11, color:"#c084fc", fontWeight:600 }}>{p.num}</td>
+                    <td style={{ padding:"11px 14px", fontFamily:"var(--mono)", fontSize: 12, color:"var(--text-3)" }}>{p.num}</td>
                     <td style={{ padding:"11px 14px", color:"var(--text-4)" }}>{p.data}</td>
-                    <td style={{ padding:"11px 14px", color:"var(--text-2)", fontWeight:600 }}>{p.cliente}</td>
+                    <td style={{ padding:"11px 14px", color:"var(--text-1)" }}>{p.cliente}</td>
                     <td style={{ padding:"11px 14px", color:"var(--text-3)" }}>{p.produto}</td>
                     <td style={{ padding:"11px 14px", color:"var(--text-4)" }}>{p.cor}</td>
                     <td style={{ padding:"11px 14px", color:"var(--text-4)" }}>{p.tam}</td>
-                    <td style={{ padding:"11px 14px", color:"var(--text-3)", textAlign:"center" }}>{p.qtd}</td>
-                    <td style={{ padding:"11px 14px", fontWeight:700, color:"#c084fc", fontFamily:"'DM Mono',monospace" }}>R${p.total}</td>
+                    <td style={{ padding:"11px 14px", color:"var(--text-3)", textAlign:"right" }}>{p.qtd}</td>
+                    <td style={{ padding:"11px 14px", fontWeight: 500, color:"var(--text-1)", textAlign:"right" }}>{formatBRL(p.total)}</td>
                     <td style={{ padding:"11px 14px" }}>
-                      <span style={{ padding:"3px 10px", borderRadius:20, fontSize:10, fontWeight:700, background:st.bg, color:st.color }}>{p.status}</span>
+                      <Pill tone={st.tone}>{p.status}</Pill>
                     </td>
                   </tr>
                   {isExpanded && (
                     <tr>
                       <td colSpan={9} style={{ padding:"14px 14px 18px", background:"var(--surface-1)" }}>
                         <div style={{ marginBottom:12 }}>
-                          <table style={{ width:"100%", borderCollapse:"collapse", fontSize:11 }}>
+                          <table style={{ width:"100%", borderCollapse:"collapse", fontSize: 12 }}>
                             <thead>
                               <tr>
                                 {["Produto","Cor","Tam","Qtd","Preço Unit."].map(h=>(
-                                  <th key={h} style={{ padding:"6px 10px", textAlign:"left", color:"var(--text-4)", fontWeight:600 }}>{h}</th>
+                                  <th key={h} style={{ padding:"6px 10px", textAlign:"left", color:"var(--text-4)", fontWeight:400 }}>{h}</th>
                                 ))}
                               </tr>
                             </thead>
@@ -70,7 +71,7 @@ function TabelaPedidos({
                                   <td style={{ padding:"6px 10px", color:"var(--text-4)" }}>{it.cor}</td>
                                   <td style={{ padding:"6px 10px", color:"var(--text-4)" }}>{it.tam}</td>
                                   <td style={{ padding:"6px 10px", color:"var(--text-3)" }}>{it.quantidade}</td>
-                                  <td style={{ padding:"6px 10px", color:"var(--text-3)", fontFamily:"'DM Mono',monospace" }}>R${it.precoUnit.toFixed(2)}</td>
+                                  <td style={{ padding:"6px 10px", color:"var(--text-3)", fontFamily:"var(--font)" }}>R${it.precoUnit.toFixed(2)}</td>
                                 </tr>
                               ))}
                             </tbody>
@@ -78,22 +79,22 @@ function TabelaPedidos({
                         </div>
                         {approvedLinks[p.id] ? (
                           <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-                            <label style={{ fontSize:11, color:"var(--text-4)", fontWeight:600 }}>Link de pagamento:</label>
+                            <label style={{ fontSize: 12, color:"var(--text-4)", fontWeight:400 }}>Link de pagamento:</label>
                             <input
                               readOnly
                               value={approvedLinks[p.id]}
                               onClick={(e) => { e.stopPropagation(); e.target.select(); }}
                               style={{
-                                flex:1, maxWidth:360, padding:"6px 10px", borderRadius:8, fontSize:11,
+                                flex:1, maxWidth:360, padding:"6px 10px", borderRadius:8, fontSize: 12,
                                 background:"var(--surface-3)", color:"var(--text-2)",
-                                border:"1px solid var(--surface-7)", fontFamily:"'DM Mono',monospace",
+                                border:"1px solid var(--surface-7)", fontFamily:"var(--font)",
                               }}
                             />
                             <button
                               onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(approvedLinks[p.id]); }}
                               style={{
                                 padding:"6px 12px", borderRadius:8, border:"1px solid var(--surface-7)",
-                                background:"var(--surface-3)", color:"var(--text-3)", fontSize:11, fontWeight:600, cursor:"pointer",
+                                background:"var(--surface-3)", color:"var(--text-3)", fontSize: 12, fontWeight:600, cursor:"pointer",
                               }}>
                               Copiar
                             </button>
@@ -106,11 +107,11 @@ function TabelaPedidos({
                               style={{
                                 padding:"7px 16px", borderRadius:8, border:"none",
                                 cursor: approvingId === p.id ? "wait" : "pointer",
-                                background:"linear-gradient(135deg,#34d399,#059669)", color:"white", fontSize:12, fontWeight:700,
+                                background:"var(--primary)", color: "var(--primary-ink)", fontSize:12, fontWeight: 600,
                               }}>
-                              {approvingId === p.id ? "Aprovando..." : "✅ Aprovar"}
+                              {approvingId === p.id ? "Aprovando..." : "Aprovar"}
                             </button>
-                            <label style={{ fontSize:11, color:"var(--text-4)", fontWeight:600 }}>Status:</label>
+                            <label style={{ fontSize: 12, color:"var(--text-4)", fontWeight:400 }}>Status:</label>
                             <select
                               value={p.statusRaw}
                               disabled={updatingId === p.id}
@@ -125,11 +126,11 @@ function TabelaPedidos({
                                 <option key={s} value={s}>{STATUS_LABEL[s] || s}</option>
                               ))}
                             </select>
-                            {updatingId === p.id && <span style={{ fontSize:11, color:"var(--text-4)" }}>Salvando...</span>}
+                            {updatingId === p.id && <span style={{ fontSize: 12, color:"var(--text-4)" }}>Salvando...</span>}
                           </div>
                         ) : (
                           <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                            <label style={{ fontSize:11, color:"var(--text-4)", fontWeight:600 }}>Status:</label>
+                            <label style={{ fontSize: 12, color:"var(--text-4)", fontWeight:400 }}>Status:</label>
                             <select
                               value={p.statusRaw}
                               disabled={updatingId === p.id}
@@ -144,7 +145,7 @@ function TabelaPedidos({
                                 <option key={s} value={s}>{STATUS_LABEL[s] || s}</option>
                               ))}
                             </select>
-                            {updatingId === p.id && <span style={{ fontSize:11, color:"var(--text-4)" }}>Salvando...</span>}
+                            {updatingId === p.id && <span style={{ fontSize: 12, color:"var(--text-4)" }}>Salvando...</span>}
                           </div>
                         )}
                       </td>
@@ -184,7 +185,7 @@ export default function Pedidos({ data, onRefresh, justUpdated }) {
     { name:"Em andamento", value: kpis.emAndamento  },
     { name:"Cancelado",    value: kpis.cancelados   },
   ];
-  const statusCores = ["#34d399","#38bdf8","#ef4444"];
+  const statusCores = ["var(--positive)","var(--chart-2)","var(--negative)"];
   const totalStatus = kpis.entregues + kpis.emAndamento + kpis.cancelados;
   const pct = (n) => totalStatus ? `${Math.round((n / totalStatus) * 100)}%` : "—";
 
@@ -237,40 +238,21 @@ export default function Pedidos({ data, onRefresh, justUpdated }) {
 
   return (
     <>
-      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14, gap:12, flexWrap:"wrap" }}>
-        {showBanner ? (
-          <div style={{
-            padding:"6px 14px", borderRadius:20, fontSize:12, fontWeight:600,
-            background:"rgba(52,211,153,0.12)", color:"#34d399", border:"1px solid rgba(52,211,153,0.3)",
-          }}>
-            🔔 Pedido atualizado
-          </div>
-        ) : <div />}
-        <button
-          onClick={onRefresh}
-          style={{
-            padding:"7px 14px", borderRadius:8, border:"1px solid var(--surface-7)",
-            background:"var(--surface-3)", color:"var(--text-3)", fontSize:12, fontWeight:600, cursor:"pointer",
-          }}>
-          🔄 Atualizar
-        </button>
-      </div>
+      {showBanner && (
+        <div style={{ marginBottom:14 }}><Pill tone="positive">Pedido atualizado</Pill></div>
+      )}
 
       {errorMsg && (
-        <div style={{
-          marginBottom:14, padding:"10px 14px", borderRadius:10,
-          background:"rgba(239,68,68,0.1)", border:"1px solid rgba(239,68,68,0.25)",
-          color:"#fca5a5", fontSize:12,
-        }}>
-          ⚠️ {errorMsg}
+        <div style={{ marginBottom:14, padding:"10px 14px", borderRadius:6, background:"var(--pill-negative-bg)", color:"var(--pill-negative-ink)", fontSize:13 }}>
+          {errorMsg}
         </div>
       )}
 
-      <div className="admin-kpi-grid" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:14, marginBottom:22 }}>
-        <KPICard icon="🛒" label="Pedidos (6 meses)"  value={kpis.pedidosMes}   accent="#c084fc" delay={0}    />
-        <KPICard icon="✅" label="Entregues"           value={kpis.entregues}    sub={pct(kpis.entregues)}        accent="#34d399" delay={0.05} />
-        <KPICard icon="🚚" label="Em Andamento"        value={kpis.emAndamento}  sub="este mês"   accent="#38bdf8" delay={0.1}  />
-        <KPICard icon="❌" label="Cancelados"          value={kpis.cancelados}   sub={pct(kpis.cancelados)}       accent="#ef4444" delay={0.15} />
+      <div className="admin-kpi-grid" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)" }}>
+        <KPICard icon="" label="Pedidos (6 meses)"  value={kpis.pedidosMes}   accent="var(--accent)" delay={0}    />
+        <KPICard icon="" label="Entregues"           value={kpis.entregues}    sub={pct(kpis.entregues)}        accent="var(--positive)" delay={0.05} />
+        <KPICard icon="" label="Em Andamento"        value={kpis.emAndamento}  sub="este mês"   accent="var(--chart-2)" delay={0.1}  />
+        <KPICard icon="" label="Cancelados"          value={kpis.cancelados}   sub={pct(kpis.cancelados)}       accent="var(--negative)" delay={0.15} />
       </div>
 
       <TabelaPedidos
@@ -282,7 +264,7 @@ export default function Pedidos({ data, onRefresh, justUpdated }) {
       />
 
       <TabelaPedidos
-        titulo="Confirmados — prontos pra separação" accent="#34d399" vazio="Nenhum pedido confirmado ainda."
+        titulo="Confirmados — prontos pra separação" accent="var(--positive)" vazio="Nenhum pedido confirmado ainda."
         pedidos={ultimosPedidos.filter((p) => CONFIRMADOS_STATUSES.has(p.statusRaw))}
         expandedId={expandedId} setExpandedId={setExpandedId}
         updatingId={updatingId} handleStatusChange={handleStatusChange}
@@ -291,15 +273,15 @@ export default function Pedidos({ data, onRefresh, justUpdated }) {
 
       <div style={{ maxWidth:560 }}>
         <Card delay={0.25}>
-          <SectionTitle accent="#818cf8">Status dos Pedidos (6 meses)</SectionTitle>
+          <SectionTitle>Status dos Pedidos (6 meses)</SectionTitle>
           {totalStatus ? (
           <ResponsiveContainer width="100%" height={200}>
             <PieChart>
               <Pie data={statusPie} cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={4} dataKey="value">
                 {statusPie.map((_, i) => <Cell key={i} fill={statusCores[i]} />)}
               </Pie>
-              <Tooltip contentStyle={{ background:"var(--panel-solid)", border:"1px solid rgba(192,132,252,0.3)", borderRadius:8, fontSize:11 }} />
-              <Legend wrapperStyle={{ fontSize:11, color:"var(--text-3)" }} />
+              <Tooltip contentStyle={{ background:"var(--panel-solid)", border:"1px solid var(--accent-tint)", borderRadius:8, fontSize: 12 }} />
+              <Legend wrapperStyle={{ fontSize: 12, color:"var(--text-3)" }} />
             </PieChart>
           </ResponsiveContainer>
           ) : <SemDados height={200} />}

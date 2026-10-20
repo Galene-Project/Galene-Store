@@ -30,16 +30,16 @@ export default function FluxoCaixa({ data }) {
       <PeriodSelector value={periodo} onChange={setPeriodo} />
 
       <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14 }}>
-        <KPICard icon="⬆️" label="Entrada" value={formatBRL(resumo.totalEntrada)} sub="período" accent="#34d399" />
-        <KPICard icon="⬇️" label="Saída" value={formatBRL(resumo.totalSaida)} sub="período" accent="#ef4444" />
+        <KPICard icon="" label="Entrada" value={formatBRL(resumo.totalEntrada)} sub="período" accent="var(--positive)" />
+        <KPICard icon="" label="Saída" value={formatBRL(resumo.totalSaida)} sub="período" accent="var(--negative)" />
         <KPICard
-          icon="💵" label="Saldo" value={formatBRL(resumo.saldo)} sub="período"
-          accent={resumo.saldo >= 0 ? "#34d399" : "#ef4444"}
+          icon="" label="Saldo" value={formatBRL(resumo.saldo)} sub="período"
+          accent={resumo.saldo >= 0 ? "var(--positive)" : "var(--negative)"}
         />
       </div>
 
       <Card>
-        <SectionTitle accent="#f472b6">Saída por categoria</SectionTitle>
+        <SectionTitle>Saída por categoria</SectionTitle>
         {resumo.saidaPorCategoria.length === 0 ? (
           <div style={{ fontSize: 12, color: "var(--text-4)" }}>Nenhuma saída no período.</div>
         ) : (
@@ -50,10 +50,10 @@ export default function FluxoCaixa({ data }) {
                 <div key={i}>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
                     <span style={{ fontSize: 12, color: "var(--text-2)", fontWeight: 500 }}>{c.categoria}</span>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: "#f472b6", fontFamily: "'DM Mono',monospace" }}>{formatBRL(c.valor)}</span>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: "var(--chart-2)", fontFamily: "var(--font)" }}>{formatBRL(c.valor)}</span>
                   </div>
                   <div style={{ height: 4, background: "var(--surface-5)", borderRadius: 2, overflow: "hidden" }}>
-                    <div style={{ height: "100%", width: `${pct}%`, background: "#f472b6", borderRadius: 2 }} />
+                    <div style={{ height: "100%", width: `${pct}%`, background: "var(--chart-2)", borderRadius: 2 }} />
                   </div>
                 </div>
               );
@@ -69,7 +69,7 @@ export default function FluxoCaixa({ data }) {
             <thead>
               <tr>
                 {["Data", "Tipo", "Categoria", "Descrição", "Valor"].map((h) => (
-                  <th key={h} style={{ padding: "8px 10px", textAlign: "left", color: "var(--text-4)", fontWeight: 600, borderBottom: "1px solid var(--surface-6)" }}>{h}</th>
+                  <th key={h} style={{ padding: "8px 10px", textAlign: "left", color: "var(--text-4)", fontWeight: 400, borderBottom: "1px solid var(--surface-6)" }}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -79,16 +79,16 @@ export default function FluxoCaixa({ data }) {
                   <td style={{ padding: "8px 10px", color: "var(--text-3)" }}>{m.data.split('-').reverse().join('/')}</td>
                   <td style={{ padding: "8px 10px" }}>
                     <span style={{
-                      padding: "2px 8px", borderRadius: 6, fontSize: 10, fontWeight: 700,
-                      background: m.tipo === "entrada" ? "#d1fae5" : "#fee2e2",
-                      color: m.tipo === "entrada" ? "#065f46" : "#991b1b",
+                      padding: "2px 8px", borderRadius: 6, fontSize: 12, fontWeight: 600,
+                      background: m.tipo === "entrada" ? "var(--pill-positive-bg)" : "var(--pill-negative-bg)",
+                      color: m.tipo === "entrada" ? "var(--pill-positive-ink)" : "var(--pill-negative-ink)",
                     }}>{m.tipo === "entrada" ? "ENTRADA" : "SAÍDA"}</span>
                   </td>
                   <td style={{ padding: "8px 10px", color: "var(--text-2)", fontWeight: 600 }}>{m.categoria}</td>
                   <td style={{ padding: "8px 10px", color: "var(--text-3)" }}>{m.descricao}</td>
                   <td style={{
-                    padding: "8px 10px", fontWeight: 700, fontFamily: "'DM Mono',monospace",
-                    color: m.tipo === "entrada" ? "#34d399" : "#ef4444",
+                    padding: "8px 10px", fontWeight: 600, fontFamily: "var(--font)",
+                    color: m.tipo === "entrada" ? "var(--positive)" : "var(--negative)",
                   }}>{m.tipo === "entrada" ? "+" : "-"}{formatBRL(m.valor)}</td>
                 </tr>
               ))}

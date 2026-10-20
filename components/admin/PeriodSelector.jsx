@@ -11,7 +11,7 @@ const PRESETS = [
 
 const buttonStyle = (ativo) => ({
   padding: "6px 14px", borderRadius: 8, border: "1px solid var(--surface-7)",
-  background: ativo ? "linear-gradient(135deg,#c084fc,#818cf8)" : "var(--surface-3)",
+  background: ativo ? "var(--primary)" : "var(--surface-3)",
   color: ativo ? "white" : "var(--text-3)", fontSize: 12, fontWeight: 600, cursor: "pointer",
 });
 
