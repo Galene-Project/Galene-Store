@@ -6,7 +6,7 @@ import {
   ResponsiveContainer, Legend,
 } from "recharts";
 import KPICard from "../KPICard";
-import { SectionTitle, CustomTooltip, Card, CORES, CORES_TAM } from "../shared";
+import { SectionTitle, CustomTooltip, Card, CORES, CORES_TAM, SemDados } from "../shared";
 import { formatBRLk } from "../../../lib/format";
 
 export default function Overview({ data }) {
@@ -21,7 +21,7 @@ export default function Overview({ data }) {
         <KPICard icon="💰" label="Faturamento (6 meses)"  value={formatBRLk(totalFat)} sub="6 meses"          trend={comparativo.faturamentoPct !== null ? { pct: comparativo.faturamentoPct, up: comparativo.faturamentoPct >= 0 } : null} accent="#c084fc" delay={0}    />
         <KPICard icon="🛒" label="Total de Pedidos"       value={totalPedidos}                        sub="6 meses"          trend={comparativo.pedidosPct !== null ? { pct: comparativo.pedidosPct, up: comparativo.pedidosPct >= 0 } : null} accent="#818cf8" delay={0.05}  />
         <KPICard icon="🎯" label="Ticket Médio"           value={`R$${ticketMedio}`}                  sub="por pedido"       accent="#38bdf8" delay={0.1}   />
-        <KPICard icon="📦" label="Produtos Ativos"         value={kpis.totalSkus}                      sub={`${kpis.disponiveis} variantes c/ estoque`} accent="#34d399" delay={0.15}  />
+        <KPICard icon="📦" label="Produtos Ativos"         value={kpis.totalSkus}                      sub={`${kpis.disponiveis} variantes`} accent="#34d399" delay={0.15}  />
         <KPICard icon="⚠️" label="Alertas de Estoque"    value={kpis.estoqueBaixo + kpis.esgotados} sub={`${kpis.esgotados} esgotados`} accent="#fb923c" delay={0.2} />
         <KPICard icon="📅" label="Pedidos Hoje"           value={kpis.pedidosHoje}                    sub={`R$${kpis.faturamentoHoje.toFixed(2)}`}    accent="#f472b6" delay={0.25} />
         <KPICard icon="📈" label="Lucro Líquido"          value={formatBRLk(kpis.lucroLiquido)} sub="6 meses, aproximado" accent={kpis.lucroLiquido >= 0 ? "#34d399" : "#ef4444"} delay={0.3} />
@@ -57,6 +57,7 @@ export default function Overview({ data }) {
 
         <Card delay={0.15}>
           <SectionTitle accent="#f472b6">Vendas por Tamanho</SectionTitle>
+          {distribuicaoTamanho.length ? (
           <ResponsiveContainer width="100%" height={175}>
             <PieChart>
               <Pie data={distribuicaoTamanho} cx="50%" cy="50%" innerRadius={50} outerRadius={78} paddingAngle={3} dataKey="value">
@@ -65,6 +66,7 @@ export default function Overview({ data }) {
               <Tooltip contentStyle={{ background:"var(--panel-solid)", border:"1px solid rgba(192,132,252,0.3)", borderRadius:8, fontSize:11 }} />
             </PieChart>
           </ResponsiveContainer>
+          ) : <SemDados height={175} />}
           <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:6 }}>
             {distribuicaoTamanho.map((d, i) => (
               <div key={i} style={{ display:"flex", alignItems:"center", gap:6 }}>
@@ -79,6 +81,7 @@ export default function Overview({ data }) {
       <div className="admin-chart-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:16, marginBottom:16 }}>
         <Card delay={0.2}>
           <SectionTitle accent="#34d399">Receita por Categoria</SectionTitle>
+          {vendasPorCategoria.length ? (
           <ResponsiveContainer width="100%" height={240}>
             <BarChart data={vendasPorCategoria} layout="vertical" margin={{ left:0, right:16 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-4)" horizontal={false} />
@@ -90,6 +93,7 @@ export default function Overview({ data }) {
               </Bar>
             </BarChart>
           </ResponsiveContainer>
+          ) : <SemDados height={240} />}
         </Card>
 
         <Card delay={0.25}>

@@ -46,8 +46,10 @@ export default function KPICard({ icon, label, value, sub, trend, accent = "#c08
         </div>
       </div>
       <div style={{
-        fontSize: 26, fontWeight: 800, color: accent,
-        fontFamily: "'DM Mono', monospace", letterSpacing: -1,
+        // nowrap: o sinal de "-R$15.9k" não pode cair numa linha sozinho; valor
+        // longo encolhe em vez de quebrar.
+        fontSize: String(value).length > 7 ? 20 : 26, fontWeight: 800, color: accent,
+        fontFamily: "'DM Mono', monospace", letterSpacing: -1, whiteSpace: "nowrap",
       }}>{value}</div>
       <div style={{ fontSize: 11, color: "var(--text-3)", fontWeight: 500 }}>{label}</div>
     </div>

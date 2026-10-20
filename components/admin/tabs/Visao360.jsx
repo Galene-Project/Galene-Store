@@ -70,7 +70,7 @@ export default function Visao360({ data }) {
       <div>
         <div style={grupoLabelStyle}>Estoque (agora)</div>
         <div className="admin-kpi-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14 }}>
-          <KPICard icon="📦" label="Produtos Ativos" value={kpis.totalSkus} sub={`${kpis.disponiveis} variantes c/ estoque`} accent="#34d399" />
+          <KPICard icon="📦" label="Produtos Ativos" value={kpis.totalSkus} sub={`${kpis.disponiveis} variantes`} accent="#34d399" />
           <KPICard icon="⚠️" label="Estoque Baixo" value={kpis.estoqueBaixo} sub="atenção" accent="#fb923c" />
           <KPICard icon="❌" label="Esgotados" value={kpis.esgotados} sub="repor urgente" accent="#ef4444" />
         </div>

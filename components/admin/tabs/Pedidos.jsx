@@ -5,7 +5,7 @@ import {
   ResponsiveContainer, Legend,
 } from "recharts";
 import KPICard from "../KPICard";
-import { SectionTitle, CustomTooltip, Card, statusStyle } from "../shared";
+import { SectionTitle, CustomTooltip, Card, statusStyle, SemDados } from "../shared";
 import { STATUS_LABEL } from "../../../lib/adminData";
 import { VALID_STATUSES } from "../../../lib/orderStatus";
 import { getSession } from "../../../lib/adminAuth";
@@ -306,6 +306,7 @@ export default function Pedidos({ data, onRefresh, justUpdated }) {
 
         <Card delay={0.25}>
           <SectionTitle accent="#818cf8">Status dos Pedidos (6 meses)</SectionTitle>
+          {totalStatus ? (
           <ResponsiveContainer width="100%" height={200}>
             <PieChart>
               <Pie data={statusPie} cx="50%" cy="50%" innerRadius={55} outerRadius={85} paddingAngle={4} dataKey="value">
@@ -315,6 +316,7 @@ export default function Pedidos({ data, onRefresh, justUpdated }) {
               <Legend wrapperStyle={{ fontSize:11, color:"var(--text-3)" }} />
             </PieChart>
           </ResponsiveContainer>
+          ) : <SemDados height={200} />}
         </Card>
       </div>
     </>

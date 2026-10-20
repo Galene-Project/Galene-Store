@@ -83,3 +83,12 @@ export function statusStyle(s) {
   };
   return map[s] || { bg: "#f3f4f6", color: "#374151" };
 }
+
+// Gráfico sem dado: texto no lugar do quadro em branco.
+export function SemDados({ height = 160, texto = "Sem dados no período." }) {
+  return (
+    <div style={{ height, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "var(--text-4)" }}>
+      {texto}
+    </div>
+  );
+}

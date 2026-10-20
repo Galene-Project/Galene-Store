@@ -6,7 +6,7 @@ import {
   ResponsiveContainer, Legend,
 } from "recharts";
 import KPICard from "../KPICard";
-import { SectionTitle, CustomTooltip, Card, CORES } from "../shared";
+import { SectionTitle, CustomTooltip, Card, CORES, SemDados } from "../shared";
 import { formatBRLk } from "../../../lib/format";
 
 export default function Vendas({ data }) {
@@ -49,6 +49,7 @@ export default function Vendas({ data }) {
 
         <Card delay={0.15}>
           <SectionTitle accent="#fb923c">Receita por Categoria</SectionTitle>
+          {vendasPorCategoria.length ? (
           <ResponsiveContainer width="100%" height={260}>
             <PieChart>
               <Pie data={vendasPorCategoria} cx="50%" cy="50%" outerRadius={95} dataKey="receita" nameKey="nome"
@@ -59,12 +60,14 @@ export default function Vendas({ data }) {
               <Tooltip contentStyle={{ background:"var(--panel-solid)", border:"1px solid rgba(192,132,252,0.3)", borderRadius:8, fontSize:11 }} formatter={v=>[`R$${v}`,"Receita"]} />
             </PieChart>
           </ResponsiveContainer>
+          ) : <SemDados height={260} />}
         </Card>
       </div>
 
       <Card delay={0.2}>
         <SectionTitle accent="#818cf8">Ranking — Receita vs Unidades Vendidas</SectionTitle>
-        <ResponsiveContainer width="100%" height={220}>
+        {topProdutos.length ? (
+          <ResponsiveContainer width="100%" height={220}>
           <BarChart data={topProdutos}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-4)" />
             <XAxis dataKey="nome" tick={{ fill:"var(--text-4)", fontSize:10 }} axisLine={false} tickLine={false}
@@ -77,6 +80,7 @@ export default function Vendas({ data }) {
             <Bar yAxisId="r" dataKey="vendas"  name="Unidades"     fill="#38bdf8" radius={[4,4,0,0]} opacity={0.85} />
           </BarChart>
         </ResponsiveContainer>
+          ) : <SemDados height={220} />}
       </Card>
     </>
   );

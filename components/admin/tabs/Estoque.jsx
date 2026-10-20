@@ -5,7 +5,7 @@ import {
   ResponsiveContainer, Legend, Cell,
 } from "recharts";
 import KPICard from "../KPICard";
-import { SectionTitle, CustomTooltip, Card, CORES_TAM } from "../shared";
+import { SectionTitle, CustomTooltip, Card, CORES_TAM, SemDados } from "../shared";
 
 export default function Estoque({ data }) {
   const { vendasPorCategoria, estoqueAlertas, distribuicaoTamanho, kpis, estoquePorCategoria } = data;
@@ -46,6 +46,7 @@ export default function Estoque({ data }) {
 
         <Card delay={0.15}>
           <SectionTitle accent="#f472b6">Distribuição por Tamanho</SectionTitle>
+          {distribuicaoTamanho.length ? (
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={distribuicaoTamanho}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-4)" />
@@ -57,6 +58,7 @@ export default function Estoque({ data }) {
               </Bar>
             </BarChart>
           </ResponsiveContainer>
+          ) : <SemDados height={200} />}
           {tamanhoLider && (
             <div style={{ marginTop:14, padding:12, background:"var(--surface-2)", borderRadius:10 }}>
               <div style={{ fontSize:11, color:"var(--text-4)" }}>💡 Tamanho {tamanhoLider.name} representa {tamanhoLider.value}% das vendas — priorize no reabastecimento</div>

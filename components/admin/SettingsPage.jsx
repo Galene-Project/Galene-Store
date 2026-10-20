@@ -132,7 +132,7 @@ export default function SettingsPage() {
               <div>
                 <div style={labelStyle}>Pagamento</div>
                 <div style={{ ...inputStyle, color:"var(--text-4)" }}>
-                  Pix (automático) — site público só oferece Pix. Cartão fica fora do site, só pra cliente selecionado ou compra na loja física.
+                  Confirmado manualmente por você no painel (Pix, cartão ou dinheiro). O estoque só baixa depois da confirmação.
                 </div>
               </div>
             </div>
