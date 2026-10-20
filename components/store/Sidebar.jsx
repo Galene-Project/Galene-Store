@@ -33,7 +33,7 @@ export default function Sidebar({ cat, setCat, mobile, onClose, produtos, redes 
         </div>
       )}
       <div style={{ padding: "16px 0 28px" }}>
-        <div style={{ padding: "0 16px 8px", fontFamily: "'Lato',sans-serif", fontSize: 9, letterSpacing: 2, color: T.ink4, textTransform: "uppercase" }}>
+        <div style={{ padding: "0 16px 8px", fontFamily: "'Lato',sans-serif", fontSize: 12, letterSpacing: 2, color: T.ink4, textTransform: "uppercase" }}>
           Categorias
         </div>
         {CATS.map((c) => {
@@ -45,7 +45,7 @@ export default function Sidebar({ cat, setCat, mobile, onClose, produtos, redes 
               style={{
                 width: "100%", textAlign: "left",
                 background: ativa ? T.goldXlt : "transparent",
-                border: "none", padding: "10px 16px", cursor: "pointer",
+                border: "none", padding: "9px 16px", cursor: "pointer",
                 display: "flex", alignItems: "center", gap: 10,
                 borderLeft: `3px solid ${ativa ? T.gold : "transparent"}`,
                 transition: "all .15s",
@@ -53,16 +53,10 @@ export default function Sidebar({ cat, setCat, mobile, onClose, produtos, redes 
               onMouseEnter={(e) => { if (!ativa) e.currentTarget.style.background = T.bg2; }}
               onMouseLeave={(e) => { if (!ativa) e.currentTarget.style.background = "transparent"; }}
             >
-              <span style={{ fontSize: 14, lineHeight: 1, flexShrink: 0 }}>{c.icon}</span>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 12, fontWeight: ativa ? 700 : 500, color: ativa ? T.goldDk : T.ink2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                  {c.label}
-                </div>
-                <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 9.5, color: T.ink4, marginTop: 1 }}>
-                  {counts[c.id] || 0} produtos
-                </div>
+              <div style={{ flex: 1, minWidth: 0, fontFamily: "'Lato',sans-serif", fontSize: 14, fontWeight: ativa ? 700 : 400, color: ativa ? T.goldDk : T.ink2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                {c.label}
               </div>
-              {ativa && <div style={{ width: 6, height: 6, borderRadius: "50%", background: T.gold, flexShrink: 0 }} />}
+              <span style={{ fontFamily: "'Lato',sans-serif", fontSize: 12, color: T.ink4, fontVariantNumeric: "tabular-nums" }}>{counts[c.id] || 0}</span>
             </button>
           );
         })}

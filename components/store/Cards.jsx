@@ -53,7 +53,7 @@ export function CardDest({ prod, onClick }) {
         <div style={{
           position: "absolute", top: 14, left: 14, zIndex: 10,
           background: prod.tag === "Mais Vendido" ? T.gold : prod.tag === "Premium" ? T.ruby : T.jade,
-          color: "white", fontFamily: "'Lato',sans-serif", fontSize: 9, fontWeight: 700,
+          color: "white", fontFamily: "'Lato',sans-serif", fontSize: 12, fontWeight: 700,
           letterSpacing: 1.5, padding: "4px 10px", borderRadius: 20, textTransform: "uppercase",
         }}>
           {prod.tag}
@@ -114,28 +114,28 @@ export function CardDest({ prod, onClick }) {
         </div>
       </div>
       <div style={{ padding: "18px 20px 22px", flex: 1, display: "flex", flexDirection: "column" }}>
-        <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 9.5, letterSpacing: 2.5, color: T.ink4, textTransform: "uppercase", marginBottom: 6 }}>
+        <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 12, letterSpacing: 2.5, color: T.ink4, textTransform: "uppercase", marginBottom: 6 }}>
           {prod.cat} — {prod.sub}
         </div>
         <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: mob ? 20 : 24, color: T.ink, marginBottom: 8, fontWeight: 600 }}>
           {prod.nome}
         </div>
-        <p style={{ margin: "0 0 16px", fontFamily: "'Lato',sans-serif", fontSize: 11.5, color: T.ink3, lineHeight: 1.6, flex: 1 }}>
+        <p style={{ margin: "0 0 16px", fontFamily: "'Lato',sans-serif", fontSize: 13, color: T.ink3, lineHeight: 1.6, flex: 1 }}>
           {prod.desc}
         </p>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ display: "flex", flexDirection: mob ? "column" : "row", gap: mob ? 10 : 0, justifyContent: "space-between", alignItems: mob ? "stretch" : "center" }}>
           <div>
             {prod.precoOriginal && (
-              <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 11, color: T.ink4, textDecoration: "line-through" }}>
+              <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 12, color: T.ink4, textDecoration: "line-through" }}>
                 {fmt(prod.precoOriginal)}
               </div>
             )}
             <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: mob ? 24 : 28, color: T.goldDk, fontWeight: 600 }}>
               {fmt(prod.preco)}
             </div>
-            <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 9.5, color: T.ink4 }}>por peça</div>
+            <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 12, color: T.ink4 }}>por peça</div>
           </div>
-          <button type="button" onClick={(e) => { e.stopPropagation(); onClick(); }} aria-label={`Selecionar ${prod.nome}`} style={{ background: T.goldDk, border: "none", borderRadius: 10, padding: "10px 18px", color: "white", fontFamily: "'Lato',sans-serif", fontSize: 11, fontWeight: 700, cursor: "pointer", letterSpacing: 1 }}>
+          <button type="button" onClick={(e) => { e.stopPropagation(); onClick(); }} aria-label={`Selecionar ${prod.nome}`} style={{ background: T.goldDk, whiteSpace: "nowrap", border: "none", borderRadius: 10, padding: "10px 18px", color: "white", fontFamily: "'Lato',sans-serif", fontSize: 12, fontWeight: 700, cursor: "pointer", letterSpacing: 1 }}>
             Selecionar
           </button>
         </div>
@@ -191,7 +191,7 @@ export function Card({ prod, onClick }) {
         <div style={{
           position: "absolute", top: 10, left: 10, zIndex: 10,
           background: prod.tag === "Mais Vendido" ? T.gold : prod.tag === "Premium" ? T.ruby : T.jade,
-          color: "white", fontFamily: "'Lato',sans-serif", fontSize: 8, fontWeight: 700,
+          color: "white", fontFamily: "'Lato',sans-serif", fontSize: 12, fontWeight: 700,
           letterSpacing: 1, padding: "3px 8px", borderRadius: 20, textTransform: "uppercase",
         }}>
           {prod.tag}
@@ -249,7 +249,7 @@ export function Card({ prod, onClick }) {
         </div>
       </div>
       <div style={{ padding: "13px 15px 17px" }}>
-        <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 9, letterSpacing: 2, color: T.ink4, textTransform: "uppercase", marginBottom: 4 }}>
+        <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 12, letterSpacing: 2, color: T.ink4, textTransform: "uppercase", marginBottom: 4 }}>
           {prod.sub}
         </div>
         <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 16, color: T.ink, marginBottom: 10, fontWeight: 600 }}>
@@ -258,7 +258,7 @@ export function Card({ prod, onClick }) {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
             {prod.precoOriginal && (
-              <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 9.5, color: T.ink4, textDecoration: "line-through" }}>
+              <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 12, color: T.ink4, textDecoration: "line-through" }}>
                 {fmt(prod.precoOriginal)}
               </div>
             )}
@@ -270,7 +270,7 @@ export function Card({ prod, onClick }) {
             background: hov ? T.goldDk : "transparent",
             border: `1.5px solid ${hov ? T.gold : T.border}`,
             borderRadius: 8, padding: "6px 12px", cursor: "pointer",
-            fontFamily: "'Lato',sans-serif", fontSize: 10, fontWeight: 700,
+            fontFamily: "'Lato',sans-serif", fontSize: 12, fontWeight: 700,
             color: hov ? "white" : T.ink4, transition: "all .2s", letterSpacing: 0.5,
           }}>
             Ver

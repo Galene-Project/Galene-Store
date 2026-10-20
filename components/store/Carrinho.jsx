@@ -105,13 +105,13 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder, p
     <div style={{ maxWidth: 980, margin: "0 auto", padding: mob ? "20px 14px 100px" : "36px 32px 60px" }}>
 
       <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 28 }}>
-        <button onClick={onBack} style={{ background: "none", border: `1.5px solid ${T.border}`, borderRadius: 8, padding: "8px 14px", cursor: "pointer", fontFamily: "'Lato',sans-serif", fontSize: 11, color: T.ink3, fontWeight: 700 }}>
+        <button onClick={onBack} style={{ background: "none", border: `1.5px solid ${T.border}`, borderRadius: 8, padding: "8px 14px", cursor: "pointer", fontFamily: "'Lato',sans-serif", fontSize: 12, color: T.ink3, fontWeight: 700 }}>
           Voltar
         </button>
         <h1 style={{ margin: 0, fontFamily: "'Cormorant Garamond',serif", fontSize: mob ? 24 : 32, color: T.ink, fontWeight: 600 }}>
           Meu Pedido
         </h1>
-        <div style={{ marginLeft: "auto", fontFamily: "'Lato',sans-serif", fontSize: 11, color: ok6 ? T.jade : T.ruby, fontWeight: 700 }}>
+        <div style={{ marginLeft: "auto", fontFamily: "'Lato',sans-serif", fontSize: 12, color: ok6 ? T.jade : T.ruby, fontWeight: 700 }}>
           {totPcs} pc {ok6 ? "— mínimo atingido" : `— faltam ${minOrder - totPcs}`}
         </div>
       </div>
@@ -127,9 +127,9 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder, p
           <div key={s} style={{ display: "flex", alignItems: "center" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
               <div style={{ width: 28, height: 28, borderRadius: "50%", border: `2px solid ${step > i ? T.gold : T.border}`, background: step > i ? T.goldXlt : "transparent", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <span style={{ fontFamily: "'Lato',sans-serif", fontSize: 11, fontWeight: 700, color: step > i ? T.gold : T.ink4 }}>{i + 1}</span>
+                <span style={{ fontFamily: "'Lato',sans-serif", fontSize: 12, fontWeight: 700, color: step > i ? T.gold : T.ink4 }}>{i + 1}</span>
               </div>
-              <span style={{ fontFamily: "'Lato',sans-serif", fontSize: 11, fontWeight: 600, color: step === i + 1 ? T.ink : T.ink4, whiteSpace: "nowrap" }}>{s}</span>
+              <span style={{ fontFamily: "'Lato',sans-serif", fontSize: 12, fontWeight: 600, color: step === i + 1 ? T.ink : T.ink4, whiteSpace: "nowrap" }}>{s}</span>
             </div>
             {i < 2 && <div style={{ width: mob ? 20 : 40, height: 2, background: step > i + 1 ? T.jade : T.border, margin: "0 8px" }} />}
           </div>
@@ -155,7 +155,7 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder, p
                         </div>
                         <div style={{ flex: 1 }}>
                           <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 16, color: T.ink, fontWeight: 600 }}>{item.nome}</div>
-                          <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 10, color: T.ink4, marginTop: 2 }}>{item.cat} — {fmt(item.preco)}/pc</div>
+                          <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 12, color: T.ink4, marginTop: 2 }}>{item.cat} — {fmt(item.preco)}/pc</div>
                         </div>
                         <button onClick={() => onRemove(idx)} aria-label="Remover item" style={{ background: "none", border: `1px solid ${T.border}`, borderRadius: 6, padding: "4px 8px", cursor: "pointer", color: T.ruby, fontSize: 12, fontWeight: 700 }}>
                           ✕
@@ -165,7 +165,7 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder, p
                         {item.sel.map((s) => (
                           <div key={s.key} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
                             <div style={{ width: 8, height: 8, borderRadius: "50%", background: COR_HEX[s.cor] || T.gold }} />
-                            <span style={{ fontFamily: "'Lato',sans-serif", fontSize: 11, color: T.ink3, flex: 1 }}>{s.cor} / {s.tam} — {s.qtd}</span>
+                            <span style={{ fontFamily: "'Lato',sans-serif", fontSize: 12, color: T.ink3, flex: 1 }}>{s.cor} / {s.tam} — {s.qtd}</span>
                             <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 13, color: T.goldDk }}>{fmt(s.qtd * item.preco)}</span>
                           </div>
                         ))}
@@ -185,7 +185,7 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder, p
               {presencial && (
                 <div style={{ gridColumn: `span ${mob ? "1" : "2"}`, display: "flex", gap: 10, alignItems: "flex-end", marginBottom: 4 }}>
                   <div style={{ flex: 1 }}>
-                    <label style={{ display: "block", fontFamily: "'Lato',sans-serif", fontSize: 10, letterSpacing: 1.5, color: T.ink4, textTransform: "uppercase", marginBottom: 6 }}>
+                    <label style={{ display: "block", fontFamily: "'Lato',sans-serif", fontSize: 12, letterSpacing: 1.5, color: T.ink4, textTransform: "uppercase", marginBottom: 6 }}>
                       Buscar cliente por telefone ou e-mail
                     </label>
                     <input
@@ -201,17 +201,17 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder, p
                 </div>
               )}
               {presencial && buscaResultado === "encontrado" && (
-                <div style={{ gridColumn: `span ${mob ? "1" : "2"}`, fontFamily: "'Lato',sans-serif", fontSize: 11, color: T.jade }}>
+                <div style={{ gridColumn: `span ${mob ? "1" : "2"}`, fontFamily: "'Lato',sans-serif", fontSize: 12, color: T.jade }}>
                   Cliente encontrado — dados preenchidos abaixo.
                 </div>
               )}
               {presencial && buscaResultado === "nao_encontrado" && (
-                <div style={{ gridColumn: `span ${mob ? "1" : "2"}`, fontFamily: "'Lato',sans-serif", fontSize: 11, color: T.ink4 }}>
+                <div style={{ gridColumn: `span ${mob ? "1" : "2"}`, fontFamily: "'Lato',sans-serif", fontSize: 12, color: T.ink4 }}>
                   Cliente não encontrado — cadastre abaixo.
                 </div>
               )}
               {presencial && buscaResultado === "erro" && (
-                <div style={{ gridColumn: `span ${mob ? "1" : "2"}`, fontFamily: "'Lato',sans-serif", fontSize: 11, color: T.ruby }}>
+                <div style={{ gridColumn: `span ${mob ? "1" : "2"}`, fontFamily: "'Lato',sans-serif", fontSize: 12, color: T.ruby }}>
                   Erro ao buscar cliente — tente de novo.
                 </div>
               )}
@@ -224,7 +224,7 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder, p
                 ["cidade", "Cidade / Estado",         "2"],
               ].map(([f, label, c]) => (
                 <div key={f} style={{ gridColumn: `span ${mob ? "1" : c}` }}>
-                  <label style={{ display: "block", fontFamily: "'Lato',sans-serif", fontSize: 10, letterSpacing: 1.5, color: T.ink4, textTransform: "uppercase", marginBottom: 6 }}>{label}</label>
+                  <label style={{ display: "block", fontFamily: "'Lato',sans-serif", fontSize: 12, letterSpacing: 1.5, color: T.ink4, textTransform: "uppercase", marginBottom: 6 }}>{label}</label>
                   <input
                     value={form[f] || ""}
                     onChange={(e) => { setForm((p) => ({ ...p, [f]: e.target.value })); setFormErros((p) => ({ ...p, [f]: false })); }}
@@ -232,7 +232,7 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder, p
                     onFocus={(e)  => (e.target.style.borderColor = T.gold)}
                     onBlur={(e)   => (e.target.style.borderColor = formErros[f] ? T.ruby : T.border)}
                   />
-                  {formErros[f] && <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 10, color: T.ruby, marginTop: 4 }}>Campo obrigatório</div>}
+                  {formErros[f] && <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 12, color: T.ruby, marginTop: 4 }}>Campo obrigatório</div>}
                 </div>
               ))}
               <div style={{ gridColumn: `span ${mob ? "1" : "2"}`, display: "flex", gap: 10, marginTop: 4 }}>
@@ -261,7 +261,7 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder, p
               {presencial ? (
                 <div style={{ textAlign: "center", padding: "24px 0" }}>
                   <div style={{ background: T.goldXlt, border: `1px solid ${T.border}`, borderRadius: 16, padding: "28px 24px", marginBottom: 20 }}>
-                    <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 11, color: T.ink3, marginBottom: 8, letterSpacing: 1 }}>TOTAL A RECEBER</div>
+                    <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 12, color: T.ink3, marginBottom: 8, letterSpacing: 1 }}>TOTAL A RECEBER</div>
                     <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 22, color: T.ink2, marginBottom: 4 }}>{totPcs} peças</div>
                     <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 42, color: T.gold, fontWeight: 600 }}>{fmt(totVal)}</div>
                   </div>
@@ -287,10 +287,10 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder, p
               ) : (
                 <div style={{ textAlign: "center", padding: "24px 0" }}>
                   <div style={{ background: met === "pix" ? "#EAF5EE" : T.goldXlt, border: `1px solid ${met === "pix" ? "#B8D8C4" : T.border}`, borderRadius: 16, padding: "28px 24px", marginBottom: 20 }}>
-                    <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 11, color: T.ink3, marginBottom: 8, letterSpacing: 1 }}>TOTAL A PAGAR</div>
+                    <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 12, color: T.ink3, marginBottom: 8, letterSpacing: 1 }}>TOTAL A PAGAR</div>
                     <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 22, color: T.ink2, marginBottom: 4 }}>{totPcs} peças</div>
                     <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 42, color: met === "pix" ? T.jade : T.gold, fontWeight: 600 }}>{fmt(totVal)}</div>
-                    <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 10, color: T.ink3, marginTop: 8, letterSpacing: 1 }}>
+                    <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 12, color: T.ink3, marginTop: 8, letterSpacing: 1 }}>
                       Você vai finalizar em uma página segura do Mercado Pago
                     </div>
                   </div>
@@ -309,13 +309,13 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder, p
 
         {(!mob || step === 1) && (
           <div style={{ background: T.panel, border: `1px solid ${T.border}`, borderRadius: 14, padding: "20px", height: "fit-content", position: mob ? "static" : "sticky", top: 130 }}>
-            <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 10, letterSpacing: 2.5, color: T.ink4, textTransform: "uppercase", marginBottom: 16 }}>Resumo</div>
+            <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 12, letterSpacing: 2.5, color: T.ink4, textTransform: "uppercase", marginBottom: 16 }}>Resumo</div>
             {cart.map((item, idx) => (
               <div key={idx} style={{ marginBottom: 12 }}>
                 <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 14, color: T.ink, fontWeight: 600, marginBottom: 4 }}>{item.nome}</div>
                 {item.sel.map((s) => (
                   <div key={s.key} style={{ display: "flex", justifyContent: "space-between", marginBottom: 2 }}>
-                    <span style={{ fontFamily: "'Lato',sans-serif", fontSize: 10, color: T.ink4 }}>{s.cor} / {s.tam} — {s.qtd}</span>
+                    <span style={{ fontFamily: "'Lato',sans-serif", fontSize: 12, color: T.ink4 }}>{s.cor} / {s.tam} — {s.qtd}</span>
                     <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 12, color: T.ink3 }}>{fmt(s.qtd * item.preco)}</span>
                   </div>
                 ))}
@@ -323,7 +323,7 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder, p
             ))}
             <div style={{ borderTop: `1px solid ${T.border}`, paddingTop: 12, marginTop: 8 }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-                <span style={{ fontFamily: "'Lato',sans-serif", fontSize: 11, color: T.ink3 }}>{totPcs} peças</span>
+                <span style={{ fontFamily: "'Lato',sans-serif", fontSize: 12, color: T.ink3 }}>{totPcs} peças</span>
                 <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 14, color: T.ink3 }}>{fmt(totVal)}</span>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", paddingTop: 10, borderTop: `1px solid ${T.border}` }}>

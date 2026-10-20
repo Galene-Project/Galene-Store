@@ -60,7 +60,7 @@ export default function ModalProd({ prod, onClose, onAdd }) {
 
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
             <div>
-              <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 10, letterSpacing: 2.5, color: T.ink4, textTransform: "uppercase", marginBottom: 4 }}>
+              <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 12, letterSpacing: 2.5, color: T.ink4, textTransform: "uppercase", marginBottom: 4 }}>
                 {prod.cat} — {prod.sub}
               </div>
               <h2 style={{ margin: 0, fontFamily: "'Cormorant Garamond',serif", fontSize: mob ? 22 : 28, color: T.ink, fontWeight: 600 }}>
@@ -91,7 +91,7 @@ export default function ModalProd({ prod, onClose, onAdd }) {
               <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 34, color: T.goldDk, fontWeight: 600, lineHeight: 1 }}>
                 {fmt(prod.preco)}
               </div>
-              <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 10, color: T.ink4, margin: "4px 0 10px", letterSpacing: 1 }}>
+              <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 12, color: T.ink4, margin: "4px 0 10px", letterSpacing: 1 }}>
                 por peça · atacado
               </div>
               <p style={{ margin: 0, fontFamily: "'Lato',sans-serif", fontSize: 11.5, color: T.ink3, lineHeight: 1.6 }}>
@@ -101,7 +101,7 @@ export default function ModalProd({ prod, onClose, onAdd }) {
           </div>
 
           <div style={{ marginBottom: 18 }}>
-            <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 10, letterSpacing: 2, color: T.ink4, textTransform: "uppercase", marginBottom: 10 }}>
+            <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 12, letterSpacing: 2, color: T.ink4, textTransform: "uppercase", marginBottom: 10 }}>
               Cor: <span style={{ color: T.goldDk }}>{cor}</span>
             </div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -123,7 +123,7 @@ export default function ModalProd({ prod, onClose, onAdd }) {
                     }}
                   >
                     <div style={{ width: 12, height: 12, borderRadius: "50%", background: COR_HEX[c] || T.gold, border: "1px solid rgba(0,0,0,0.1)" }} />
-                    <span style={{ fontFamily: "'Lato',sans-serif", fontSize: 11, color: cor === c ? T.goldDk : T.ink3 }}>{c}</span>
+                    <span style={{ fontFamily: "'Lato',sans-serif", fontSize: 12, color: cor === c ? T.goldDk : T.ink3 }}>{c}</span>
                     {baixa && !esgotada && <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#f59e0b" }} />}
                   </button>
                 );
@@ -132,7 +132,7 @@ export default function ModalProd({ prod, onClose, onAdd }) {
           </div>
 
           <div style={{ marginBottom: 18 }}>
-            <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 10, letterSpacing: 2, color: T.ink4, textTransform: "uppercase", marginBottom: 10 }}>
+            <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 12, letterSpacing: 2, color: T.ink4, textTransform: "uppercase", marginBottom: 10 }}>
               Tamanho {tam && <span style={{ color: T.jade }}>{tam}</span>}
             </div>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -159,7 +159,7 @@ export default function ModalProd({ prod, onClose, onAdd }) {
                   >
                     <span style={{ fontSize: 12, fontWeight: 700, color: tam === t ? "white" : T.ink2 }}>{t}</span>
                     {baixo && (
-                      <span style={{ fontSize: 8, fontWeight: 600, color: tam === t ? "white" : "#f59e0b", lineHeight: 1 }}>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: tam === t ? "white" : "#f59e0b", lineHeight: 1 }}>
                         últimas peças
                       </span>
                     )}
@@ -175,7 +175,7 @@ export default function ModalProd({ prod, onClose, onAdd }) {
 
           {sel.length > 0 && (
             <div style={{ background: T.bg, border: `1px solid ${T.border}`, borderRadius: 12, marginBottom: 14, overflow: "hidden" }}>
-              <div style={{ padding: "10px 14px", borderBottom: `1px solid ${T.border}`, fontFamily: "'Lato',sans-serif", fontSize: 10, letterSpacing: 2, color: T.ink4, textTransform: "uppercase" }}>
+              <div style={{ padding: "10px 14px", borderBottom: `1px solid ${T.border}`, fontFamily: "'Lato',sans-serif", fontSize: 12, letterSpacing: 2, color: T.ink4, textTransform: "uppercase" }}>
                 Selecionados
               </div>
               {sel.map((s) => (
@@ -196,7 +196,7 @@ export default function ModalProd({ prod, onClose, onAdd }) {
                 </div>
               ))}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px" }}>
-                <span style={{ fontFamily: "'Lato',sans-serif", fontSize: 11, color: T.ink3 }}>{totPcs} peça{totPcs !== 1 ? "s" : ""}</span>
+                <span style={{ fontFamily: "'Lato',sans-serif", fontSize: 12, color: T.ink3 }}>{totPcs} peça{totPcs !== 1 ? "s" : ""}</span>
                 <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 18, color: T.goldDk, fontWeight: 600 }}>{fmt(totVal)}</span>
               </div>
             </div>
