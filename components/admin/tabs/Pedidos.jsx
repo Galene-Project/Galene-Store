@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
 import {
-  BarChart, Bar, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip,
+  PieChart, Pie, Cell, Tooltip,
   ResponsiveContainer, Legend,
 } from "recharts";
 import KPICard from "../KPICard";
-import { SectionTitle, CustomTooltip, Card, statusStyle, SemDados } from "../shared";
+import { SectionTitle, Card, statusStyle, SemDados } from "../shared";
 import { STATUS_LABEL } from "../../../lib/adminData";
 import { VALID_STATUSES } from "../../../lib/orderStatus";
 import { getSession } from "../../../lib/adminAuth";
@@ -165,7 +164,7 @@ function TabelaPedidos({
 }
 
 export default function Pedidos({ data, onRefresh, justUpdated }) {
-  const { faturamentoMensal, ultimosPedidos, kpis } = data;
+  const { ultimosPedidos, kpis } = data;
   const [expandedId, setExpandedId] = useState(null);
   const [updatingId, setUpdatingId] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
@@ -290,20 +289,7 @@ export default function Pedidos({ data, onRefresh, justUpdated }) {
         approvingId={approvingId} handleApprove={handleApprove} approvedLinks={approvedLinks}
       />
 
-      <div className="admin-chart-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
-        <Card delay={0.2}>
-          <SectionTitle accent="#34d399">Pedidos por Mês</SectionTitle>
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={faturamentoMensal}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-4)" />
-              <XAxis dataKey="mes" tick={{ fill:"var(--text-4)", fontSize:11 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill:"var(--text-4)", fontSize:11 }} axisLine={false} tickLine={false} />
-              <Tooltip content={<CustomTooltip />} />
-              <Bar dataKey="pedidos" name="Pedidos" fill="#34d399" radius={[6,6,0,0]} opacity={0.85} />
-            </BarChart>
-          </ResponsiveContainer>
-        </Card>
-
+      <div style={{ maxWidth:560 }}>
         <Card delay={0.25}>
           <SectionTitle accent="#818cf8">Status dos Pedidos (6 meses)</SectionTitle>
           {totalStatus ? (

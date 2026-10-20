@@ -8,11 +8,19 @@ import KPICard from "../KPICard";
 import { SectionTitle, CustomTooltip, Card, CORES_TAM, SemDados } from "../shared";
 
 export default function Estoque({ data }) {
-  const { vendasPorCategoria, estoqueAlertas, distribuicaoTamanho, kpis, estoquePorCategoria } = data;
+  const { vendasPorCategoria, estoqueAlertas, distribuicaoTamanho, kpis, estoquePorCategoria, estoquePorTamanho } = data;
+  // Cruza o que mais vende com o que tem no estoque: o tamanho líder de
+  // vendas é o que mais pesa no reabastecimento.
+  const lider = [...distribuicaoTamanho].sort((a, b) => b.value - a.value)[0];
+  const totalEstoqueTam = estoquePorTamanho.reduce((s, t) => s + t.value, 0);
+  const estoqueDoLider = lider && totalEstoqueTam
+    ? Math.round(((estoquePorTamanho.find((t) => t.name === lider.name)?.value || 0) / totalEstoqueTam) * 100)
+    : null;
+  const insightTamanho = lider && estoqueDoLider !== null
+    ? `Tamanho ${lider.name}: ${lider.value}% das vendas e ${estoqueDoLider}% do estoque${lider.value > estoqueDoLider ? " — priorize no reabastecimento" : ""}`
+    : null;
   // totalSkus conta produtos; disponiveis/esgotados contam variantes (cor × tamanho)
   // — porcentagem só faz sentido entre as duas últimas.
-  // Antes o texto era fixo ("M representa 35%") e discordava do gráfico acima.
-  const tamanhoLider = [...distribuicaoTamanho].sort((a, b) => b.value - a.value)[0];
   const totalVariantes = kpis.disponiveis + kpis.esgotados;
   const vendidoPorCategoria = new Map(vendasPorCategoria.map((v) => [v.nome, v.vendas]));
   const estoqueReal = estoquePorCategoria.map((e) => ({
@@ -45,23 +53,23 @@ export default function Estoque({ data }) {
         </Card>
 
         <Card delay={0.15}>
-          <SectionTitle accent="#f472b6">Distribuição por Tamanho</SectionTitle>
-          {distribuicaoTamanho.length ? (
+          <SectionTitle accent="#f472b6">Estoque por Tamanho (un.)</SectionTitle>
+          {estoquePorTamanho.length ? (
           <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={distribuicaoTamanho}>
+            <BarChart data={estoquePorTamanho}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--surface-4)" />
               <XAxis dataKey="name" tick={{ fill:"var(--text-3)", fontSize:13, fontWeight:700 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill:"var(--text-4)", fontSize:11 }} axisLine={false} tickLine={false} tickFormatter={v=>`${v}%`} />
-              <Tooltip content={<CustomTooltip suffix="%" />} />
-              <Bar dataKey="value" name="% Vendas" radius={[6,6,0,0]}>
-                {distribuicaoTamanho.map((_, i) => <Cell key={i} fill={CORES_TAM[i]} />)}
+              <YAxis tick={{ fill:"var(--text-4)", fontSize:11 }} axisLine={false} tickLine={false} />
+              <Tooltip content={<CustomTooltip />} />
+              <Bar dataKey="value" name="Unidades" radius={[6,6,0,0]}>
+                {estoquePorTamanho.map((_, i) => <Cell key={i} fill={CORES_TAM[i % CORES_TAM.length]} />)}
               </Bar>
             </BarChart>
           </ResponsiveContainer>
           ) : <SemDados height={200} />}
-          {tamanhoLider && (
+          {insightTamanho && (
             <div style={{ marginTop:14, padding:12, background:"var(--surface-2)", borderRadius:10 }}>
-              <div style={{ fontSize:11, color:"var(--text-4)" }}>💡 Tamanho {tamanhoLider.name} representa {tamanhoLider.value}% das vendas — priorize no reabastecimento</div>
+              <div style={{ fontSize:11, color:"var(--text-4)" }}>💡 {insightTamanho}</div>
             </div>
           )}
         </Card>

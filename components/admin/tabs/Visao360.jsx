@@ -4,7 +4,6 @@ import PeriodSelector from "../PeriodSelector";
 import KPICard from "../KPICard";
 import { SectionTitle, CustomTooltip, Card, CORES } from "../shared";
 import { presetParaIntervalo, resumoVendas, serieFaturamento } from "../../../lib/dashboardMetrics";
-import RelatorioProdutoVisual from "./RelatorioProdutoVisual";
 import { formatBRL, formatBRLk } from "../../../lib/format";
 
 
@@ -170,7 +169,6 @@ export default function Visao360({ data }) {
         </Card>
       </div>
 
-      <RelatorioProdutoVisual items={data.items} orders={data.orders} periodo={periodo} />
     </div>
   );
 }
