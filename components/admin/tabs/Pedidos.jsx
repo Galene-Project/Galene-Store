@@ -251,7 +251,7 @@ export default function Pedidos({ data, onRefresh, justUpdated }) {
       <div className="admin-kpi-grid" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)" }}>
         <KPICard icon="" label="Pedidos (6 meses)"  value={kpis.pedidosMes}   accent="var(--accent)" delay={0}    />
         <KPICard icon="" label="Entregues"           value={kpis.entregues}    sub={pct(kpis.entregues)}        accent="var(--positive)" delay={0.05} />
-        <KPICard icon="" label="Em Andamento"        value={kpis.emAndamento}  sub="este mês"   accent="var(--chart-2)" delay={0.1}  />
+        <KPICard icon="" label="Em Andamento"        value={kpis.emAndamento}  sub="pedidos em aberto"   accent="var(--chart-2)" delay={0.1}  />
         <KPICard icon="" label="Cancelados"          value={kpis.cancelados}   sub={pct(kpis.cancelados)}       accent="var(--negative)" delay={0.15} />
       </div>
 
