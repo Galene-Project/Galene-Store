@@ -184,7 +184,7 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder })
                     <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 22, color: T.ink2, marginBottom: 4 }}>{totPcs} peças</div>
                     <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 42, color: met === "pix" ? T.jade : T.gold, fontWeight: 600 }}>{fmt(totVal)}</div>
                     <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 12, color: T.ink3, marginTop: 8, letterSpacing: 1 }}>
-                      Você vai finalizar em uma página segura do Mercado Pago
+                      Nossa equipe confirma o pagamento com você (Pix, cartão ou dinheiro)
                     </div>
                   </div>
                   <button
@@ -192,7 +192,7 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder })
                     disabled={salvando}
                     style={{ width: "100%", background: salvando ? T.bg2 : T.goldDk, border: "none", borderRadius: 12, padding: "16px", color: salvando ? T.ink4 : "white", fontFamily: "'Lato',sans-serif", fontSize: 13, fontWeight: 700, cursor: salvando ? "wait" : "pointer", letterSpacing: 1 }}
                   >
-                    {salvando ? "Redirecionando…" : "Ir para o pagamento"}
+                    {salvando ? "Enviando…" : "Enviar pedido"}
                   </button>
                 </div>
               )}

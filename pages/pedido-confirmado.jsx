@@ -18,7 +18,7 @@ export default function PedidoConfirmado() {
         )}
         <p style={{ fontSize: 13, color: T.ink3, lineHeight: 1.7, marginBottom: 32 }}>
           {emAnalise
-            ? 'Seu pedido está em análise. Nossa equipe vai entrar em contato assim que for aprovado pra você finalizar o pagamento.'
+            ? 'Recebemos seu pedido. Nossa equipe vai entrar em contato para combinar o pagamento e, depois da confirmação, separar suas peças.'
             : 'Assim que o pagamento for confirmado pelo Mercado Pago, nossa equipe vai preparar seu pedido.'}
         </p>
         <Link href="/" style={{ display: 'inline-block', background: T.goldDk, borderRadius: 12, padding: '14px 36px', color: 'white', textDecoration: 'none', fontSize: 13, fontWeight: 700, letterSpacing: 1 }}>

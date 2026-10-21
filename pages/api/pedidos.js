@@ -8,6 +8,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: { code: 'METHOD_NOT_ALLOWED', message: 'Use POST', details: [] } });
 
   const { form, cart, pagamento } = req.body || {};
+  const usaGateway = Boolean(process.env.MERCADOPAGO_ACCESS_TOKEN);
 
   if (!form || !cart?.length) {
     return res.status(400).json({ error: { code: 'VALIDATION_FAILED', message: 'Dados do pedido incompletos.', details: [] } });
@@ -133,7 +134,7 @@ export default async function handler(req, res) {
       .insert([{
         order_number: orderNumber,
         customer_id: customerId,
-        payment_provider: 'mercado_pago',
+        payment_provider: usaGateway ? 'mercado_pago' : null,
         shipping_address: { endereco: form.end || '', cidade: form.cidade || '' },
         total: priced.total,
       }])
@@ -152,6 +153,11 @@ export default async function handler(req, res) {
     }));
     const { error: itemsErr } = await supabaseAdmin.from('order_items').insert(items);
     if (itemsErr) throw itemsErr;
+
+    // Sem gateway configurado (caso do Galene) o pedido fica aguardando_pagamento
+    // e a equipe confirma o pagamento e muda o status no painel. O Mercado Pago
+    // só entra quando houver token (opção para outras lojas/white-label).
+    if (!usaGateway) return res.status(200).json({ order_number: orderNumber });
 
     const origin = `https://${req.headers.host}`;
 
