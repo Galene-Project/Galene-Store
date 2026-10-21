@@ -12,7 +12,7 @@ const Section = ({ title, icon, children, status }) => {
   };
   const c = colors[status] || colors.pending;
   return (
-    <div style={{ marginBottom:16, borderRadius:16, overflow:"hidden", border:`1px solid var(--surface-6)` }}>
+    <div style={{ marginBottom:16, borderRadius:8, overflow:"hidden", border:"1px solid var(--border)", background:"var(--surface)" }}>
       <div
         onClick={() => setOpen(o => !o)}
         style={{
@@ -35,7 +35,7 @@ const Section = ({ title, icon, children, status }) => {
         </div>
       </div>
       {open && (
-        <div style={{ padding:"20px 22px 22px", background:"rgba(0,0,0,0.2)", borderTop:"1px solid var(--surface-4)" }}>
+        <div style={{ padding:"20px 22px 22px", background:"var(--surface)", borderTop:"1px solid var(--border)" }}>
           {children}
         </div>
       )}

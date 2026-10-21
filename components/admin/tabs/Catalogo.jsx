@@ -518,6 +518,7 @@ export default function Catalogo() {
           gridTemplateColumns: formAberto ? "1fr" : "0fr",
           transition: "grid-template-columns 0.25s ease",
           overflow: "hidden",
+          maxHeight: (formAberto) ? undefined : 0,
         }}>
           <div style={{
             display: "flex", alignItems: "center", gap: 6, minWidth: 0,
@@ -556,6 +557,7 @@ export default function Catalogo() {
           gridTemplateColumns: (p.instagram_urls?.length > 0 || videoFormOpenIds.has(p.id)) ? "1fr" : "0fr",
           transition: "grid-template-columns 0.25s ease",
           overflow: "hidden",
+          maxHeight: ((p.instagram_urls?.length > 0 || videoFormOpenIds.has(p.id))) ? undefined : 0,
         }}>
           <div style={{
             display: "flex", alignItems: "flex-start", gap: 6, minWidth: 0,
@@ -590,6 +592,7 @@ export default function Catalogo() {
           gridTemplateColumns: fotoCorFormOpenIds.has(p.id) ? "1fr" : "0fr",
           transition: "grid-template-columns 0.25s ease",
           overflow: "hidden",
+          maxHeight: (fotoCorFormOpenIds.has(p.id)) ? undefined : 0,
         }}>
           <div style={{
             display: "flex", flexDirection: "column", gap: 6, minWidth: 0,
