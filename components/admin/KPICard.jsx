@@ -21,7 +21,7 @@ export default function KPICard({ label, value, sub, trend, accent }) {
         <div style={{ fontSize: 12, color: "var(--text-5)", display: "flex", gap: 8, flexWrap: "wrap" }}>
           {trend && (
             <span style={{ color: trend.up ? "var(--text-4)" : "var(--negative)" }}>
-              {trend.up ? "▲" : "▼"} {Math.abs(trend.pct)}% vs mês anterior
+              {trend.up ? "▲" : "▼"} {Math.abs(trend.pct)}% vs mês anterior (mesmos dias)
             </span>
           )}
           {sub && <span>{sub}</span>}

@@ -107,8 +107,8 @@ export default function AdminPage() {
   if (!session) return <LoginPage onLogin={() => getSession().then(setSession)} />;
 
   const ativo = ITENS.find((i) => i.id === activeTab) || ITENS[0];
-  // Fila que precisa de ação: pedido de cartão esperando o operador aprovar.
-  const aguardando = (data?.raw?.orders || []).filter((o) => o.status === "aguardando_aprovacao").length;
+  // Fila que precisa de ação: cartão a aprovar ou pagamento a confirmar.
+  const aguardando = (data?.raw?.orders || []).filter((o) => o.status === "aguardando_aprovacao" || o.status === "aguardando_pagamento").length;
 
   function irPara(id) { setActiveTab(id); setMenuOpen(false); }
 

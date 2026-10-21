@@ -1,13 +1,12 @@
 import React, { useMemo, useState } from "react";
 import {
   LineChart, Line, BarChart, Bar,
-  PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Legend,
 } from "recharts";
 import KPICard from "../KPICard";
 import PeriodSelector from "../PeriodSelector";
-import { SectionTitle, CustomTooltip, Card, CORES, SemDados } from "../shared";
+import { SectionTitle, CustomTooltip, Card, RankList, SemDados } from "../shared";
 import { formatBRL, formatBRLk } from "../../../lib/format";
 import { presetParaIntervalo, periodoAnterior, resumoVendas, serieFaturamento } from "../../../lib/dashboardMetrics";
 
@@ -57,18 +56,8 @@ export default function Vendas({ data }) {
 
         <Card delay={0.15}>
           <SectionTitle>Receita por Categoria</SectionTitle>
-          {vendasPorCategoria.length ? (
-          <ResponsiveContainer width="100%" height={260}>
-            <PieChart>
-              <Pie data={vendasPorCategoria} cx="50%" cy="50%" outerRadius={95} dataKey="receita" nameKey="nome"
-                label={({ name, percent }) => `${name.split(" ")[0]} ${(percent*100).toFixed(0)}%`}
-                labelLine={false} fontSize={9}>
-                {vendasPorCategoria.map((_, i) => <Cell key={i} fill={CORES[i % CORES.length]} />)}
-              </Pie>
-              <Tooltip contentStyle={{ background:"var(--panel-solid)", border:"1px solid var(--accent-tint)", borderRadius:8, fontSize: 12 }} formatter={v=>[`R$${v}`,"Receita"]} />
-            </PieChart>
-          </ResponsiveContainer>
-          ) : <SemDados height={260} />}
+          <RankList vazio="Sem dados no período."
+            rows={vendasPorCategoria.slice(0, 8).map((c) => ({ label: c.nome, detail: `${c.vendas} un.`, value: formatBRL(c.receita), pct: c.receita }))} />
         </Card>
       </div>
 

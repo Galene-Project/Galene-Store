@@ -83,7 +83,7 @@ export default function FluxoCaixa({ data }) {
                       padding: "2px 8px", borderRadius: 6, fontSize: 12, fontWeight: 600,
                       background: m.tipo === "entrada" ? "var(--pill-positive-bg)" : "var(--pill-negative-bg)",
                       color: m.tipo === "entrada" ? "var(--pill-positive-ink)" : "var(--pill-negative-ink)",
-                    }}>{m.tipo === "entrada" ? "ENTRADA" : "SAÍDA"}</span>
+                    }}>{m.tipo === "entrada" ? "Entrada" : "Saída"}</span>
                   </td>
                   <td style={{ padding: "8px 10px", color: "var(--text-2)", fontWeight: 600 }}>{m.categoria}</td>
                   <td style={{ padding: "8px 10px", color: "var(--text-3)" }}>{m.descricao}</td>

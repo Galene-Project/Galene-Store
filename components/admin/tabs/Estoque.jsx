@@ -72,13 +72,13 @@ export default function Estoque({ data }) {
       </div>
 
       <Card>
-        <SectionTitle>Produtos para repor</SectionTitle>
-        <div style={{ overflowX:"auto" }}>
+        <SectionTitle>{`Produtos para repor (${estoqueAlertas.length})`}</SectionTitle>
+        <div style={{ overflow:"auto", maxHeight:480 }}>
           <table style={{ width:"100%", borderCollapse:"collapse", fontSize:14 }}>
             <thead>
               <tr>
                 {[["SKU","left"],["Produto","left"],["Cor","left"],["Tam.","left"],["Estoque","right"],["Mínimo","right"],["Situação","left"]].map(([h,al])=>(
-                  <th key={h} style={{ padding:"8px 12px", textAlign:al, color:"var(--text-4)", fontWeight:400, fontSize:12, borderBottom:"1px solid var(--border)", whiteSpace:"nowrap" }}>{h}</th>
+                  <th key={h} style={{ position:"sticky", top:0, background:"var(--surface)", padding:"8px 12px", textAlign:al, color:"var(--text-4)", fontWeight:400, fontSize:12, borderBottom:"1px solid var(--border)", whiteSpace:"nowrap" }}>{h}</th>
                 ))}
               </tr>
             </thead>
