@@ -1,4 +1,5 @@
 import { supabaseAdmin } from '../../../lib/supabaseAdmin';
+import { requireAdmin } from '../../../lib/requireAdmin';
 import { validateMinOrder } from '../../../lib/storeSettings';
 import { buildPixPayload } from '../../../lib/pixPayload';
 
@@ -7,16 +8,8 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: { code: 'METHOD_NOT_ALLOWED', message: 'Use POST', details: [] } });
   }
 
-  const authHeader = req.headers.authorization || '';
-  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
-  if (!token) {
-    return res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Token ausente.', details: [] } });
-  }
-
-  const { data: userData, error: userErr } = await supabaseAdmin.auth.getUser(token);
-  if (userErr || !userData?.user) {
-    return res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Sessão inválida ou expirada.', details: [] } });
-  }
+  const admin = await requireAdmin(req, res);
+  if (!admin) return;
 
   const { name, agent_name, whatsapp, instagram, facebook, min_order, pix_key, pix_name, pix_city } = req.body || {};
   if (!name?.trim() || !agent_name?.trim()) {
