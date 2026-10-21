@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 import {
   LineChart, Line, BarChart, Bar,
   PieChart, Pie, Cell,
@@ -6,45 +6,53 @@ import {
   ResponsiveContainer, Legend,
 } from "recharts";
 import KPICard from "../KPICard";
+import PeriodSelector from "../PeriodSelector";
 import { SectionTitle, CustomTooltip, Card, CORES, SemDados } from "../shared";
-import { formatBRLk } from "../../../lib/format";
+import { formatBRL, formatBRLk } from "../../../lib/format";
+import { presetParaIntervalo, periodoAnterior, resumoVendas, serieFaturamento } from "../../../lib/dashboardMetrics";
 
 export default function Vendas({ data }) {
-  const { faturamentoMensal, vendasPorCategoria, topProdutos } = data;
-  const totalFat = faturamentoMensal.reduce((a, b) => a + b.valor, 0);
-  const totalPedidos = faturamentoMensal.reduce((a, b) => a + b.pedidos, 0);
-  const ticketMedio = totalPedidos ? Math.round(totalFat / totalPedidos) : 0;
-  const melhorCat = [...vendasPorCategoria].sort((a,b)=>b.receita-a.receita)[0];
-  const mesAtual = faturamentoMensal[faturamentoMensal.length - 1];
-  const mesAnterior = faturamentoMensal[faturamentoMensal.length - 2];
-  const crescimento = mesAnterior?.valor
-    ? Math.round(((mesAtual.valor - mesAnterior.valor) / mesAnterior.valor) * 100)
+  const [periodo, setPeriodo] = useState({ preset: "6m", ...presetParaIntervalo("6m") });
+  const raw = data?.raw;
+
+  const { atual, anterior, serie } = useMemo(() => {
+    if (!raw) return {};
+    const calc = (p) => resumoVendas(raw.orders, raw.paidItems, raw.custoPorProdutoId, raw.expenses, p);
+    return { atual: calc(periodo), anterior: calc(periodoAnterior(periodo)), serie: serieFaturamento(raw.orders, periodo) };
+  }, [raw, periodo]);
+
+  if (!atual) return <div style={{ textAlign: "center", padding: "80px 0", color: "var(--text-4)", fontSize: 13 }}>Carregando vendas...</div>;
+
+  const { vendasPorCategoria, topProdutos } = atual;
+  const melhorCat = vendasPorCategoria[0];
+  const crescimento = anterior.faturamento
+    ? Math.round(((atual.faturamento - anterior.faturamento) / anterior.faturamento) * 100)
     : null;
 
   return (
     <>
+      <PeriodSelector value={periodo} onChange={setPeriodo} />
       <div className="admin-kpi-grid" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:14, marginBottom:22 }}>
-        <KPICard icon="" label="Faturamento (6 meses)" value={formatBRLk(totalFat)} accent="var(--accent)" delay={0} />
-        <KPICard icon="" label="Crescimento"           value={crescimento === null ? "—" : `${crescimento > 0 ? "+" : ""}${crescimento}%`} sub="vs mês anterior" accent="var(--positive)" delay={0.05} />
-        <KPICard icon="" label="Ticket Médio"          value={`R$${ticketMedio}`}                  sub="por pedido"      accent="var(--chart-2)" delay={0.1}  />
-        <KPICard icon="" label="Melhor Categoria"      value={melhorCat ? melhorCat.nome.split(" ")[0] : "—"} sub={melhorCat ? `R$${melhorCat.receita}` : "sem vendas"} accent="var(--chart-2)" delay={0.15} />
+        <KPICard label="Faturamento" value={formatBRLk(atual.faturamento)} sub="no período" />
+        <KPICard label="Crescimento" value={crescimento === null ? "—" : `${crescimento > 0 ? "+" : ""}${crescimento}%`} sub="vs período anterior" />
+        <KPICard label="Ticket médio" value={formatBRL(atual.ticketMedio)} sub="por pedido" />
+        <KPICard label="Melhor categoria" value={melhorCat ? melhorCat.nome.split(" ")[0] : "—"} sub={melhorCat ? formatBRL(melhorCat.receita) : "sem vendas"} />
       </div>
 
       <div className="admin-chart-grid" style={{ display:"grid", gridTemplateColumns:"3fr 2fr", gap:16, marginBottom:16 }}>
         <Card delay={0.1}>
-          <SectionTitle>Evolução — Faturamento & Pedidos</SectionTitle>
+          <SectionTitle>Evolução do faturamento</SectionTitle>
+          {serie.length ? (
           <ResponsiveContainer width="100%" height={260}>
-            <LineChart data={faturamentoMensal}>
+            <LineChart data={serie}>
               <CartesianGrid stroke="var(--grid)" vertical={false} />
-              <XAxis dataKey="mes" tick={{ fill:"var(--text-4)", fontSize: 12 }} axisLine={false} tickLine={false} />
-              <YAxis yAxisId="l" tick={{ fill:"var(--text-4)", fontSize: 12 }} axisLine={false} tickLine={false} tickFormatter={v=>`R$${v}`} />
-              <YAxis yAxisId="r" orientation="right" tick={{ fill:"var(--text-4)", fontSize: 12 }} axisLine={false} tickLine={false} />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend wrapperStyle={{ fontSize: 12, color:"var(--text-3)" }} />
-              <Line yAxisId="l" type="linear" dataKey="valor"   name="Faturamento (R$)" stroke="var(--accent)" strokeWidth={3} dot={{ r:5, fill:"var(--accent)", stroke:"var(--panel-solid)", strokeWidth:2 }} />
-              <Line yAxisId="r" type="linear" dataKey="pedidos" name="Nº Pedidos"       stroke="var(--positive)" strokeWidth={2} strokeDasharray="5 3" dot={{ r:4, fill:"var(--positive)" }} />
+              <XAxis dataKey="label" tick={{ fill:"var(--text-4)", fontSize: 12 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill:"var(--text-4)", fontSize: 12 }} axisLine={false} tickLine={false} tickFormatter={formatBRLk} width={56} />
+              <Tooltip content={<CustomTooltip prefix="R$" />} />
+              <Line type="linear" dataKey="valor" name="Faturamento" stroke="var(--accent)" strokeWidth={2} dot={{ r:3, fill:"var(--accent)" }} />
             </LineChart>
           </ResponsiveContainer>
+          ) : <SemDados height={260} />}
         </Card>
 
         <Card delay={0.15}>

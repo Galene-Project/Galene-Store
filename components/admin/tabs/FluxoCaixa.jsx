@@ -40,6 +40,7 @@ export default function FluxoCaixa({ data }) {
 
       <Card>
         <SectionTitle>Saída por categoria</SectionTitle>
+        <div style={{ fontSize: 12, color: "var(--text-5)", margin: "-6px 0 12px" }}>Custo de produção entra pelo lote; despesa de categoria Produção não conta aqui, para não somar duas vezes.</div>
         {resumo.saidaPorCategoria.length === 0 ? (
           <div style={{ fontSize: 12, color: "var(--text-4)" }}>Nenhuma saída no período.</div>
         ) : (
