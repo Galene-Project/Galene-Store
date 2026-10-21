@@ -26,7 +26,7 @@ const NAV = [
     { id: "visao360", label: "Visão 360", icon: "compass", sub: "Vendas, financeiro e estoque no período escolhido." },
   ] },
   { grupo: "Vendas", itens: [
-    { id: "vendas", label: "Vendas", icon: "trend", sub: "Faturamento e ranking dos últimos 6 meses." },
+    { id: "vendas", label: "Vendas", icon: "trend", sub: "Faturamento e ranking no período escolhido." },
     { id: "pedidos", label: "Pedidos", icon: "bag", sub: "Aprovação, separação e entrega." },
     { id: "clientes", label: "Clientes", icon: "users", sub: "Base de clientes para recompra e remarketing." },
     { id: "balcao", label: "Venda no balcão", icon: "cash", href: "/admin/venda" },
