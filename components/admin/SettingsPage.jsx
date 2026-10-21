@@ -61,6 +61,9 @@ export default function SettingsPage() {
           instagram: data.instagram || "",
           facebook: data.facebook || "",
           min_order: data.min_order,
+          pix_key: data.pix_key || "",
+          pix_name: data.pix_name || "",
+          pix_city: data.pix_city || "",
         });
       }
     });
@@ -130,9 +133,24 @@ export default function SettingsPage() {
                   style={{ ...inputStyle, width:"100%" }} />
               </div>
               <div>
+                <div style={labelStyle}>Chave Pix</div>
+                <input value={loja.pix_key} onChange={(e) => setLoja((p) => ({ ...p, pix_key: e.target.value }))} placeholder="CNPJ, e-mail, +5511999999999 ou chave aleatória"
+                  style={{ ...inputStyle, width:"100%" }} />
+              </div>
+              <div>
+                <div style={labelStyle}>Nome do recebedor (Pix)</div>
+                <input value={loja.pix_name} onChange={(e) => setLoja((p) => ({ ...p, pix_name: e.target.value }))} placeholder="Como aparece no banco"
+                  style={{ ...inputStyle, width:"100%" }} />
+              </div>
+              <div>
+                <div style={labelStyle}>Cidade (Pix)</div>
+                <input value={loja.pix_city} onChange={(e) => setLoja((p) => ({ ...p, pix_city: e.target.value }))} placeholder="São Paulo"
+                  style={{ ...inputStyle, width:"100%" }} />
+              </div>
+              <div>
                 <div style={labelStyle}>Pagamento</div>
                 <div style={{ ...inputStyle, color:"var(--text-4)" }}>
-                  Confirmado manualmente por você no painel (Pix, cartão ou dinheiro). O estoque só baixa depois da confirmação.
+                  Pix gerado automático com o valor do pedido (se a chave estiver preenchida). Você confirma o pagamento no painel; o estoque só baixa depois da confirmação.
                 </div>
               </div>
             </div>

@@ -2,6 +2,7 @@ import { supabaseAdmin } from '../../lib/supabaseAdmin';
 import { computeOrderItems } from '../../lib/pricing';
 import { findShortages, formatShortages } from '../../lib/stock';
 import { createOrderPreference } from '../../lib/mercadopagoPreference';
+import { buildPixPayload } from '../../lib/pixPayload';
 import { findCustomerByPhone, camposEmBranco, normalizePhone } from '../../lib/customers';
 
 export default async function handler(req, res) {
@@ -45,7 +46,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: { code: 'VALIDATION_FAILED', message: e.message, details: [] } });
     }
 
-    const { data: settingsRow } = await supabaseAdmin.from('store_settings').select('min_order').limit(1).single();
+    const { data: settingsRow } = await supabaseAdmin.from('store_settings').select('min_order, pix_key, pix_name, pix_city').limit(1).single();
     const minOrder = settingsRow?.min_order || 6;
 
     // Peças mínimas recalculadas do carrinho de verdade — não confia no
@@ -157,7 +158,13 @@ export default async function handler(req, res) {
     // Sem gateway configurado (caso do Galene) o pedido fica aguardando_pagamento
     // e a equipe confirma o pagamento e muda o status no painel. O Mercado Pago
     // só entra quando houver token (opção para outras lojas/white-label).
-    if (!usaGateway) return res.status(200).json({ order_number: orderNumber });
+    if (!usaGateway) {
+      // Pix "copia e cola" com o total recalculado do banco (priced.total), nunca do client.
+      const pix = settingsRow?.pix_key
+        ? buildPixPayload({ key: settingsRow.pix_key, name: settingsRow.pix_name, city: settingsRow.pix_city, amount: priced.total, txid: orderNumber })
+        : null;
+      return res.status(200).json({ order_number: orderNumber, pix, total: priced.total });
+    }
 
     const origin = `https://${req.headers.host}`;
 

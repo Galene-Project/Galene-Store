@@ -45,6 +45,7 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder })
       if (data.checkout_url) {
         window.location.href = data.checkout_url;
       } else {
+        try { sessionStorage.setItem('galene_pix', JSON.stringify({ numero: data.order_number, pix: data.pix, total: data.total })); } catch (e) { /* sem storage: segue sem o Pix na tela */ }
         window.location.href = `/pedido-confirmado?numero=${data.order_number}&emAnalise=1`;
       }
     } catch (e) {

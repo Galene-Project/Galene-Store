@@ -1,5 +1,6 @@
 import { supabaseAdmin } from '../../../lib/supabaseAdmin';
 import { validateMinOrder } from '../../../lib/storeSettings';
+import { buildPixPayload } from '../../../lib/pixPayload';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -17,7 +18,7 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Sessão inválida ou expirada.', details: [] } });
   }
 
-  const { name, agent_name, whatsapp, instagram, facebook, min_order } = req.body || {};
+  const { name, agent_name, whatsapp, instagram, facebook, min_order, pix_key, pix_name, pix_city } = req.body || {};
   if (!name?.trim() || !agent_name?.trim()) {
     return res.status(400).json({ error: { code: 'VALIDATION_FAILED', message: 'Nome da loja e nome do agente são obrigatórios.', details: [] } });
   }
@@ -27,6 +28,18 @@ export default async function handler(req, res) {
     minOrder = validateMinOrder(min_order);
   } catch (e) {
     return res.status(400).json({ error: { code: 'VALIDATION_FAILED', message: e.message, details: [] } });
+  }
+
+  // Chave Pix preenchida exige nome e cidade, e precisa gerar um código válido.
+  if (pix_key?.trim()) {
+    try {
+      buildPixPayload({ key: pix_key, name: pix_name, city: pix_city, amount: 1, txid: 'TESTE' });
+    } catch (e) {
+      return res.status(400).json({ error: { code: 'VALIDATION_FAILED', message: 'Chave Pix inválida.', details: [] } });
+    }
+    if (!pix_name?.trim() || !pix_city?.trim()) {
+      return res.status(400).json({ error: { code: 'VALIDATION_FAILED', message: 'Informe o nome do recebedor e a cidade do Pix.', details: [] } });
+    }
   }
 
   try {
@@ -44,6 +57,9 @@ export default async function handler(req, res) {
         instagram: instagram?.trim() || null,
         facebook: facebook?.trim() || null,
         min_order: minOrder,
+        pix_key: pix_key?.trim() || null,
+        pix_name: pix_name?.trim() || null,
+        pix_city: pix_city?.trim() || null,
         updated_at: new Date().toISOString(),
       })
       .eq('id', row.id);
