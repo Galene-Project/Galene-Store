@@ -1,5 +1,5 @@
 import { supabaseAdmin } from '../../../../lib/supabaseAdmin';
-import { VALID_STATUSES, shouldRestoreStock } from '../../../../lib/orderStatus';
+import { VALID_STATUSES, shouldRestoreStock, shouldDecrementStock } from '../../../../lib/orderStatus';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -34,6 +34,20 @@ export default async function handler(req, res) {
 
     const mustRestore = shouldRestoreStock(order.status, novoStatus);
 
+    let statusAtual = order.status;
+    if (shouldDecrementStock(statusAtual, novoStatus)) {
+      const { data: claim, error: claimErr } = await supabaseAdmin.rpc('claim_payment_and_decrement_stock', {
+        p_order_id: orderId,
+        p_payment_id: 'manual',
+      });
+      if (claimErr) throw claimErr;
+      if (claim === 'already_paid') {
+        return res.status(409).json({ error: { code: 'CONFLICT', message: 'Pedido foi alterado por outra requisição, tente novamente.', details: [] } });
+      }
+      if (novoStatus === 'pago') return res.status(200).json({ ok: true });
+      statusAtual = 'pago';
+    }
+
     // Status update + restauração de estoque (se houver) rodam dentro de
     // uma única função Postgres (`update_order_status_and_restore_stock`),
     // que o Postgres executa numa única transação implícita — se faltar
@@ -43,7 +57,7 @@ export default async function handler(req, res) {
     // restaurado) que existia com as duas operações separadas.
     const { data: result, error: rpcErr } = await supabaseAdmin.rpc('update_order_status_and_restore_stock', {
       p_order_id: orderId,
-      p_expected_status: order.status,
+      p_expected_status: statusAtual,
       p_novo_status: novoStatus,
       p_must_restore: mustRestore,
     });
@@ -58,6 +72,9 @@ export default async function handler(req, res) {
     console.error('Erro ao atualizar status do pedido:', err);
     if (typeof err?.message === 'string' && err.message.startsWith('stock row not found for product')) {
       return res.status(422).json({ error: { code: 'STOCK_ROW_MISSING', message: 'Não foi possível cancelar: falta linha de estoque para uma das variantes do pedido. Contate o suporte técnico.', details: [] } });
+    }
+    if (err?.code === '23514') {
+      return res.status(409).json({ error: { code: 'INSUFFICIENT_STOCK', message: 'Estoque insuficiente para confirmar este pedido.', details: [] } });
     }
     return res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Não foi possível atualizar o pedido.', details: [] } });
   }

@@ -78,7 +78,7 @@ export default function Overview({ data, onNavigate = () => {} }) {
                 <div key={o.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, padding: "10px 0", borderTop: "1px solid var(--rule)" }}>
                   <div style={{ minWidth: 0 }}>
                     <div style={{ fontSize: 14, color: "var(--text-1)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{o.customers?.company_name || o.customers?.name || "—"}</div>
-                    <div style={{ fontSize: 12, color: "var(--text-5)", fontFamily: "var(--font)" }}>{o.order_number} · {formatBRL(o.total)}</div>
+                    <div style={{ fontSize: 12, color: "var(--text-5)", fontFamily: "var(--font)" }}>{o.order_number} · {o.canal === "loja" ? "Loja · " : ""}{formatBRL(o.total)}</div>
                   </div>
                   <Pill tone="warning">{FILA[o.status]}</Pill>
                 </div>

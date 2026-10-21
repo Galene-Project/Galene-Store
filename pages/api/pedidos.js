@@ -8,6 +8,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: { code: 'METHOD_NOT_ALLOWED', message: 'Use POST', details: [] } });
 
   const { form, cart, pagamento } = req.body || {};
+  const canal = req.body?.canal === 'loja' ? 'loja' : 'online';
 
   if (!form || !cart?.length) {
     return res.status(400).json({ error: { code: 'VALIDATION_FAILED', message: 'Dados do pedido incompletos.', details: [] } });
@@ -133,7 +134,9 @@ export default async function handler(req, res) {
       .insert([{
         order_number: orderNumber,
         customer_id: customerId,
-        payment_provider: 'mercado_pago',
+        payment_provider: canal === 'loja' ? null : 'mercado_pago',
+        payment_method: canal === 'loja' ? (['pix', 'cartao', 'dinheiro'].includes(pagamento) ? pagamento : null) : null,
+        canal,
         shipping_address: { endereco: form.end || '', cidade: form.cidade || '' },
         total: priced.total,
       }])
@@ -152,6 +155,10 @@ export default async function handler(req, res) {
     }));
     const { error: itemsErr } = await supabaseAdmin.from('order_items').insert(items);
     if (itemsErr) throw itemsErr;
+
+    // Totem na loja: cliente paga no caixa e a equipe confirma na fila do painel
+    // (aguardando_pagamento) — sem gateway.
+    if (canal === 'loja') return res.status(200).json({ order_number: orderNumber, canal });
 
     const origin = `https://${req.headers.host}`;
 

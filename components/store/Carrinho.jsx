@@ -3,7 +3,7 @@ import Sil from "./Sil";
 import { T, COR_HEX, fmt } from "../../lib/galeneTheme";
 import { useWindowWidth } from "../../hooks/useWindowWidth";
 
-export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder, presencial = false, onBuscarCliente, onConfirmarPresencial }) {
+export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder, totem = false }) {
   const [step, setStep] = useState(1);
   const [met, setMet]   = useState(null);
   const [salvando, setSalvando] = useState(false);
@@ -11,11 +11,6 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder, p
 
   const [form, setForm] = useState({ razao: "", cnpj: "", email: "", tel: "", end: "", cidade: "" });
   const [formErros, setFormErros] = useState({});
-  const [telefoneBusca, setTelefoneBusca] = useState("");
-  const [buscando, setBuscando] = useState(false);
-  const [buscaResultado, setBuscaResultado] = useState(null); // null | "encontrado" | "nao_encontrado"
-  const [clienteId, setClienteId] = useState(null);
-  const [idempotencyKey] = useState(() => (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`));
 
   const w = useWindowWidth();
   const mob = w < 768;
@@ -34,7 +29,7 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder, p
     return Object.keys(erros).length === 0;
   };
 
-  const irParaPagamento = () => { if (validarForm()) { setMet(presencial ? null : "pix"); setStep(3); } };
+  const irParaPagamento = () => { if (validarForm()) { setMet(totem ? null : "pix"); setStep(3); } };
 
   const confirmarPedido = async (pagamento) => {
     setSalvando(true);
@@ -43,11 +38,13 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder, p
       const res = await fetch('/api/pedidos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ form, cart, pagamento, totalPecas: totPcs, totalValor: totVal }),
+        body: JSON.stringify({ form, cart, pagamento, canal: totem ? 'loja' : 'online', totalPecas: totPcs, totalValor: totVal }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error?.message || 'Erro ao criar pedido');
-      if (data.checkout_url) {
+      if (totem) {
+        onFinish?.({ order_number: data.order_number });
+      } else if (data.checkout_url) {
         window.location.href = data.checkout_url;
       } else {
         window.location.href = `/pedido-confirmado?numero=${data.order_number}&emAnalise=1`;
@@ -55,49 +52,6 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder, p
     } catch (e) {
       setSalvando(false);
       setErroServidor("Não foi possível registrar o pedido. Tente novamente.");
-    }
-  };
-
-  const buscarCliente = async () => {
-    if (!telefoneBusca.trim() || !onBuscarCliente) return;
-    setBuscando(true);
-    setBuscaResultado(null);
-    try {
-      const cliente = await onBuscarCliente(telefoneBusca.trim());
-      if (cliente) {
-        setClienteId(cliente.id);
-        setForm({
-          razao: cliente.name || cliente.company_name || "",
-          cnpj: cliente.cnpj || "",
-          email: cliente.email || "",
-          tel: cliente.phone || (telefoneBusca.includes("@") ? "" : telefoneBusca.trim()),
-          end: "",
-          cidade: "",
-        });
-        setBuscaResultado("encontrado");
-      } else {
-        setClienteId(null);
-        setBuscaResultado("nao_encontrado");
-      }
-    } catch (e) {
-      console.error('Erro ao buscar cliente:', e);
-      setClienteId(null);
-      setBuscaResultado("erro");
-    } finally {
-      setBuscando(false);
-    }
-  };
-
-  const confirmarVendaPresencial = async () => {
-    setSalvando(true);
-    setErroServidor(null);
-    try {
-      const resultado = await onConfirmarPresencial({ form, cart, metodo: met, clienteId, idempotencyKey });
-      onFinish?.(resultado);
-    } catch (e) {
-      setErroServidor(e.message || "Não foi possível registrar a venda.");
-    } finally {
-      setSalvando(false);
     }
   };
 
@@ -182,39 +136,6 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder, p
 
           {step === 2 && (
             <div style={{ display: "grid", gridTemplateColumns: mob ? "1fr" : "1fr 1fr", gap: 14 }}>
-              {presencial && (
-                <div style={{ gridColumn: `span ${mob ? "1" : "2"}`, display: "flex", gap: 10, alignItems: "flex-end", marginBottom: 4 }}>
-                  <div style={{ flex: 1 }}>
-                    <label style={{ display: "block", fontFamily: "'Lato',sans-serif", fontSize: 12, letterSpacing: 1.5, color: T.ink4, textTransform: "uppercase", marginBottom: 6 }}>
-                      Buscar cliente por telefone ou e-mail
-                    </label>
-                    <input
-                      value={telefoneBusca}
-                      onChange={(e) => setTelefoneBusca(e.target.value)}
-                      placeholder="(00) 00000-0000 ou nome@email.com"
-                      style={{ width: "100%", background: T.panel, border: `1.5px solid ${T.border}`, borderRadius: 8, padding: "11px 14px", fontFamily: "'Lato',sans-serif", fontSize: 13, color: T.ink, outline: "none", boxSizing: "border-box" }}
-                    />
-                  </div>
-                  <button onClick={buscarCliente} disabled={buscando || !telefoneBusca.trim()} style={{ background: "none", border: `1.5px solid ${T.border}`, borderRadius: 8, padding: "11px 16px", cursor: buscando ? "wait" : "pointer", fontFamily: "'Lato',sans-serif", fontSize: 12, fontWeight: 700, color: T.ink3 }}>
-                    {buscando ? "Buscando..." : "Buscar"}
-                  </button>
-                </div>
-              )}
-              {presencial && buscaResultado === "encontrado" && (
-                <div style={{ gridColumn: `span ${mob ? "1" : "2"}`, fontFamily: "'Lato',sans-serif", fontSize: 12, color: T.jade }}>
-                  Cliente encontrado — dados preenchidos abaixo.
-                </div>
-              )}
-              {presencial && buscaResultado === "nao_encontrado" && (
-                <div style={{ gridColumn: `span ${mob ? "1" : "2"}`, fontFamily: "'Lato',sans-serif", fontSize: 12, color: T.ink4 }}>
-                  Cliente não encontrado — cadastre abaixo.
-                </div>
-              )}
-              {presencial && buscaResultado === "erro" && (
-                <div style={{ gridColumn: `span ${mob ? "1" : "2"}`, fontFamily: "'Lato',sans-serif", fontSize: 12, color: T.ruby }}>
-                  Erro ao buscar cliente — tente de novo.
-                </div>
-              )}
               {[
                 ["razao",  "Razão Social *",          "2"],
                 ["cnpj",   "CNPJ / CPF",              "1"],
@@ -258,15 +179,15 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder, p
                 </div>
               )}
 
-              {presencial ? (
+              {totem ? (
                 <div style={{ textAlign: "center", padding: "24px 0" }}>
                   <div style={{ background: T.goldXlt, border: `1px solid ${T.border}`, borderRadius: 16, padding: "28px 24px", marginBottom: 20 }}>
-                    <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 12, color: T.ink3, marginBottom: 8, letterSpacing: 1 }}>TOTAL A RECEBER</div>
+                    <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 12, color: T.ink3, marginBottom: 8, letterSpacing: 1 }}>TOTAL DO PEDIDO</div>
                     <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 22, color: T.ink2, marginBottom: 4 }}>{totPcs} peças</div>
                     <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 42, color: T.gold, fontWeight: 600 }}>{fmt(totVal)}</div>
                   </div>
                   <div style={{ display: "flex", gap: 10, justifyContent: "center", marginBottom: 20, flexWrap: "wrap" }}>
-                    {[["cartao", "Cartão"], ["dinheiro", "Dinheiro"], ["pix", "Pix"]].map(([id, label]) => (
+                    {[["pix", "Pix"], ["cartao", "Cartão"], ["dinheiro", "Dinheiro"]].map(([id, label]) => (
                       <button
                         key={id}
                         onClick={() => setMet(id)}
@@ -276,12 +197,13 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder, p
                       </button>
                     ))}
                   </div>
+                  <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 13, color: T.ink3, marginBottom: 16 }}>Escolha como vai pagar. O pagamento é feito no caixa.</div>
                   <button
-                    onClick={confirmarVendaPresencial}
+                    onClick={() => confirmarPedido(met)}
                     disabled={salvando || !met}
                     style={{ width: "100%", background: (salvando || !met) ? T.bg2 : T.goldDk, border: "none", borderRadius: 12, padding: "16px", color: (salvando || !met) ? T.ink4 : "white", fontFamily: "'Lato',sans-serif", fontSize: 13, fontWeight: 700, cursor: (salvando || !met) ? "default" : "pointer", letterSpacing: 1 }}
                   >
-                    {salvando ? "Registrando..." : "Confirmar pagamento e finalizar venda"}
+                    {salvando ? "Enviando..." : "Finalizar pedido"}
                   </button>
                 </div>
               ) : (
