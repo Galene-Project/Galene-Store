@@ -3,7 +3,7 @@ import Sil from "./Sil";
 import { T, COR_HEX, fmt } from "../../lib/galeneTheme";
 import { useWindowWidth } from "../../hooks/useWindowWidth";
 
-export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder, totem = false }) {
+export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder }) {
   const [step, setStep] = useState(1);
   const [met, setMet]   = useState(null);
   const [salvando, setSalvando] = useState(false);
@@ -29,7 +29,7 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder, t
     return Object.keys(erros).length === 0;
   };
 
-  const irParaPagamento = () => { if (validarForm()) { setMet(totem ? null : "pix"); setStep(3); } };
+  const irParaPagamento = () => { if (validarForm()) { setMet("pix"); setStep(3); } };
 
   const confirmarPedido = async (pagamento) => {
     setSalvando(true);
@@ -38,13 +38,11 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder, t
       const res = await fetch('/api/pedidos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ form, cart, pagamento, canal: totem ? 'loja' : 'online', totalPecas: totPcs, totalValor: totVal }),
+        body: JSON.stringify({ form, cart, pagamento, totalPecas: totPcs, totalValor: totVal }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error?.message || 'Erro ao criar pedido');
-      if (totem) {
-        onFinish?.({ order_number: data.order_number });
-      } else if (data.checkout_url) {
+      if (data.checkout_url) {
         window.location.href = data.checkout_url;
       } else {
         window.location.href = `/pedido-confirmado?numero=${data.order_number}&emAnalise=1`;
@@ -179,34 +177,7 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder, t
                 </div>
               )}
 
-              {totem ? (
-                <div style={{ textAlign: "center", padding: "24px 0" }}>
-                  <div style={{ background: T.goldXlt, border: `1px solid ${T.border}`, borderRadius: 16, padding: "28px 24px", marginBottom: 20 }}>
-                    <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 12, color: T.ink3, marginBottom: 8, letterSpacing: 1 }}>TOTAL DO PEDIDO</div>
-                    <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 22, color: T.ink2, marginBottom: 4 }}>{totPcs} peças</div>
-                    <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 42, color: T.gold, fontWeight: 600 }}>{fmt(totVal)}</div>
-                  </div>
-                  <div style={{ display: "flex", gap: 10, justifyContent: "center", marginBottom: 20, flexWrap: "wrap" }}>
-                    {[["pix", "Pix"], ["cartao", "Cartão"], ["dinheiro", "Dinheiro"]].map(([id, label]) => (
-                      <button
-                        key={id}
-                        onClick={() => setMet(id)}
-                        style={{ border: `1.5px solid ${met === id ? T.gold : T.border}`, background: met === id ? T.goldXlt : "none", borderRadius: 10, padding: "10px 18px", cursor: "pointer", fontFamily: "'Lato',sans-serif", fontWeight: 700, fontSize: 12, color: met === id ? T.goldDk : T.ink3 }}
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                  <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 13, color: T.ink3, marginBottom: 16 }}>Escolha como vai pagar. O pagamento é feito no caixa.</div>
-                  <button
-                    onClick={() => confirmarPedido(met)}
-                    disabled={salvando || !met}
-                    style={{ width: "100%", background: (salvando || !met) ? T.bg2 : T.goldDk, border: "none", borderRadius: 12, padding: "16px", color: (salvando || !met) ? T.ink4 : "white", fontFamily: "'Lato',sans-serif", fontSize: 13, fontWeight: 700, cursor: (salvando || !met) ? "default" : "pointer", letterSpacing: 1 }}
-                  >
-                    {salvando ? "Enviando..." : "Finalizar pedido"}
-                  </button>
-                </div>
-              ) : (
+              {(
                 <div style={{ textAlign: "center", padding: "24px 0" }}>
                   <div style={{ background: met === "pix" ? "#EAF5EE" : T.goldXlt, border: `1px solid ${met === "pix" ? "#B8D8C4" : T.border}`, borderRadius: 16, padding: "28px 24px", marginBottom: 20 }}>
                     <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 12, color: T.ink3, marginBottom: 8, letterSpacing: 1 }}>TOTAL A PAGAR</div>

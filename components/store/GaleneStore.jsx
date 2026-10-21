@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import Sidebar from "./Sidebar";
 import ModalProd from "./ModalProd";
 import Carrinho from "./Carrinho";
@@ -9,13 +9,7 @@ import { mergeIntoCart } from "../../lib/cart";
 import { useCatalogo } from "../../hooks/useCatalogo";
 import { useWindowWidth } from "../../hooks/useWindowWidth";
 
-// totem: iPad da loja. Mesmo fluxo do cliente em casa, mas o pagamento é no caixa
-// e a tela volta ao início sozinha (inatividade ou depois do pedido), para um
-// cliente não ver o carrinho/dados do anterior.
-const TOTEM_OCIOSO_MS = 120000;
-const TOTEM_CONFIRMACAO_MS = 30000;
-
-export default function GaleneStore({ totem = false }) {
+export default function GaleneStore() {
   const w = useWindowWidth();
   const mob = w < 900;
   const [cat, setCat] = useState("destaques");
@@ -24,7 +18,6 @@ export default function GaleneStore({ totem = false }) {
   const [currentView, setCurrentView] = useState("loja");
   const [drawer, setDrawer] = useState(false);
   const [toast, setToast] = useState(null);
-  const [confirmacao, setConfirmacao] = useState(null);
   const { produtos, loading, minOrder, redes } = useCatalogo();
   const totPcs = cart.reduce((s, i) => s + i.sel.reduce((a, x) => a + x.qtd, 0), 0);
   const prods = filtrarPorCategoria(produtos, cat);
@@ -36,43 +29,14 @@ export default function GaleneStore({ totem = false }) {
     setTimeout(() => setToast(null), 3500);
   }, []);
 
-  const reiniciar = useCallback(() => {
+  const handleFinish = useCallback(() => {
     setCart([]);
-    setModal(null);
-    setDrawer(false);
-    setConfirmacao(null);
     setCurrentView("loja");
     setCat("destaques");
   }, []);
 
-  const handleFinish = useCallback((res) => {
-    if (totem && res?.order_number) { setCart([]); setConfirmacao(res.order_number); return; }
-    reiniciar();
-  }, [totem, reiniciar]);
-
-  useEffect(() => {
-    if (!totem) return;
-    let t;
-    const armar = () => { clearTimeout(t); t = setTimeout(reiniciar, confirmacao ? TOTEM_CONFIRMACAO_MS : TOTEM_OCIOSO_MS); };
-    const eventos = ["pointerdown", "keydown", "scroll"];
-    eventos.forEach((e) => window.addEventListener(e, armar, true));
-    armar();
-    return () => { clearTimeout(t); eventos.forEach((e) => window.removeEventListener(e, armar, true)); };
-  }, [totem, confirmacao, reiniciar]);
-
   return (
     <div style={{ fontFamily: "'Lato',sans-serif", background: T.bg, minHeight: "100vh", color: T.ink }}>
-      {confirmacao && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 10000, background: T.bg, display: "flex", alignItems: "center", justifyContent: "center", padding: 24, textAlign: "center" }}>
-          <div style={{ maxWidth: 480 }}>
-            <div style={{ fontFamily: "'Lato',sans-serif", fontSize: 14, letterSpacing: 3, color: T.ink4, textTransform: "uppercase", marginBottom: 12 }}>Pedido enviado</div>
-            <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 64, color: T.goldDk, fontWeight: 600, lineHeight: 1.1, marginBottom: 20 }}>{confirmacao}</div>
-            <p style={{ fontFamily: "'Lato',sans-serif", fontSize: 18, color: T.ink2, lineHeight: 1.6, margin: "0 0 32px" }}>Anote este número e vá até o caixa para pagar. Nossa equipe confirma o pagamento e separa as peças.</p>
-            <button onClick={reiniciar} style={{ background: T.goldDk, border: "none", borderRadius: 12, padding: "16px 40px", color: "white", fontFamily: "'Lato',sans-serif", fontSize: 16, fontWeight: 700, cursor: "pointer" }}>Novo pedido</button>
-          </div>
-        </div>
-      )}
-
       {toast && (
         <div style={{ position: "fixed", top: 20, right: 20, zIndex: 9999, background: T.panel, border: `1px solid ${T.border}`, borderRadius: 10, padding: "12px 18px", display: "flex", alignItems: "center", gap: 10, boxShadow: "0 4px 20px rgba(26,23,20,0.15)", fontFamily: "'Lato',sans-serif", fontSize: 12, color: T.ink2, maxWidth: 320 }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ color: T.jade, flexShrink: 0 }}><polyline points="20 6 9 17 4 12"/></svg>
@@ -154,7 +118,6 @@ export default function GaleneStore({ totem = false }) {
           onFinish={handleFinish}
           onBack={() => setCurrentView("loja")}
           minOrder={minOrder}
-          totem={totem}
         />
       ) : (
         <div style={{ display: "flex", minHeight: "calc(100vh - 112px)" }}>
