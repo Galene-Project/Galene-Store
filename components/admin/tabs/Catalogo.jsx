@@ -251,6 +251,67 @@ function NovoProdutoForm({ cores, tamanhos, categorias, onCorCriada, onCancel, o
   );
 }
 
+function EditarProdutoForm({ produto, categorias, onCancel, onSaved }) {
+  const precoBase = produto.price_original ?? produto.price;
+  const [f, setF] = useState({
+    name: produto.name || "", category: produto.category || "", material: produto.material || "",
+    description: produto.description || "", price: String(precoBase),
+  });
+  const [saving, setSaving] = useState(false);
+  const [erro, setErro] = useState("");
+  const set = (campo) => (e) => setF((prev) => ({ ...prev, [campo]: e.target.value }));
+
+  async function salvar() {
+    setSaving(true);
+    setErro("");
+    try {
+      const body = { productId: produto.id, name: f.name, category: f.category, material: f.material, description: f.description };
+      if (Number(f.price) !== Number(precoBase)) body.price = f.price;
+      await callApi("/api/admin/produtos/editar", body);
+      onSaved();
+    } catch (err) {
+      setErro(err.message);
+      setSaving(false);
+    }
+  }
+
+  async function desativar() {
+    if (!window.confirm(`Desativar "${produto.name}"? Ele some da loja e dos números do painel (estoque e histórico ficam guardados). Dá para reativar depois.`)) return;
+    setSaving(true);
+    setErro("");
+    try {
+      await callApi("/api/admin/produtos/editar", { productId: produto.id, ativo: false });
+      onSaved();
+    } catch (err) {
+      setErro(err.message);
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div style={{ flexBasis: "100%", padding: "12px 0 4px", borderTop: "1px solid var(--rule)" }}>
+      {erro && <div style={{ marginBottom: 10, padding: "8px 12px", borderRadius: 8, background: "var(--pill-negative-bg)", color: "var(--negative)", fontSize: 12 }}>{erro}</div>}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
+        <input placeholder="Nome" value={f.name} onChange={set("name")} style={{ ...inputStyle, width: "100%" }} />
+        <input list="categorias-existentes-edicao" placeholder="Categoria" value={f.category} onChange={set("category")} style={{ ...inputStyle, width: "100%" }} />
+        <input placeholder="Material" value={f.material} onChange={set("material")} style={{ ...inputStyle, width: "100%" }} />
+        <input type="number" step="0.01" placeholder="Preço base" value={f.price} onChange={set("price")} style={{ ...inputStyle, width: "100%" }} />
+      </div>
+      <datalist id="categorias-existentes-edicao">{categorias.map((c) => <option key={c} value={c} />)}</datalist>
+      {produto.price_original != null && (
+        <div style={{ fontSize: 12, color: "var(--text-5)", marginBottom: 10 }}>Em promoção: o preço base muda o valor original e o desconto é recalculado; o preço promocional atual ({formatBRL(produto.price)}) continua.</div>
+      )}
+      <textarea placeholder="Descrição" value={f.description} onChange={set("description")} style={{ ...inputStyle, width: "100%", minHeight: 60, marginBottom: 6 }} />
+      <div style={{ fontSize: 12, color: "var(--text-5)", marginBottom: 10 }}>SKU {produto.sku} (não editável: está nos códigos de barras).</div>
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+        <button onClick={salvar} disabled={saving} style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: "var(--primary)", color: "var(--primary-ink)", fontSize: 12, fontWeight: 600, cursor: saving ? "wait" : "pointer" }}>{saving ? "Salvando..." : "Salvar alterações"}</button>
+        <button onClick={onCancel} disabled={saving} style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid var(--surface-7)", background: "transparent", color: "var(--text-3)", fontSize: 12, cursor: "pointer" }}>Cancelar</button>
+        <button onClick={desativar} disabled={saving} style={{ marginLeft: "auto", padding: "8px 16px", borderRadius: 8, border: "1px solid var(--negative)", background: "transparent", color: "var(--negative)", fontSize: 12, cursor: "pointer" }}>Desativar produto</button>
+      </div>
+    </div>
+  );
+}
+
 export default function Catalogo() {
   const [produtos, setProdutos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -261,6 +322,9 @@ export default function Catalogo() {
   const [formOpenIds, setFormOpenIds] = useState(new Set());
   const [precoInputs, setPrecoInputs] = useState({});
   const [novoAberto, setNovoAberto] = useState(false);
+  const [editandoId, setEditandoId] = useState(null);
+  const [desativados, setDesativados] = useState([]);
+  const [mostrarDesativados, setMostrarDesativados] = useState(false);
   const [cores, setCores] = useState([]);
   const [tamanhos, setTamanhos] = useState([]);
   const [videoFormOpenIds, setVideoFormOpenIds] = useState(new Set());
@@ -277,13 +341,22 @@ export default function Catalogo() {
     setLoading(true);
     const { data, error } = await supabase
       .from("products")
-      .select("id, name, category, price, price_original, discount_percentage, featured, instagram_urls, is_launch, product_media(id, type, url, storage_path), product_colors(color_id, photo_url, colors(name))")
+      .select("id, sku, name, category, material, description, price, price_original, discount_percentage, featured, instagram_urls, is_launch, product_media(id, type, url, storage_path), product_colors(color_id, photo_url, colors(name))")
       .eq("is_active", true)
       .order("category")
       .order("name");
     if (error) { console.error("Erro ao buscar produtos:", error); setLoading(false); return; }
     setProdutos(data || []);
+    const { data: inativos } = await supabase.from("products").select("id, name, category, price").eq("is_active", false).order("name");
+    setDesativados(inativos || []);
     setLoading(false);
+  }
+
+  async function reativar(id) {
+    try {
+      await callApi("/api/admin/produtos/editar", { productId: id, ativo: true });
+      loadProdutos();
+    } catch (err) { setErrorMsg(err.message); }
   }
 
   useEffect(() => { loadProdutos(); }, []);
@@ -693,6 +766,20 @@ export default function Catalogo() {
             />
           </label>
         </div>
+
+        <button onClick={() => setEditandoId(editandoId === p.id ? null : p.id)}
+          style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid var(--surface-7)", background: "transparent", color: "var(--text-3)", fontSize: 12, cursor: "pointer" }}>
+          {editandoId === p.id ? "Fechar" : "Editar"}
+        </button>
+
+        {editandoId === p.id && (
+          <EditarProdutoForm
+            produto={p}
+            categorias={[...new Set(produtos.map((x) => x.category).filter(Boolean))]}
+            onCancel={() => setEditandoId(null)}
+            onSaved={() => { setEditandoId(null); loadProdutos(); }}
+          />
+        )}
       </div>
     );
   }
@@ -755,6 +842,22 @@ export default function Catalogo() {
             {openCat[cat] && prods.map(renderProduto)}
           </Card>
         ))
+      )}
+
+      {desativados.length > 0 && (
+        <Card style={{ marginTop: 12, padding: 0 }}>
+          <div onClick={() => setMostrarDesativados((v) => !v)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", cursor: "pointer" }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: "var(--text-2)" }}>Desativados ({desativados.length})</span>
+            <span style={{ fontSize: 12, color: "var(--text-4)" }}>{mostrarDesativados ? "▲" : "▼"}</span>
+          </div>
+          {mostrarDesativados && desativados.map((d) => (
+            <div key={d.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "10px 18px", borderTop: "1px solid var(--surface-4)" }}>
+              <div style={{ flex: 1, fontSize: 13, color: "var(--text-3)" }}>{d.name}</div>
+              <div style={{ fontSize: 12, color: "var(--text-4)" }}>{d.category} · {formatBRL(d.price)}</div>
+              <button onClick={() => reativar(d.id)} style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid var(--surface-7)", background: "transparent", color: "var(--text-3)", fontSize: 12, cursor: "pointer" }}>Reativar</button>
+            </div>
+          ))}
+        </Card>
       )}
     </div>
   );
