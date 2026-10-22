@@ -86,13 +86,29 @@ async function callApi(path, body) {
 
 const emptyNovoProduto = { name: "", category: "", material: "", sku: "", price: "", description: "" };
 
-function NovoProdutoForm({ cores, tamanhos, onCancel, onCreated }) {
+function NovoProdutoForm({ cores, tamanhos, categorias, onCorCriada, onCancel, onCreated }) {
   const [form, setForm] = useState(emptyNovoProduto);
   const [variantes, setVariantes] = useState([{ color_id: "", size_id: "", quantity: "" }]);
   const [instagramLinks, setInstagramLinks] = useState([""]);
   const [saving, setSaving] = useState(false);
   const [erro, setErro] = useState("");
   const [etiquetas, setEtiquetas] = useState(null);
+  const [novaCor, setNovaCor] = useState(null); // null = fechado; { name, hex } = aberto
+  const [salvandoCor, setSalvandoCor] = useState(false);
+
+  async function handleCriarCor() {
+    setSalvandoCor(true);
+    setErro("");
+    try {
+      const resp = await callApi("/api/admin/cores", novaCor);
+      onCorCriada(resp.cor);
+      setNovaCor(null);
+    } catch (err) {
+      setErro(err.message);
+    } finally {
+      setSalvandoCor(false);
+    }
+  }
 
   function setVariante(i, campo, valor) {
     setVariantes((prev) => prev.map((v, idx) => (idx === i ? { ...v, [campo]: valor } : v)));
@@ -161,11 +177,12 @@ function NovoProdutoForm({ cores, tamanhos, onCancel, onCreated }) {
       )}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
         <input placeholder="Nome" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} style={{ ...inputStyle, width: "100%" }} />
-        <input placeholder="Categoria" value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))} style={{ ...inputStyle, width: "100%" }} />
+        <input list="categorias-existentes" placeholder="Categoria (escolha ou digite uma nova)" value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))} style={{ ...inputStyle, width: "100%" }} />
         <input placeholder="Material" value={form.material} onChange={(e) => setForm((f) => ({ ...f, material: e.target.value }))} style={{ ...inputStyle, width: "100%" }} />
         <input placeholder="SKU (opcional)" value={form.sku} onChange={(e) => setForm((f) => ({ ...f, sku: e.target.value }))} style={{ ...inputStyle, width: "100%" }} />
         <input type="number" step="0.01" placeholder="Preço" value={form.price} onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))} style={{ ...inputStyle, width: "100%" }} />
       </div>
+      <datalist id="categorias-existentes">{categorias.map((c) => <option key={c} value={c} />)}</datalist>
       <textarea placeholder="Descrição (opcional)" value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} style={{ ...inputStyle, width: "100%", minHeight: 60, marginBottom: 12 }} />
 
       <div style={{ fontSize: 12, color: "var(--text-4)", marginBottom: 8 }}>Variantes (cor / tamanho / quantidade em estoque)</div>
@@ -187,9 +204,22 @@ function NovoProdutoForm({ cores, tamanhos, onCancel, onCreated }) {
         </div>
       ))}
       <button type="button" onClick={() => setVariantes((prev) => [...prev, { color_id: "", size_id: "", quantity: "" }])}
-        style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid var(--surface-7)", background: "transparent", color: "var(--text-3)", fontSize: 12, cursor: "pointer", marginBottom: 14 }}>
+        style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid var(--surface-7)", background: "transparent", color: "var(--text-3)", fontSize: 12, cursor: "pointer", marginBottom: 14, marginRight: 8 }}>
         + Variante
       </button>
+      {novaCor ? (
+        <div style={{ display: "inline-flex", gap: 8, alignItems: "center", marginBottom: 14, flexWrap: "wrap" }}>
+          <input placeholder="Nome da cor" value={novaCor.name} onChange={(e) => setNovaCor((c) => ({ ...c, name: e.target.value }))} style={{ ...inputStyle, width: 160 }} />
+          <input type="color" aria-label="Tom da cor" value={novaCor.hex} onChange={(e) => setNovaCor((c) => ({ ...c, hex: e.target.value }))} style={{ width: 40, height: 32, padding: 2, border: "1px solid var(--control)", borderRadius: 6, background: "var(--surface)" }} />
+          <button type="button" onClick={handleCriarCor} disabled={salvandoCor} style={{ padding: "6px 12px", borderRadius: 8, border: "none", background: "var(--primary)", color: "var(--primary-ink)", fontSize: 12, fontWeight: 600, cursor: salvandoCor ? "wait" : "pointer" }}>{salvandoCor ? "Criando..." : "Criar cor"}</button>
+          <button type="button" onClick={() => setNovaCor(null)} style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid var(--surface-7)", background: "transparent", color: "var(--text-3)", fontSize: 12, cursor: "pointer" }}>Cancelar</button>
+        </div>
+      ) : (
+        <button type="button" onClick={() => setNovaCor({ name: "", hex: "#888888" })}
+          style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid var(--surface-7)", background: "transparent", color: "var(--text-3)", fontSize: 12, cursor: "pointer", marginBottom: 14 }}>
+          + Nova cor
+        </button>
+      )}
 
       <div style={{ fontSize: 12, color: "var(--text-4)", marginBottom: 8 }}>Fotos/vídeos (links de post ou reel do Instagram, opcional)</div>
       {instagramLinks.map((link, i) => (
@@ -690,6 +720,8 @@ export default function Catalogo() {
         <NovoProdutoForm
           cores={cores}
           tamanhos={tamanhos}
+          categorias={[...new Set(produtos.map((p) => p.category).filter(Boolean))]}
+          onCorCriada={(c) => setCores((prev) => [...prev, c].sort((a, b) => a.name.localeCompare(b.name, "pt-BR")))}
           onCancel={() => setNovoAberto(false)}
           onCreated={() => { setNovoAberto(false); loadProdutos(); }}
         />

@@ -1,4 +1,5 @@
-import { T, CATS } from "../../lib/galeneTheme";
+import { T, CATS, ESPECIAIS, ORDEM_CATEGORIAS } from "../../lib/galeneTheme";
+import { listarCategorias } from "../../lib/categorias";
 import { buildWhatsappLink, buildInstagramLink, buildFacebookLink } from "../../lib/socialLinks";
 
 const REDE_ICONS = {
@@ -19,10 +20,9 @@ export default function Sidebar({ cat, setCat, mobile, onClose, produtos, redes 
     promocoes: produtos.filter((p) => p.precoOriginal != null).length,
     lancamentos: produtos.filter((p) => p.isLaunch).length,
   };
-  const especiais = new Set(["destaques", "promocoes", "lancamentos"]);
-  CATS.forEach((c) => {
-    if (!especiais.has(c.id)) counts[c.id] = produtos.filter((p) => p.cat === c.id).length;
-  });
+  const dinamicas = listarCategorias(produtos, ORDEM_CATEGORIAS);
+  dinamicas.forEach((c) => { counts[c] = produtos.filter((p) => p.cat === c).length; });
+  const itens = [...CATS.filter((c) => ESPECIAIS.includes(c.id)), ...dinamicas.map((c) => ({ id: c, label: c }))];
 
   return (
     <div style={{ width: mobile ? 260 : 200, background: T.panel, borderRight: `1px solid ${T.border}`, height: "100%", overflowY: "auto" }}>
@@ -36,7 +36,7 @@ export default function Sidebar({ cat, setCat, mobile, onClose, produtos, redes 
         <div style={{ padding: "0 16px 8px", fontFamily: "'Lato',sans-serif", fontSize: 12, letterSpacing: 2, color: T.ink4, textTransform: "uppercase" }}>
           Categorias
         </div>
-        {CATS.map((c) => {
+        {itens.map((c) => {
           const ativa = cat === c.id;
           return (
             <button

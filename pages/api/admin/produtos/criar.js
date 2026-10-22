@@ -1,6 +1,7 @@
 import { supabaseAdmin } from '../../../../lib/supabaseAdmin';
 import { requireAdmin } from '../../../../lib/requireAdmin';
 import { validateNewProduct } from '../../../../lib/productCreate';
+import { resolveCategoria } from '../../../../lib/categorias';
 import { computeVariantCodes } from '../../../../lib/barcode';
 import { validateInstagramUrls } from '../../../../lib/instagramUrl';
 
@@ -20,7 +21,10 @@ export default async function handler(req, res) {
   }
 
   const { material, sku, description, colorPhotos, instagramUrls } = req.body || {};
-  const { name, category, price, variants } = parsed;
+  const { name, price, variants } = parsed;
+  // Reaproveita a grafia de categoria que já existe (evita "vestidos" e "Vestidos" separados).
+  const { data: catRows } = await supabaseAdmin.from('products').select('category');
+  const category = resolveCategoria(parsed.category, [...new Set((catRows || []).map((r) => r.category).filter(Boolean))]);
   const finalSku = sku || `AUTO-${Date.now().toString(36).toUpperCase()}`;
 
   let finalInstagramUrls;

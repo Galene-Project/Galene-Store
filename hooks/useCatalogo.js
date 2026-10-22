@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { fetchAll } from "../lib/fetchAll";
 import { buildCatalogo } from "../lib/catalogo";
+import { registrarCores } from "../lib/galeneTheme";
+import { mapaDeCores } from "../lib/cores";
 
 // Busca catálogo + status público de estoque + configurações da loja.
 // Usado pela vitrine e pelo balcão (/admin/venda). `enabled=false` adia a
@@ -19,7 +21,7 @@ export function useCatalogo({ enabled = true } = {}) {
         .from("products")
         .select(`
           id, name, category, material, price, price_original, discount_percentage, description, featured, tag, instagram_urls, is_launch,
-          product_colors ( colors ( name ), photo_url ),
+          product_colors ( colors ( name, hex_code ), photo_url ),
           stock ( color_id, size_id, colors ( name ), sizes ( name ) ),
           product_media ( type, url )
         `)
@@ -40,6 +42,7 @@ export function useCatalogo({ enabled = true } = {}) {
 
     if (settingsRow?.min_order) setMinOrder(settingsRow.min_order);
     if (settingsRow) setRedes({ whatsapp: settingsRow.whatsapp, instagram: settingsRow.instagram, facebook: settingsRow.facebook });
+    registrarCores(mapaDeCores(produtosRes.data.flatMap((p) => p.product_colors.map((pc) => pc.colors))));
     setProdutos(buildCatalogo(produtosRes.data, statusRes.data));
     setLoading(false);
   }, [enabled]);
