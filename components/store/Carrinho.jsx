@@ -3,6 +3,16 @@ import Sil from "./Sil";
 import { T, COR_HEX, fmt } from "../../lib/galeneTheme";
 import { useWindowWidth } from "../../hooks/useWindowWidth";
 
+// Teclado certo no celular (e-mail, telefone, número) e preenchimento automático do navegador.
+const ATRIBUTOS_CAMPO = {
+  razao:  { type: "text",  autoComplete: "organization" },
+  cnpj:   { type: "text",  inputMode: "numeric" },
+  email:  { type: "email", inputMode: "email", autoComplete: "email", autoCapitalize: "none", autoCorrect: "off" },
+  tel:    { type: "tel",   inputMode: "tel", autoComplete: "tel" },
+  end:    { type: "text",  autoComplete: "street-address" },
+  cidade: { type: "text",  autoComplete: "address-level2" },
+};
+
 export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder }) {
   const [step, setStep] = useState(1);
   const [met, setMet]   = useState(null);
@@ -146,6 +156,7 @@ export default function Carrinho({ cart, onRemove, onFinish, onBack, minOrder })
                 <div key={f} style={{ gridColumn: `span ${mob ? "1" : c}` }}>
                   <label style={{ display: "block", fontFamily: "'Lato',sans-serif", fontSize: 12, letterSpacing: 1.5, color: T.ink4, textTransform: "uppercase", marginBottom: 6 }}>{label}</label>
                   <input
+                    {...ATRIBUTOS_CAMPO[f]}
                     value={form[f] || ""}
                     onChange={(e) => { setForm((p) => ({ ...p, [f]: e.target.value })); setFormErros((p) => ({ ...p, [f]: false })); }}
                     style={{ width: "100%", background: T.panel, border: `1.5px solid ${formErros[f] ? T.ruby : T.border}`, borderRadius: 8, padding: "11px 14px", fontFamily: "'Lato',sans-serif", fontSize: 13, color: T.ink, outline: "none", boxSizing: "border-box" }}
