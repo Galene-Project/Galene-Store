@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 // /gestao-k7x2p abre o painel e /admin devolve 404. Sem a variável (dev), /admin
 // continua normal. Isso só reduz ruído e tentativa de invasão; a proteção de
 // verdade é o login único + RLS (is_admin) + requireAdmin nas rotas /api/admin.
-export function middleware(req) {
+export function proxy(req) {
   const segredo = process.env.ADMIN_PATH;
   if (!segredo) return NextResponse.next();
 

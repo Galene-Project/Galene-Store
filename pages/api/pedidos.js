@@ -1,11 +1,11 @@
-import { supabaseAdmin } from '../../lib/supabaseAdmin';
-import { computeOrderItems } from '../../lib/pricing';
-import { findShortages, formatShortages } from '../../lib/stock';
-import { createOrderPreference } from '../../lib/mercadopagoPreference';
-import { buildPixPayload } from '../../lib/pixPayload';
-import { findCustomerByPhone, camposEmBranco, normalizePhone } from '../../lib/customers';
+import { supabaseAdmin } from '../../lib/supabaseAdmin.js';
+import { computeOrderItems } from '../../lib/pricing.js';
+import { findShortages, formatShortages } from '../../lib/stock.js';
+import { createOrderPreference } from '../../lib/mercadopagoPreference.js';
+import { buildPixPayload } from '../../lib/pixPayload.js';
+import { findCustomerByPhone, camposEmBranco, normalizePhone } from '../../lib/customers.js';
 
-export default async function handler(req, res) {
+export default async function handler(req, res, db = supabaseAdmin) {
   if (req.method !== 'POST') return res.status(405).json({ error: { code: 'METHOD_NOT_ALLOWED', message: 'Use POST', details: [] } });
 
   const { form, cart, pagamento } = req.body || {};
@@ -25,14 +25,14 @@ export default async function handler(req, res) {
   let novoClienteId = null;
   let orderId = null;
   const desfazer = async () => {
-    if (orderId) await supabaseAdmin.from('orders').delete().eq('id', orderId);
-    if (novoClienteId) await supabaseAdmin.from('customers').delete().eq('id', novoClienteId);
+    if (orderId) await db.from('orders').delete().eq('id', orderId);
+    if (novoClienteId) await db.from('customers').delete().eq('id', novoClienteId);
   };
 
   try {
     // Preço vem sempre do banco, nunca do corpo do POST — ver lib/pricing.js.
     const productIds = [...new Set(cart.map((i) => i.id))];
-    const { data: products, error: prodErr } = await supabaseAdmin
+    const { data: products, error: prodErr } = await db
       .from('products')
       .select('id, price')
       .eq('is_active', true)
@@ -46,7 +46,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: { code: 'VALIDATION_FAILED', message: e.message, details: [] } });
     }
 
-    const { data: settingsRow } = await supabaseAdmin.from('store_settings').select('min_order, pix_key, pix_name, pix_city').limit(1).single();
+    const { data: settingsRow } = await db.from('store_settings').select('min_order, pix_key, pix_name, pix_city').limit(1).single();
     const minOrder = settingsRow?.min_order || 6;
 
     // Peças mínimas recalculadas do carrinho de verdade — não confia no
@@ -62,8 +62,8 @@ export default async function handler(req, res) {
     const colorNames = [...new Set(cart.flatMap((i) => i.sel.map((s) => s.cor)))];
     const sizeNames = [...new Set(cart.flatMap((i) => i.sel.map((s) => s.tam)))];
     const [{ data: colors }, { data: sizes }] = await Promise.all([
-      supabaseAdmin.from('colors').select('id,name').in('name', colorNames),
-      supabaseAdmin.from('sizes').select('id,name').in('name', sizeNames),
+      db.from('colors').select('id,name').in('name', colorNames),
+      db.from('sizes').select('id,name').in('name', sizeNames),
     ]);
     const colorId = (name) => colors?.find((c) => c.name === name)?.id ?? null;
     const sizeId = (name) => sizes?.find((s) => s.name === name)?.id ?? null;
@@ -79,7 +79,7 @@ export default async function handler(req, res) {
       unitPrice: i.unitPrice,
     }));
 
-    const { data: stockRows, error: stockErr } = await supabaseAdmin
+    const { data: stockRows, error: stockErr } = await db
       .from('stock')
       .select('product_id, color_id, size_id, quantity')
       .in('product_id', productIds);
@@ -101,7 +101,7 @@ export default async function handler(req, res) {
     // aqui — rota pública, qualquer um que souber o telefone poderia
     // reescrever nome/e-mail de outro cliente. Só preenche o que está vazio;
     // trocar cadastro é coisa do painel (venda presencial).
-    const existente = await findCustomerByPhone(supabaseAdmin, form.tel);
+    const existente = await findCustomerByPhone(db, form.tel);
     if (existente) {
       customerId = existente.id;
       // Volta com e-mail/CNPJ que o cadastro ainda não tinha: preenche só o vazio.
@@ -109,10 +109,10 @@ export default async function handler(req, res) {
         name: form.razao, company_name: form.razao, email: form.email?.trim().toLowerCase(), cnpj: form.cnpj,
       });
       if (Object.keys(preencher).length) {
-        await supabaseAdmin.from('customers').update(preencher).eq('id', existente.id);
+        await db.from('customers').update(preencher).eq('id', existente.id);
       }
     } else {
-      const { data: customer, error: custErr } = await supabaseAdmin
+      const { data: customer, error: custErr } = await db
         .from('customers')
         .insert([{
           name: form.razao?.trim(),
@@ -128,9 +128,9 @@ export default async function handler(req, res) {
       novoClienteId = customer.id;
     }
 
-    const { data: orderNumber, error: numErr } = await supabaseAdmin.rpc('next_order_number');
+    const { data: orderNumber, error: numErr } = await db.rpc('next_order_number');
     if (numErr) throw numErr;
-    const { data: order, error: orderErr } = await supabaseAdmin
+    const { data: order, error: orderErr } = await db
       .from('orders')
       .insert([{
         order_number: orderNumber,
@@ -152,7 +152,7 @@ export default async function handler(req, res) {
       quantity: i.quantity,
       unit_price: i.unitPrice,
     }));
-    const { error: itemsErr } = await supabaseAdmin.from('order_items').insert(items);
+    const { error: itemsErr } = await db.from('order_items').insert(items);
     if (itemsErr) throw itemsErr;
 
     // Sem gateway configurado (caso do Galene) o pedido fica aguardando_pagamento
@@ -174,12 +174,12 @@ export default async function handler(req, res) {
     // operador aprovar no painel (rota /api/admin/pedidos/aprovar),
     // que é quem de fato gera a preferência do Mercado Pago.
     if (pagamento === 'cartao') {
-      await supabaseAdmin.from('orders').update({ status: 'aguardando_aprovacao' }).eq('id', order.id);
+      await db.from('orders').update({ status: 'aguardando_aprovacao' }).eq('id', order.id);
       return res.status(200).json({ order_number: orderNumber, status: 'aguardando_aprovacao' });
     }
 
     const pref = await createOrderPreference(order, priced.items, origin);
-    await supabaseAdmin.from('orders').update({ payment_id: pref.id }).eq('id', order.id);
+    await db.from('orders').update({ payment_id: pref.id }).eq('id', order.id);
 
     return res.status(200).json({ order_number: orderNumber, checkout_url: pref.init_point });
   } catch (err) {

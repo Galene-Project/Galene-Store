@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm audit --omit=dev --audit-level=high
+      - run: npm run build
+        env:
+          # Só para o build compilar; o CI nunca fala com o banco de verdade.
+          NEXT_PUBLIC_SUPABASE_URL: http://localhost
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ci
+          SUPABASE_SERVICE_ROLE_KEY: ci

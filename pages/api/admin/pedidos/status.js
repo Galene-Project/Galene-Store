@@ -1,13 +1,13 @@
-import { supabaseAdmin } from '../../../../lib/supabaseAdmin';
-import { requireAdmin } from '../../../../lib/requireAdmin';
-import { VALID_STATUSES, shouldRestoreStock, shouldDecrementStock } from '../../../../lib/orderStatus';
+import { supabaseAdmin } from '../../../../lib/supabaseAdmin.js';
+import { requireAdmin } from '../../../../lib/requireAdmin.js';
+import { VALID_STATUSES, shouldRestoreStock, shouldDecrementStock } from '../../../../lib/orderStatus.js';
 
-export default async function handler(req, res) {
+export default async function handler(req, res, db = supabaseAdmin) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: { code: 'METHOD_NOT_ALLOWED', message: 'Use POST', details: [] } });
   }
 
-  const admin = await requireAdmin(req, res);
+  const admin = await requireAdmin(req, res, db);
   if (!admin) return;
 
   const { orderId, novoStatus } = req.body || {};
@@ -16,7 +16,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { data: order, error: orderErr } = await supabaseAdmin
+    const { data: order, error: orderErr } = await db
       .from('orders')
       .select('id, status')
       .eq('id', orderId)
@@ -29,7 +29,7 @@ export default async function handler(req, res) {
 
     let statusAtual = order.status;
     if (shouldDecrementStock(statusAtual, novoStatus)) {
-      const { data: claim, error: claimErr } = await supabaseAdmin.rpc('claim_payment_and_decrement_stock', {
+      const { data: claim, error: claimErr } = await db.rpc('claim_payment_and_decrement_stock', {
         p_order_id: orderId,
         p_payment_id: 'manual',
       });
@@ -48,7 +48,7 @@ export default async function handler(req, res) {
     // o update de status já feito antes na mesma função. Isso fecha a
     // janela de falha parcial (status commitado + estoque parcialmente
     // restaurado) que existia com as duas operações separadas.
-    const { data: result, error: rpcErr } = await supabaseAdmin.rpc('update_order_status_and_restore_stock', {
+    const { data: result, error: rpcErr } = await db.rpc('update_order_status_and_restore_stock', {
       p_order_id: orderId,
       p_expected_status: statusAtual,
       p_novo_status: novoStatus,
